@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap');
+
+@font-face {
+  font-family: jost;
+  src: url(../../assets/Jost.ttf);
+}
+
+@font-face {
+  font-family: jost2;
+  src: url(../../assets/Jost-Bold.ttf);
+}
+
+@font-face {
+  font-family: jost3;
+  src: url(../../assets/Jost-SemiBold.ttf);
+}
+
+@font-face {
+  font-family: jost4;
+  src: url(../../assets/Jost-ExtraBold.ttf);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* ===== Colors ===== */
+  --primary-color: #d8f275;
+  --text-color: #f7f7f5;
+  --bg-color: #1f1e30;
+  --font1: 'Fira Sans', sans-serif;
+  --font2: jost, sans-serif;
+  --font3: jost2, sans-serif;
+  --font4: jost3, sans-serif;
+  --font5: jost4, sans-serif;
+
+  /* ====== Transition ====== */
+  --tran-05: all 0.5s ease;
+  --tran-03: all 0.3s ease;
+  --tran-03: all 0.2s ease;
+}
+
+.main.dark {
+  --primary-color: #3A3B3C;
+  --panel-color: #242526;
+  --text-color: #CCC;
+  --black-light-color: #CCC;
+  --border-color: #4D4C4C;
+  --toggle-color: #FFF;
+  --box1-color: #3A3B3C;
+  --box2-color: #3A3B3C;
+  --box3-color: #3A3B3C;
+  --title-icon-color: #CCC;
+}
+
+.main-dashboard{
+  height: max-content;
+  width: 100%;
+  display: flex;
+}
