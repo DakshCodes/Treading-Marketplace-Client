@@ -26,6 +26,17 @@
   box-sizing: border-box;
 }
 
+body {
+  min-height: 100vh;
+  background-color: var(--text-color);
+  font-family: var(--font1);
+}
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* ===== Colors ===== */
   --primary-color: #d8f275;
@@ -43,7 +54,8 @@
   --tran-03: all 0.2s ease;
 }
 
-.main.dark {
+
+.main-dashboard.dark {
   --primary-color: #3A3B3C;
   --panel-color: #242526;
   --text-color: #CCC;
@@ -56,8 +68,9 @@
   --title-icon-color: #CCC;
 }
 
-.main-dashboard{
+.main-dashboard {
   height: max-content;
   width: 100%;
   display: flex;
+  justify-content: flex-end;
 }

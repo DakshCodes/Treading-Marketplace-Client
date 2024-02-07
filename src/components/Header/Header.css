@@ -1,45 +1,33 @@
-.dashboard {
-    position: relative;
-    left: 260px;
-    background-color: var(--text-color);
-    min-height: 100vh;
-    width: calc(100% - 260px);
-    overflow: hidden;
-    transition: var(--tran-05);
-}
-
-nav.close~.dashboard {
-    left: 73px;
-    width: calc(100% - 73px);
-}
-
-.dashboard .top {
+.top {
     position: fixed;
     top: 0;
-    left: 250px;
     display: flex;
+    left: 250px;
     width: calc(100% - 250px);
     justify-content: space-between;
     align-items: center;
-    padding: 10px 30px;
+    padding: 10px 0px;
     background-color: var(--panel-color);
     transition: var(--tran-05);
-    z-index: 10;
+    z-index: 5;
+    gap: 30px;
 }
 
-nav.close~.dashboard .top {
-    left: 73px;
-    width: calc(100% - 73px);
+.close .top {
+    left: 85px;
+    width: calc(100% - 85px);
 }
 
-.dashboard .top .sidebar-toggle {
+
+.top .sidebar-toggle {
     font-size: 26px;
     height: 25px;
     color: var(--text-color);
     cursor: pointer;
+    margin-left: 10px;
 }
 
-.dashboard .top .search-box {
+.top .search-box {
     position: relative;
     height: 45px;
     max-width: 600px;
@@ -53,7 +41,7 @@ nav.close~.dashboard .top {
     display: flex;
 }
 
-.box-head h1{
+.box-head h1 {
     font-family: var(--font5);
     font-size: 2rem;
 }
@@ -87,6 +75,7 @@ nav.close~.dashboard .top {
 .top img {
     width: 40px;
     border-radius: 50%;
+    margin-right: 10px;
 }
 
 .dashboard .dash-content {
@@ -192,4 +181,15 @@ nav.close~.dashboard .top {
     margin-top: 20px;
     white-space: nowrap;
     color: var(--text-color);
+}
+
+@media (max-width: 400px) {
+    .top {
+        padding: 10px 2px;
+        gap: 0px;
+    }
+
+    .top .search-box {
+        max-width: 200px;
+    }
 }

@@ -1,19 +1,25 @@
 import './Sidenav.css'
 import React, { useEffect, useState } from 'react'
 import Header from '../Header/Header'
+import { Link } from 'react-router-dom';
+// Component for individual menu item
+const MenuItem = ({ icon, title, classNames, href }) => (
+    <li>
+        <Link to={href} className={classNames}>
+            {icon}
+            <span className="link-name">{title}</span>
+        </Link>
+    </li>
+);
 
 const Sidenav = () => {
-
     const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'light');
     const [status, setStatus] = useState(() => localStorage.getItem('status') || 'open');
 
     useEffect(() => {
         localStorage.setItem('mode', mode);
-    }, [mode]);
-
-    useEffect(() => {
         localStorage.setItem('status', status);
-    }, [status]);
+    }, [mode, status]);
 
     const toggleMode = () => {
         setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
@@ -34,21 +40,11 @@ const Sidenav = () => {
                 </div>
                 <div className="menu-items">
                     <ul className="nav-links">
-                        <li>
-                            <a href="#" className='active-tab'>
-                                <svg viewBox="0 0 24 24" fill="#000" xmlns="http://www.w3.org/2000/svg">
-                                    <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                                    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                                    <g id="SVGRepo_iconCarrier">
-                                        <rect width={24} height={24} fill="none" />
-                                        <path fillRule="evenodd" clipRule="evenodd" d="M6.93417 2H17.0658C17.9523 1.99995 18.7161 1.99991 19.3278 2.08215C19.9833 2.17028 20.6117 2.36902 21.1213 2.87868C21.631 3.38835 21.8297 4.0167 21.9179 4.67221C22.0001 5.28388 22.0001 6.0477 22 6.9342V13.0658C22.0001 13.9523 22.0001 14.7161 21.9179 15.3278C21.8297 15.9833 21.631 16.6117 21.1213 17.1213C20.6117 17.631 19.9833 17.8297 19.3278 17.9179C18.7161 18.0001 17.9523 18.0001 17.0658 18L13 18V20H17C17.5523 20 18 20.4477 18 21C18 21.5523 17.5523 22 17 22H7C6.44772 22 6 21.5523 6 21C6 20.4477 6.44772 20 7 20H11V18L6.93417 18C6.04769 18.0001 5.28387 18.0001 4.67221 17.9179C4.0167 17.8297 3.38835 17.631 2.87868 17.1213C2.36902 16.6117 2.17028 15.9833 2.08215 15.3278C1.99991 14.7161 1.99995 13.9523 2 13.0658V6.93417C1.99995 6.04769 1.99991 5.28387 2.08215 4.67221C2.17028 4.0167 2.36902 3.38835 2.87868 2.87868C3.38835 2.36902 4.0167 2.17028 4.67221 2.08215C5.28387 1.99991 6.04769 1.99995 6.93417 2Z" fill="#000" />
-                                    </g>
-                                </svg>
-                                <span className="link-name">Dashboard</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+                        <MenuItem
+                            href="/"
+                            classNames="active-tab"
+                            title="Home"
+                            icon={(
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -56,11 +52,20 @@ const Sidenav = () => {
                                         <path fillRule="evenodd" clipRule="evenodd" d="M2.5192 7.82274C2 8.77128 2 9.91549 2 12.2039V13.725C2 17.6258 2 19.5763 3.17157 20.7881C4.34315 22 6.22876 22 10 22H14C17.7712 22 19.6569 22 20.8284 20.7881C22 19.5763 22 17.6258 22 13.725V12.2039C22 9.91549 22 8.77128 21.4808 7.82274C20.9616 6.87421 20.0131 6.28551 18.116 5.10812L16.116 3.86687C14.1106 2.62229 13.1079 2 12 2C10.8921 2 9.88939 2.62229 7.88403 3.86687L5.88403 5.10813C3.98695 6.28551 3.0384 6.87421 2.5192 7.82274ZM9.44661 15.3975C9.11385 15.1508 8.64413 15.2206 8.39747 15.5534C8.15082 15.8862 8.22062 16.3559 8.55339 16.6025C9.5258 17.3233 10.715 17.75 12 17.75C13.285 17.75 14.4742 17.3233 15.4466 16.6025C15.7794 16.3559 15.8492 15.8862 15.6025 15.5534C15.3559 15.2206 14.8862 15.1508 14.5534 15.3975C13.825 15.9373 12.9459 16.25 12 16.25C11.0541 16.25 10.175 15.9373 9.44661 15.3975Z" fill="#000" />
                                     </g>
                                 </svg>
-                                <span className="link-name">Home</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+                            )}
+                        />
+                        <MenuItem
+                            href="/dashboard"
+                            title="Dashboard"
+                            icon={(
+                                <svg viewBox="0 0 24 24" fill="#000" xmlns="http://www.w3.org/2000/svg">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M6.93417 2H17.0658C17.9523 1.99995 18.7161 1.99991 19.3278 2.08215C19.9833 2.17028 20.6117 2.36902 21.1213 2.87868C21.631 3.38835 21.8297 4.0167 21.9179 4.67221C22.0001 5.28388 22.0001 6.0477 22 6.9342V13.0658C22.0001 13.9523 22.0001 14.7161 21.9179 15.3278C21.8297 15.9833 21.631 16.6117 21.1213 17.1213C20.6117 17.631 19.9833 17.8297 19.3278 17.9179C18.7161 18.0001 17.9523 18.0001 17.0658 18L13 18V20H17C17.5523 20 18 20.4477 18 21C18 21.5523 17.5523 22 17 22H7C6.44772 22 6 21.5523 6 21C6 20.4477 6.44772 20 7 20H11V18L6.93417 18C6.04769 18.0001 5.28387 18.0001 4.67221 17.9179C4.0167 17.8297 3.38835 17.631 2.87868 17.1213C2.36902 16.6117 2.17028 15.9833 2.08215 15.3278C1.99991 14.7161 1.99995 13.9523 2 13.0658V6.93417C1.99995 6.04769 1.99991 5.28387 2.08215 4.67221C2.17028 4.0167 2.36902 3.38835 2.87868 2.87868C3.38835 2.36902 4.0167 2.17028 4.67221 2.08215C5.28387 1.99991 6.04769 1.99995 6.93417 2Z" fill="#000" />
+                                </svg>
+                            )}
+                        />
+                        <MenuItem
+                            title="Projects"
+                            icon={(
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -68,11 +73,11 @@ const Sidenav = () => {
                                         <path fillRule="evenodd" clipRule="evenodd" d="M5.4 2h13.2A3.4 3.4 0 0 1 22 5.4v13.2a3.4 3.4 0 0 1-3.4 3.4H5.4A3.4 3.4 0 0 1 2 18.6V5.4A3.4 3.4 0 0 1 5.4 2ZM7 5a1 1 0 0 1 1 1v8a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1Zm5 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1Zm6 1a1 1 0 1 0-2 0v10a1 1 0 1 0 2 0V6Z" fill="#000000" />
                                     </g>
                                 </svg>
-                                <span className="link-name">Projects</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+                            )}
+                        />
+                        <MenuItem
+                            title="OverView"
+                            icon={(
                                 <svg fill="#000000" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" xmlSpace="preserve">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -83,11 +88,11 @@ const Sidenav = () => {
                                         </g>
                                     </g>
                                 </svg>
-                                <span className="link-name">OverView</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+                            )}
+                        />
+                        <MenuItem
+                            title="Activity"
+                            icon={(
                                 <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -104,17 +109,18 @@ const Sidenav = () => {
                                         </g>
                                     </g>
                                 </svg>
-                                <span className="link-name">Activity</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+                            )}
+                        />
+                        <MenuItem
+                            title="Schedule"
+                            icon={(
                                 <svg fill="#000000" viewBox="0 0 24 24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth={0} /><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" /><g id="SVGRepo_iconCarrier"><path d="M11,13.723a1.984,1.984,0,0,1,0-3.446V7a1,1,0,0,1,2,0v3.277a1.984,1.984,0,0,1,0,3.446V16a1,1,0,0,1-2,0ZM12,0a1,1,0,0,0,0,2,10,10,0,0,1,0,20,1,1,0,0,0,0,2A12,12,0,0,0,12,0ZM1.827,6.784a1,1,0,1,0,1,1A1,1,0,0,0,1.827,6.784ZM2,12a1,1,0,1,0-1,1A1,1,0,0,0,2,12ZM4.221,3.207a1,1,0,1,0,1,1A1,1,0,0,0,4.221,3.207ZM7.779.841a1,1,0,1,0,1,1A1,1,0,0,0,7.779.841ZM1.827,15.216a1,1,0,1,0,1,1A1,1,0,0,0,1.827,15.216Zm2.394,3.577a1,1,0,1,0,1,1A1,1,0,0,0,4.221,18.793Zm3.558,2.366a1,1,0,1,0,1,1A1,1,0,0,0,7.779,21.159Z" /></g></svg>
-                                <span className="link-name">Schedule</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
+
+                            )}
+                        />
+                        <MenuItem
+                            title="Settings"
+                            icon={(
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -122,9 +128,8 @@ const Sidenav = () => {
                                         <path d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81V16.18C2 19.83 4.17 22 7.81 22H16.18C19.82 22 21.99 19.83 21.99 16.19V7.81C22 4.17 19.83 2 16.19 2ZM7.67 5.5C7.67 5.09 8.01 4.75 8.42 4.75C8.83 4.75 9.17 5.09 9.17 5.5V9.4C9.17 9.81 8.83 10.15 8.42 10.15C8.01 10.15 7.67 9.81 7.67 9.4V5.5ZM9.52282 16.4313C9.31938 16.5216 9.17 16.7132 9.17 16.9358V18.5C9.17 18.91 8.83 19.25 8.42 19.25C8.01 19.25 7.67 18.91 7.67 18.5V16.9358C7.67 16.7132 7.5206 16.5216 7.31723 16.4311C6.36275 16.0064 5.7 15.058 5.7 13.95C5.7 12.45 6.92 11.22 8.42 11.22C9.92 11.22 11.15 12.44 11.15 13.95C11.15 15.0582 10.4791 16.0066 9.52282 16.4313ZM16.33 18.5C16.33 18.91 15.99 19.25 15.58 19.25C15.17 19.25 14.83 18.91 14.83 18.5V14.6C14.83 14.19 15.17 13.85 15.58 13.85C15.99 13.85 16.33 14.19 16.33 14.6V18.5ZM15.58 12.77C14.08 12.77 12.85 11.55 12.85 10.04C12.85 8.93185 13.5209 7.98342 14.4772 7.55873C14.6806 7.46839 14.83 7.27681 14.83 7.05421V5.5C14.83 5.09 15.17 4.75 15.58 4.75C15.99 4.75 16.33 5.09 16.33 5.5V7.06421C16.33 7.28681 16.4794 7.47835 16.6828 7.56885C17.6372 7.9936 18.3 8.94195 18.3 10.05C18.3 11.55 17.08 12.77 15.58 12.77Z" fill="#292D32" />
                                     </g>
                                 </svg>
-                                <span className="link-name">Settings</span>
-                            </a>
-                        </li>
+                            )}
+                        />
                     </ul>
                     <ul className="logout-mode">
                         <li><a href="#">
@@ -139,7 +144,7 @@ const Sidenav = () => {
                             <span className="link-name">Logout</span>
                         </a></li>
                         <li className="mode">
-                            <a onClick={toggleMode} href="#">
+                            <a href="#">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
                                     <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
@@ -150,14 +155,14 @@ const Sidenav = () => {
                                 </svg>
                                 <span className="link-name">Dark Mode</span>
                             </a>
-                            <div className="mode-toggle">
+                            <div onClick={toggleMode} className="mode-toggle">
                                 <span className="switch" />
                             </div>
                         </li>
                     </ul>
                 </div>
+                <Header toggleSidebar={toggleSidebar} />
             </nav>
-            <Header toggleSidebar={toggleSidebar} />
         </>
     )
 }
