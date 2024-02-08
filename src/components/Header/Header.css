@@ -2,8 +2,8 @@
     position: fixed;
     top: 0;
     display: flex;
-    left: 250px;
-    width: calc(100% - 250px);
+    left: 235px;
+    width: calc(100% - 235px);
     justify-content: space-between;
     align-items: center;
     padding: 10px 0px;
@@ -14,8 +14,8 @@
 }
 
 .close .top {
-    left: 85px;
-    width: calc(100% - 85px);
+    left: 90px;
+    width: calc(100% - 90px);
 }
 
 
