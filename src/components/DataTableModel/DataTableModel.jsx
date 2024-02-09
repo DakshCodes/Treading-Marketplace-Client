@@ -28,7 +28,7 @@ const statusColorMap = {
 
 const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
 
-export default function DataTable({ columns, users, statusOptions, section }) {
+export default function DataTableModel({ columns, users, statusOptions, section, onOpen }) {
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
@@ -242,7 +242,7 @@ export default function DataTable({ columns, users, statusOptions, section }) {
                         <Button color="primary"
                             className="bg-foreground text-background font-font1"
                             endContent={<UilPlus className="h-5 w-5" />}
-                            onClick={() => navigate(`/${section}/new`)}
+                            onClick={onOpen}
                         >
                             Add New
                         </Button>

@@ -1,8 +1,9 @@
 import React from 'react'
 import './Dashboard.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-import { UilCube } from '@iconscout/react-unicons'
+import { UilCube, UilUsersAlt } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
+import Suppliers from '../../components/Suppliers/Suppliers';
 
 const Dashboard = () => {
     return (
@@ -31,6 +32,19 @@ const Dashboard = () => {
                         className="max-h-max px-5 "
                     >
                         <ProductPage />
+                    </Tab>
+                    <Tab
+                        key="Suppliers"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilUsersAlt />
+                                <span>Suppliers</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Suppliers />
                     </Tab>
                 </Tabs>
             </div>
