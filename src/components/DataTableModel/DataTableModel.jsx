@@ -21,17 +21,15 @@ import { useNavigate } from "react-router-dom";
 import { capitalize } from "../../utils/capitalize";
 
 const statusColorMap = {
-    active: "success",
-    paused: "danger",
-    vacation: "warning",
+    true: "success",
+    false: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
 
-export default function DataTableModel({ columns, users, statusOptions, section, onOpen }) {
+export default function DataTableModel({ columns, update, deleteItem, users, statusOptions, visible_columns, section, onOpen }) {
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-    const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
+    const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
     const [statusFilter, setStatusFilter] = React.useState("all");
     const navigate = useNavigate()
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -57,9 +55,9 @@ export default function DataTableModel({ columns, users, statusOptions, section,
                 user.name.toLowerCase().includes(filterValue.toLowerCase()),
             );
         }
-        if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+        if (statusFilter !== "all" && Array.from(statusFilter)?.length !== statusOptions?.length) {
             filteredUsers = filteredUsers.filter((user) =>
-                Array.from(statusFilter).includes(user.status),
+                user.verified == Boolean(statusFilter.currentKey),
             );
         }
 
@@ -93,29 +91,40 @@ export default function DataTableModel({ columns, users, statusOptions, section,
     const renderCell = React.useCallback((user, columnKey) => {
         const cellValue = user[columnKey];
 
+
         switch (columnKey) {
             case "name":
                 return (
                     <User
-                        avatarProps={{ radius: "lg", src: user.avatar }}
-                        description={user.email}
+                        avatarProps={{ radius: "lg", src: user?.avatar }}
                         name={cellValue}
                     >
-                        {user.email}
+                        {user?.name}
                     </User>
                 );
-            case "role":
+            case "brand":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">{cellValue}</p>
-                        <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.brand}</p>
                     </div>
                 );
-            case "status":
+            case "verified":
                 return (
-                    <Chip className="capitalize" color={statusColorMap[user.status]} size="sm" variant="flat">
-                        {cellValue}
+                    <Chip className="capitalize" color={statusColorMap[user?.verified]} size="sm" variant="flat">
+                        {cellValue ? "Active" : "Disabled"}
                     </Chip>
+                );
+            case "experienced":
+                return (
+                    <Chip className="capitalize" color={statusColorMap[user?.experienced]} size="sm" variant="flat">
+                        {cellValue ? "True" : "False"}
+                    </Chip>
+                );
+            case "address":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.address}</p>
+                    </div>
                 );
             case "actions":
                 return (
@@ -128,8 +137,8 @@ export default function DataTableModel({ columns, users, statusOptions, section,
                             </DropdownTrigger>
                             <DropdownMenu className='font-2 font-medium text-[#000]'>
                                 <DropdownItem onClick={() => alert(user._id)}>View</DropdownItem>
-                                <DropdownItem onClick={() => handleEditForSection(user._id)}>Edit</DropdownItem>
-                                <DropdownItem>Delete</DropdownItem>
+                                <DropdownItem onClick={() => update(user._id)}>Edit</DropdownItem>
+                                <DropdownItem onClick={() => deleteItem(user._id) || alert(user._id)}>Delete</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -283,6 +292,8 @@ export default function DataTableModel({ columns, users, statusOptions, section,
             </div>
         );
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+
+    console.log(headerColumns, "User")
 
     return (
         <Table

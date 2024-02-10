@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createsupplier, Deletesupplier, GetsupplierData } from '../../apis/supllier';
+import { Createcategory, Deletecategory, GetcategoryData, Updatecategory } from '../../apis/categories';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 
-const Suppliers = () => {
+const Categories = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
     const [updateId, setUpdateId] = useState(null)
@@ -57,7 +57,7 @@ const Suppliers = () => {
     const getsupplierData = async () => {
         try {
             // dispatch(SetLoader(true));
-            const response = await GetsupplierData();
+            const response = await GetcategoryData();
             // dispatch(SetLoader(false));
             if (response.success) {
                 console.log(response.suppliers)
@@ -80,7 +80,7 @@ const Suppliers = () => {
 
             console.log(values)
             // dispatch(SetLoader(true));
-            const response = await Createsupplier(values);
+            const response = await Createcategory(values);
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
@@ -99,7 +99,7 @@ const Suppliers = () => {
     const deleteItem = async (id) => {
         try {
             // dispatch(SetLoader(true));
-            const response = await Deletesupplier(id);
+            const response = await Deletecategory(id);
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message)
@@ -116,7 +116,7 @@ const Suppliers = () => {
     const handleUpdate = async (supplierId) => {
         try {
 
-            const supplierData = await getSupplierById(supplierId);
+            const supplierData = await GetcategoryData(supplierId);
 
             // Set the initial values for Formik
             formik.setValues({
@@ -138,7 +138,7 @@ const Suppliers = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            const response = await UpdateSupplier(updateId, values);
+            const response = await Updatecategory(updateId, values);
             if (response.success) {
                 toast.success(response.message);
                 // Close the modal
@@ -266,4 +266,4 @@ const Suppliers = () => {
     )
 }
 
-export default Suppliers
+export default Categories

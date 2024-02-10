@@ -1,14 +1,16 @@
 import React from 'react'
-import './Dashboard.css'
+import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-import { UilCube, UilUsersAlt } from '@iconscout/react-unicons'
+import { UilCube, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
+import Categories from '../../components/Categories/Categories';
+import Quality from '../../components/Quality/Quality';
 
-const Dashboard = () => {
+const Inventory = () => {
     return (
         <div className='inventory-main '>
-            <div className="flex w-full flex-col ">
+            <div className="flex w-full flex-col mt-2">
                 <Tabs
                     aria-label="Options"
                     color="secondary"
@@ -46,10 +48,36 @@ const Dashboard = () => {
                     >
                         <Suppliers />
                     </Tab>
+                    <Tab
+                        key="Category"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilCreateDashboard />
+                                <span>Categories</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Categories />
+                    </Tab>
+                    <Tab
+                        key="Quality"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilFilter />
+                                <span>Quality</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Quality />
+                    </Tab>
                 </Tabs>
             </div>
         </div>
     )
 }
 
-export default Dashboard
+export default Inventory
