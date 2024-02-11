@@ -1,7 +1,8 @@
 import React from 'react'
 import DataTable from '../DataTable/DataTable';
-
+ 
 const ProductPage = () => {
+
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
