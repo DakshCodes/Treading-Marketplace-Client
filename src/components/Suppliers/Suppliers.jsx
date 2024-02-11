@@ -2,20 +2,20 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createsupplier, Deletesupplier, GetsupplierData } from '../../apis/supllier';
+import { Createsupplier, Deletesupplier, Updatesupplier } from '../../apis/supllier';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-import {useRecoilState, useRecoilValue} from "recoil"
-import {suppliersDataState} from "../../store/supplier/supplierAtom"
+import { useRecoilState, useRecoilValue } from "recoil"
+import { suppliersDataState } from "../../store/supplier/supplierAtom"
 
 const Suppliers = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-    
+
     const [updateId, setUpdateId] = useState(null)
 
-    const [suppliersData , setSuppliersData] = useRecoilState(suppliersDataState)
+    const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
     console.log(suppliersData || [])
 
     // Data Format
@@ -84,14 +84,13 @@ const Suppliers = () => {
     // Create The Supplier
     const creatsupplier = async (values) => {
         try {
-
-            console.log(values)
             // dispatch(SetLoader(true));
             const response = await Createsupplier(values);
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
+                setUpdateId(null); // Reset update ID when modal is closed
             } else {
                 throw new Error(response.message);
             }
@@ -123,8 +122,8 @@ const Suppliers = () => {
     const handleUpdate = async (supplierId) => {
         try {
 
-            const supplierData = await getSupplierById(supplierId);
-
+            // changed from todoListState to filteredTodoListState
+            const supplierData = suppliersData.find((element) => element._id == supplierId);
             // Set the initial values for Formik
             formik.setValues({
                 name: supplierData.name,
@@ -145,11 +144,13 @@ const Suppliers = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            const response = await UpdateSupplier(updateId, values);
+            console.log(values, "update")
+            const response = await Updatesupplier(updateId, values);
             if (response.success) {
                 toast.success(response.message);
+                onOpenChange(false)
                 // Close the modal
-                onOpenChange(false);
+                setUpdateId(null); // Reset update ID when modal is closed
             } else {
                 throw new Error(response.message);
             }
@@ -177,11 +178,11 @@ const Suppliers = () => {
         },
     });
 
+    console.log(formik.values, "values")
 
     return (
         <>
             <div className="flex flex-col gap-2">
-                {JSON.stringify(suppliersData)}
                 <Modal
                     isOpen={isOpen}
                     scrollBehavior={"inside"}
@@ -189,7 +190,7 @@ const Suppliers = () => {
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
                         if (!newState) {
-                            setUpdateId(null); // Reset update ID when modal is closed
+                            formik.setValues({})
                         }
                     }}
                 >
@@ -257,7 +258,6 @@ const Suppliers = () => {
                                         Close
                                     </Button>
                                     <Button color="primary"
-                                        onPress={onClose}
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
                                     >
@@ -269,7 +269,7 @@ const Suppliers = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={users} onOpen={onOpen} section={'supplier'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={suppliersData} onOpen={onOpen} section={'supplier'} />
         </>
     )
 }

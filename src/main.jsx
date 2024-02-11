@@ -6,6 +6,7 @@ import { NextUIProvider } from '@nextui-org/react'
 import {
   RecoilRoot,
 } from 'recoil';
+import Loader from './components/Loader/Loader.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -13,7 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <NextUIProvider>
         <RecoilRoot>
           {/* <ErrorBoundary> */}
-            <React.Suspense fallback={<div>Loading...</div>}>
+            <React.Suspense fallback={<Loader />}>
               <App />
             </React.Suspense>
           {/* </ErrorBoundary> */}
