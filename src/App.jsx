@@ -6,6 +6,8 @@ import Home from './pages/Home/Home';
 import ProductPageForm from './components/ProductPage/ProductPageForm';
 import { Toaster } from 'react-hot-toast';
 import Inventory from './pages/Inventory/Inventory';
+import { useRecoilValue } from 'recoil';
+import { darkmodeAtom } from './store/darkmode/darkAtom';
 
 const routesConfig = [
   { path: '/', element: <Home /> },
@@ -34,8 +36,10 @@ function generateRoutes(config) {
 
 function App() {
 
+  const mode = useRecoilValue(darkmodeAtom);
+
   return (
-    <div className='main-dashboard'>
+    <div className={`main-dashboard ${mode && 'dark'}`}>
       <Toaster />
       <Sidenav />
       <Routes>

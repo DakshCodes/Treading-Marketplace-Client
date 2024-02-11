@@ -2,6 +2,8 @@ import './Sidenav.css'
 import React, { useEffect, useState } from 'react'
 import Header from '../Header/Header'
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { darkmodeAtom } from '../../store/darkmode/darkAtom';
 
 // Component for individual menu item
 const MenuItem = ({ icon, title, classNames, href }) => (
@@ -14,23 +16,21 @@ const MenuItem = ({ icon, title, classNames, href }) => (
 );
 
 const Sidenav = () => {
-    const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'light');
     const [status, setStatus] = useState(() => localStorage.getItem('status') || 'open');
     const path = useLocation().pathname;
     console.log(path)
 
     useEffect(() => {
-        localStorage.setItem('mode', mode);
         localStorage.setItem('status', status);
-    }, [mode, status]);
+    }, [status]);
 
-    const toggleMode = () => {
-        setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
-    };
 
     const toggleSidebar = () => {
         setStatus(prevStatus => (prevStatus === 'open' ? 'close' : 'open'));
     };
+
+    const mode = useRecoilValue(darkmodeAtom);
+    const setDarkmode = useSetRecoilState(darkmodeAtom);
 
     return (
         <>
@@ -159,7 +159,7 @@ const Sidenav = () => {
                                 </svg>
                                 <span className="link-name">Dark Mode</span>
                             </a>
-                            <div onClick={toggleMode} className="mode-toggle">
+                            <div onClick={() => setDarkmode(!mode)} className="mode-toggle">
                                 <span className="switch" />
                             </div>
                         </li>
