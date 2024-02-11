@@ -5,12 +5,16 @@ import { useFormik } from 'formik'
 import { Createquality,GetqualityData,Deletequality,Updatequality} from '../../apis/quality';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import { qualityDataState } from '../../store/quality/qualityAtom';
 
 
 const Quality = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
     const [updateId, setUpdateId] = useState(null)
+
+    const quality = useRecoilValue(qualityDataState)
 
 
     // Data Format
@@ -174,6 +178,7 @@ const Quality = () => {
     return (
         <>
             <div className="flex flex-col gap-2">
+                {JSON.stringify(quality)}
                 <Modal
                     isOpen={isOpen}
                     scrollBehavior={"inside"}
