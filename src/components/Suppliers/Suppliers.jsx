@@ -90,6 +90,9 @@ const Suppliers = () => {
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
+                console.log(response.supplierDoc)
+                setSuppliersData([...suppliersData, response.supplierDoc]);
+                onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
             } else {
                 throw new Error(response.message);
@@ -101,6 +104,8 @@ const Suppliers = () => {
         }
     }
 
+    console.log("________________supplier data : ", suppliersData)
+
     // Delete Supplier
     const deleteItem = async (id) => {
         try {
@@ -108,7 +113,12 @@ const Suppliers = () => {
             const response = await Deletesupplier(id);
             // dispatch(SetLoader(false));
             if (response.success) {
-                toast.success(response.message)
+                toast.success(response.message);
+
+                // Update local state based on the correct identifier (use _id instead of id)
+                setSuppliersData((prevData) => prevData.filter((supplier) => supplier._id !== id));
+                
+                navigate('/inventory');
             } else {
                 throw new Error(response.message);
             }
@@ -126,11 +136,11 @@ const Suppliers = () => {
             const supplierData = suppliersData.find((element) => element._id == supplierId);
             // Set the initial values for Formik
             formik.setValues({
-                name: supplierData.name,
-                brand: supplierData.brand,
-                address: supplierData.address,
-                verified: supplierData.verified,
-                experienced: supplierData.experienced,
+                name: supplierData?.name,
+                brand: supplierData?.brand,
+                address: supplierData?.address,
+                verified: supplierData?.verified,
+                experienced: supplierData?.experienced,
             });
 
             setUpdateId(supplierId);
@@ -148,7 +158,15 @@ const Suppliers = () => {
             const response = await Updatesupplier(updateId, values);
             if (response.success) {
                 toast.success(response.message);
+                console.log("++++++++++++++++++++++++++++++++++++++++", response.supplier)
+
+                setSuppliersData((prevData) => {
+                    const updatedSuppliers = prevData.map((supplier) => (supplier._id === updateId ? response.supplier : supplier));
+                    return updatedSuppliers;
+                });
+
                 onOpenChange(false)
+                navigate("/inventory")
                 // Close the modal
                 setUpdateId(null); // Reset update ID when modal is closed
             } else {

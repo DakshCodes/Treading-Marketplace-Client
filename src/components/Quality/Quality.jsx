@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createquality,GetqualityData,Deletequality,Updatequality} from '../../apis/quality';
+import { Createquality, GetqualityData, Deletequality, Updatequality } from '../../apis/quality';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { qualityDataState } from '../../store/quality/qualityAtom';
 
 
@@ -14,7 +14,8 @@ const Quality = () => {
     const navigate = useNavigate();
     const [updateId, setUpdateId] = useState(null)
 
-    const quality = useRecoilValue(qualityDataState)
+    const [qualityData, setQualityData] = useRecoilState(qualityDataState)
+    console.log(qualityData || [])
 
 
     // Data Format
@@ -58,25 +59,25 @@ const Quality = () => {
 
 
     // Get data Of Suppliers
-    const getsupplierData = async () => {
-        try {
-            // dispatch(SetLoader(true));
-            const response = await GetqualityData();
-            // dispatch(SetLoader(false));
-            if (response.success) {
-                console.log(response.suppliers)
-            } else {
-                throw new Error(response.message);
-            }
-        } catch (error) {
-            // dispatch(SetLoader(false));
-            toast.error(error.message)
-        }
-    }
+    // const getsupplierData = async () => {
+    //     try {
+    //         // dispatch(SetLoader(true));
+    //         const response = await GetqualityData();
+    //         // dispatch(SetLoader(false));
+    //         if (response.success) {
+    //             console.log(response.suppliers)
+    //         } else {
+    //             throw new Error(response.message);
+    //         }
+    //     } catch (error) {
+    //         // dispatch(SetLoader(false));
+    //         toast.error(error.message)
+    //     }
+    // }
 
-    useEffect(() => {
-        getsupplierData();
-    }, [])
+    // useEffect(() => {
+    //     getsupplierData();
+    // }, [])
 
     // Create The Supplier
     const CreateItem = async (values) => {
@@ -87,8 +88,14 @@ const Quality = () => {
             const response = await Createquality(values);
             // dispatch(SetLoader(false));
             if (response.success) {
-                toast.success(response.message);
                 navigate('/inventory');
+                toast.success(response.message);
+                console.log(response +"////////");
+                setQualityData([...qualityData, response.qualityDoc]);
+
+                onOpenChange(false)
+                setUpdateId(null); // Reset update ID when modal is closed
+
             } else {
                 throw new Error(response.message);
             }
@@ -106,7 +113,12 @@ const Quality = () => {
             const response = await Deletequality(id);
             // dispatch(SetLoader(false));
             if (response.success) {
-                toast.success(response.message)
+                toast.success(response.message);
+
+                // Update local state based on the correct identifier (use _id instead of id)
+                setQualityData((prevData) => prevData.filter((quality) => quality._id !== id));
+
+                // navigate('/inventory');
             } else {
                 throw new Error(response.message);
             }
@@ -124,11 +136,11 @@ const Quality = () => {
 
             // Set the initial values for Formik
             formik.setValues({
-                name: supplierData.name,
-                brand: supplierData.brand,
-                address: supplierData.address,
-                verified: supplierData.verified,
-                experienced: supplierData.experienced,
+                name: supplierData?.name,
+                brand: supplierData?.brand,
+                address: supplierData?.address,
+                verified: supplierData?.verified,
+                experienced: supplierData?.experienced,
             });
 
             setUpdateId(supplierId);
@@ -145,6 +157,12 @@ const Quality = () => {
             const response = await Updatequality(updateId, values);
             if (response.success) {
                 toast.success(response.message);
+                
+                setQualityData((prevData) => {
+                    const updatedQuality = prevData.map((quality) => (quality._id === updateId ? response.qualities : quality));
+                    return updatedQuality;
+                });
+                
                 // Close the modal
                 onOpenChange(false);
             } else {
@@ -178,7 +196,7 @@ const Quality = () => {
     return (
         <>
             <div className="flex flex-col gap-2">
-                {JSON.stringify(quality)}
+                {/* {JSON.stringify(qualityData)} */}
                 <Modal
                     isOpen={isOpen}
                     scrollBehavior={"inside"}
@@ -266,7 +284,7 @@ const Quality = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={users} onOpen={onOpen} section={'supplier'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={qualityData} onOpen={onOpen} section={'supplier'} />
         </>
     )
 }
