@@ -6,12 +6,17 @@ import { Createsupplier, Deletesupplier, GetsupplierData } from '../../apis/supl
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
+import {useRecoilState, useRecoilValue} from "recoil"
+import {suppliersDataState} from "../../store/supplier/supplierAtom"
 
 const Suppliers = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
+    
     const [updateId, setUpdateId] = useState(null)
 
+    const [suppliersData , setSuppliersData] = useRecoilState(suppliersDataState)
+    console.log(suppliersData || [])
 
     // Data Format
     const columns = [
@@ -53,26 +58,28 @@ const Suppliers = () => {
     ];
 
 
-    // Get data Of Suppliers
-    const getsupplierData = async () => {
-        try {
-            // dispatch(SetLoader(true));
-            const response = await GetsupplierData();
-            // dispatch(SetLoader(false));
-            if (response.success) {
-                console.log(response.suppliers)
-            } else {
-                throw new Error(response.message);
-            }
-        } catch (error) {
-            dispatch(SetLoader(false));
-            toast.error(error.message)
-        }
-    }
 
-    useEffect(() => {
-        getsupplierData();
-    }, [])
+    // // Get data Of Suppliers
+    // const getsupplierData = async () => {
+    //     try {
+    //         // dispatch(SetLoader(true));
+    //         const response = await GetsupplierData();
+    //         // dispatch(SetLoader(false));
+    //         if (response.success) {
+
+    //             console.log(response.suppliers)
+    //         } else {
+    //             throw new Error(response.message);
+    //         }
+    //     } catch (error) {
+    //         dispatch(SetLoader(false));
+    //         toast.error(error.message)
+    //     }
+    // }
+
+    // useEffect(() => {
+    //     getsupplierData();
+    // }, [])
 
     // Create The Supplier
     const creatsupplier = async (values) => {
@@ -174,6 +181,7 @@ const Suppliers = () => {
     return (
         <>
             <div className="flex flex-col gap-2">
+                {JSON.stringify(suppliersData)}
                 <Modal
                     isOpen={isOpen}
                     scrollBehavior={"inside"}

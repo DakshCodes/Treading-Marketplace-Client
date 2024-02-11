@@ -5,12 +5,16 @@ import { useFormik } from 'formik'
 import { Createcategory, Deletecategory, GetcategoryData, Updatecategory } from '../../apis/categories';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+// import { useRecoilState } from 'recoil';
+// import { categoryDataState } from '../../store/category/category';
 
 
 const Categories = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
     const [updateId, setUpdateId] = useState(null)
+
+    // const [categoriesData , setCategoriesData] = useRecoilState(categoryDataState)
 
 
     // Data Format
