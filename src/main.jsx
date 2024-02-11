@@ -12,7 +12,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <NextUIProvider>
         <RecoilRoot>
-          <App />
+          {/* <ErrorBoundary> */}
+            <React.Suspense fallback={<div>Loading...</div>}>
+              <App />
+            </React.Suspense>
+          {/* </ErrorBoundary> */}
         </RecoilRoot>
       </NextUIProvider>
     </BrowserRouter>
