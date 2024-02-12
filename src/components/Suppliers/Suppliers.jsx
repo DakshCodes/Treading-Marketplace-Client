@@ -36,50 +36,6 @@ const Suppliers = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "brand", "verified", "experienced", "actions"];
 
-    const users = [
-        {
-            id: 1,
-            name: "Tony Reichert",
-            brand: "CEO",
-            address: "California",
-            experienced: true,
-            verified: false,
-            avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-        },
-        {
-            id: 2,
-            name: "chert",
-            brand: "Nike",
-            address: "Paris",
-            experienced: false,
-            verified: true,
-            avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-        },
-    ];
-
-
-
-    // // Get data Of Suppliers
-    // const getsupplierData = async () => {
-    //     try {
-    //         // dispatch(SetLoader(true));
-    //         const response = await GetsupplierData();
-    //         // dispatch(SetLoader(false));
-    //         if (response.success) {
-
-    //             console.log(response.suppliers)
-    //         } else {
-    //             throw new Error(response.message);
-    //         }
-    //     } catch (error) {
-    //         dispatch(SetLoader(false));
-    //         toast.error(error.message)
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     getsupplierData();
-    // }, [])
 
     // Create The Supplier
     const creatsupplier = async (values) => {
@@ -104,7 +60,7 @@ const Suppliers = () => {
         }
     }
 
-    console.log("________________supplier data : ", suppliersData)
+
 
     // Delete Supplier
     const deleteItem = async (id) => {
@@ -117,7 +73,7 @@ const Suppliers = () => {
 
                 // Update local state based on the correct identifier (use _id instead of id)
                 setSuppliersData((prevData) => prevData.filter((supplier) => supplier._id !== id));
-                
+
                 navigate('/inventory');
             } else {
                 throw new Error(response.message);
@@ -134,6 +90,8 @@ const Suppliers = () => {
 
             // changed from todoListState to filteredTodoListState
             const supplierData = suppliersData.find((element) => element._id == supplierId);
+
+            console.log("________________supplier data : ", supplierData)
             // Set the initial values for Formik
             formik.setValues({
                 name: supplierData?.name,
@@ -150,25 +108,27 @@ const Suppliers = () => {
             toast.error(error.message);
         }
     };
-
+    
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            console.log(values, "update")
+            console.log(values, "update");
             const response = await Updatesupplier(updateId, values);
             if (response.success) {
                 toast.success(response.message);
-                console.log("++++++++++++++++++++++++++++++++++++++++", response.supplier)
+                console.log("Data update", response.supplier);
 
+                // Optimistically update UI
                 setSuppliersData((prevData) => {
-                    const updatedSuppliers = prevData.map((supplier) => (supplier._id === updateId ? response.supplier : supplier));
+                    const updatedSuppliers = prevData.map((supplier) =>
+                        supplier._id === updateId ? response.supplier : supplier
+                    );
                     return updatedSuppliers;
                 });
 
-                onOpenChange(false)
-                navigate("/inventory")
-                // Close the modal
-                setUpdateId(null); // Reset update ID when modal is closed
+                // Close the modal and reset update ID
+                onOpenChange(false);
+                setUpdateId(null);
             } else {
                 throw new Error(response.message);
             }
@@ -177,6 +137,7 @@ const Suppliers = () => {
             toast.error(error.message);
         }
     };
+
 
 
     const formik = useFormik({
