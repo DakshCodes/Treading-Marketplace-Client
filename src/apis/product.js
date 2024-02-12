@@ -1,0 +1,51 @@
+import axios from 'axios';
+
+export const CreateProduct = async (payload) => {
+    try {
+        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/products/create-product`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+};
+
+export const GetAllProducts = async () => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER}/api/products/get-all-products`);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+};
+
+export const GetProductById = async (id) => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER}/api/products/get-product-by-id/${id}`);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+};
+
+export const UpdateProduct = async (id, payload) => {
+    try {
+        const response = await axios.patch(`${import.meta.env.VITE_SERVER}/api/products/edit-product/${id}`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+};
+
+export const DeleteProduct = async (id) => {
+    try {
+        const response = await axios.delete(`${import.meta.env.VITE_SERVER}/api/products/delete-product/${id}`);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+};
