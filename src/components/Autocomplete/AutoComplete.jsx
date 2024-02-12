@@ -2,10 +2,12 @@ import React from 'react'
 import { Input, Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { UilPlus } from '@iconscout/react-unicons'
 
-const AutoComplete = ({ users,placeholder }) => {
+const AutoComplete = ({ users,placeholder,selectionChange ,values}) => {
     return (
         <div className='flex items-center'>
             <Autocomplete
+                selectedKey={values}
+                onSelectionChange={selectionChange}
                 classNames={{
                     base: "max-w-xs border-none",
                     listboxWrapper: "max-h-[300px]",
