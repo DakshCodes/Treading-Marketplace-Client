@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast';
 import Inventory from './pages/Inventory/Inventory';
 import { useRecoilValue } from 'recoil';
 import { darkmodeAtom } from './store/darkmode/darkAtom';
+import LoginPage from './pages/LoginPage/LoginPage';
 
 const routesConfig = [
   { path: '/', element: <Home /> },
@@ -44,10 +45,10 @@ function App() {
       <Sidenav />
       <Routes>
         {generateRoutes(routesConfig)}
-        {/* <Route
+        <Route
           path='/login'
           element={<LoginPage />}
-        /> */}
+        />
       </Routes>
     </div>
   )
