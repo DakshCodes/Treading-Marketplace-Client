@@ -1,11 +1,15 @@
 import React from 'react'
 import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-import { UilCube, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
+import { UilCube, UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
 import Categories from '../../components/Categories/Categories';
 import Quality from '../../components/Quality/Quality';
+import Design from '../../components/Design/Design';
+import FinishType from '../../components/Finish-Type/Finish-Type';
+import FeelType from '../../components/Feel-Type/Feel-Type';
+import Weave from '../../components/Weave/Weave';
 
 const Inventory = () => {
     return (
@@ -73,6 +77,58 @@ const Inventory = () => {
                         className="max-h-max px-5 "
                     >
                         <Quality />
+                    </Tab>
+                    <Tab
+                        key="Design"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilPalette />
+                                <span>Design</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Design />
+                    </Tab>
+                    <Tab
+                        key="Finsh-Type"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilCheckCircle />
+                                <span>Finsh-Type</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <FinishType />
+                    </Tab>
+                    <Tab
+                        key="Feel-Type"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilLightbulbAlt />
+                                <span>Feel-Type</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <FeelType />
+                    </Tab>
+                    <Tab
+                        key="Weave"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilSlack />
+                                <span>Weave</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Weave />
                     </Tab>
                 </Tabs>
             </div>
