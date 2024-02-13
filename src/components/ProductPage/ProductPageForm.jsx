@@ -7,6 +7,7 @@ import AutoComplete from '../Autocomplete/AutoComplete';
 import { useFormik } from 'formik';
 import * as z from 'zod';
 import { CreateProduct } from '../../apis/product';
+// import Arrowsvg from "../../assets/arrow.svg"
 
 
 const ProductPageForm = () => {
@@ -63,7 +64,7 @@ const ProductPageForm = () => {
             feeltype: '',
         },
         // validationSchema: () => productSchema,
-        onSubmit: async(values) => {
+        onSubmit: async (values) => {
             // Handle form submission logic here
             console.log(values);
             try {
@@ -89,11 +90,11 @@ const ProductPageForm = () => {
     return (
         <>
             <main className="demo-page-content">
-                <div className="flex h-full overflow-auto max-w-fit">
-                    <div className="w-max max-w-max bg-[#1f1e30] rounded-[24px] shadow-md p-6 overflow-auto">
-                        <h2 className="text-3xl font-bold text-gray-200 mb-4 font-font2">Create Product</h2>
+                <div className="flex h-full overflow-auto max-w-full">
+                    <div className="w-full  rounded-[24px] shadow-md p-6 overflow-auto">
+                        <h2 className="text-3xl font-bold mb-4 font-font2">Create Product</h2>
                         <form onSubmit={formik.handleSubmit} className="flex flex-wrap font-font1 flex-col gap-10 mt-5">
-                            <div className="flex flex-col  gap-4">
+                            <div className="flex flex-col">
                                 <AutoComplete
                                     placeholder={"Supplier Name"}
                                     users={users}
@@ -105,24 +106,29 @@ const ProductPageForm = () => {
                                     <div className="text-red-500">{formik.errors.supplierName}</div>
                                 ) : null}
                                 <br />
-                                <div className="flex w-full flex-wrap justify-start mb-3 md:mb-0 gap-10 items-center">
-                                    <Input
-                                        type="text"
-                                        placeholder="Product name..."
-                                        labelPlacement="outside"
-                                        classNames={{
-                                            label: '!text-[#fff]  font-font1',
-                                            base: "max-w-[250px] w-full",
-                                            input: 'font-font1 text-[1rem]',
-                                            inputWrapper: "h-[48px] max-w-[250px] w-full",
-                                        }}
-                                        variant="flat"
-                                        id="productName"
-                                        name="productName"
-                                        value={formik.values.productName}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                    />
+                                <Input
+                                    type="text"
+                                    placeholder="Product name..."
+                                    labelPlacement="outside"
+                                    classNames={{
+                                        label: '!text-[#fff]  font-font1',
+                                        base: "max-w-full",
+                                        input: 'font-font1 text-[1rem]',
+                                        inputWrapper: "h-[48px]  w-full",
+                                    }}
+                                    variant="flat"
+                                    id="productName"
+                                    name="productName"
+                                    value={formik.values.productName}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                />
+
+                                <div className='mt-12 mb-4 flex gap-2 font-bold border-b border-black pb-2 border-dashed  text-base font-sans'>
+                                    More Details about product
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z"/></svg>
+                                </div>
+                                <div className="grid  grid-cols-3 gap-6 w-full   ">
                                     {formik.touched.productName && formik.errors.productName ? (
                                         <div className="text-red-500">{formik.errors.productName}</div>
                                     ) : null}

@@ -9,15 +9,15 @@ const AutoComplete = ({ users,placeholder,selectionChange ,values}) => {
                 selectedKey={values}
                 onSelectionChange={selectionChange}
                 classNames={{
-                    base: "max-w-xs border-none",
+                    base: " border border- bg-transparent",
                     listboxWrapper: "max-h-[300px]",
-                    selectorButton: "text-default-500"
-                }}
+                    selectorButton: "text-default-500",
+                    }}
                 defaultItems={users}
                 inputProps={{
                     classNames: {
                         input: "text-[1rem] ",
-                        inputWrapper: " bg-[#fff] font-font1 h-[48px] max-w-[250px] ",
+                        inputWrapper: " bg-[#fff] font-font1 h-[48px] max-w-full ",
                     },
                 }}
                 listboxProps={{
