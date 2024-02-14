@@ -1,8 +1,8 @@
 import React from 'react'
-import { Input, Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { Input, Autocomplete, AutocompleteItem, Avatar, Button } from "@nextui-org/react";
 import { UilPlus } from '@iconscout/react-unicons'
 
-const AutoComplete = ({ users,placeholder,selectionChange ,values}) => {
+const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
     return (
         <div className='flex items-center'>
             <Autocomplete
@@ -12,7 +12,7 @@ const AutoComplete = ({ users,placeholder,selectionChange ,values}) => {
                     base: " border border- bg-transparent",
                     listboxWrapper: "max-h-[300px]",
                     selectorButton: "text-default-500",
-                    }}
+                }}
                 defaultItems={users}
                 inputProps={{
                     classNames: {
@@ -40,7 +40,7 @@ const AutoComplete = ({ users,placeholder,selectionChange ,values}) => {
                 variant="flat"
             >
                 {(item) => (
-                    <AutocompleteItem key={item.id} textValue={item.name}>
+                    <AutocompleteItem key={item._id} textValue={item.name}>
                         <div className="flex justify-between items-center">
                             <div className="flex gap-2 items-center">
                                 <div className="flex flex-col">

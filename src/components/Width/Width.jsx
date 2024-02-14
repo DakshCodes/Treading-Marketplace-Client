@@ -2,23 +2,22 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createdesign, Deletedesign, Updatedesign } from '../../apis/design';
+import { Createwidth, Deletewidth, Updatewidth } from '../../apis/width';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from "recoil"
-import { designDataState } from "../../store/design/designAtom"
+import { widthDataState } from "../../store/width/widthAtom"
 import { categoryDataState } from '../../store/category/category';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
-const Design = () => {
+const Width = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
     const [updateId, setUpdateId] = useState(null)
     const [refcat, setrefcat] = useState('')
-
-    const [DesignsData, setDesignsData] = useRecoilState(designDataState)
-    console.log(DesignsData, "designDataState")
+    const [widthData, setwidthData] = useRecoilState(widthDataState)
+    console.log(widthData, "widthDataState")
 
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
     console.log(categoriesData, "categoryDataState")
@@ -39,18 +38,18 @@ const Design = () => {
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
 
-    // Create The design
-    const createdesign = async (values) => {
+    // Create The width
+    const createwidth = async (values) => {
         try {
             values.ref = refcat;
             // dispatch(SetLoader(true));
-            const response = await Createdesign(values);
+            const response = await Createwidth(values);
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
-                console.log(response.designDoc)
-                setDesignsData([...DesignsData, response.designDoc]);
+                console.log(response.widthDoc)
+                setwidthData([...widthData, response.widthDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
             } else {
@@ -65,17 +64,17 @@ const Design = () => {
 
 
 
-    // Delete design
+    // Delete width
     const deleteItem = async (id) => {
         try {
             // dispatch(SetLoader(true));
-            const response = await Deletedesign(id);
+            const response = await Deletewidth(id);
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setDesignsData((prevData) => prevData.filter((design) => design._id !== id));
+                setwidthData((prevData) => prevData.filter((width) => width._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -87,23 +86,23 @@ const Design = () => {
         }
     }
 
-    // Update The design
-    const handleUpdate = async (designId) => {
+    // Update The width
+    const handleUpdate = async (widthId) => {
         try {
 
             // changed from todoListState to filteredTodoListState
-            const designData = DesignsData.find((element) => element._id == designId);
+            const widthData = widthData.find((element) => element._id == widthId);
 
             // Set the initial values for Formik
             formik.setValues({
-                name: designData?.name,
-                verified: designData?.verified,
+                name: widthData?.name,
+                verified: widthData?.verified,
             });
 
-            setUpdateId(designId);
+            setUpdateId(widthId);
             onOpen(); // Open the modal
         } catch (error) {
-            console.error("Error updating design:", error.message);
+            console.error("Error updating width:", error.message);
             toast.error(error.message);
         }
     };
@@ -111,17 +110,17 @@ const Design = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            const response = await Updatedesign(updateId, values);
+            const response = await Updatewidth(updateId, values);
             if (response.success) {
                 toast.success(response.message);
-                console.log("Data update", response.design);
+                console.log("Data update", response.width);
 
                 // Optimistically update UI
-                setDesignsData((prevData) => {
-                    const updateddesigns = prevData.map((design) =>
-                        design._id === updateId ? response.design : design
+                setwidthData((prevData) => {
+                    const updatedwidths = prevData.map((width) =>
+                        width._id === updateId ? response.width : width
                     );
-                    return updateddesigns;
+                    return updatedwidths;
                 });
 
                 // Close the modal and reset update ID
@@ -131,7 +130,7 @@ const Design = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            console.error("Error updating design:", error.message);
+            console.error("Error updating width:", error.message);
             toast.error(error.message);
         }
     };
@@ -148,7 +147,7 @@ const Design = () => {
             if (updateId) {
                 await handleUpdateSubmit(values);
             } else {
-                await createdesign(values);
+                await createwidth(values);
             }
         },
     });
@@ -172,7 +171,7 @@ const Design = () => {
                         {(onClose) => (
                             <>
                                 <ModalHeader className="flex flex-col gap-1 text-[2rem] font-font1">
-                                    {updateId ? "Update Design" : "Create Design"}
+                                    {updateId ? "Update width" : "Create width"}
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
@@ -181,7 +180,7 @@ const Design = () => {
                                                 autoFocus
                                                 {...formik.getFieldProps('name')}
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
-                                                placeholder="design name.."
+                                                placeholder="width name.."
                                             />
                                             <Autocomplete
                                                 classNames={{
@@ -299,9 +298,9 @@ const Design = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={DesignsData} onOpen={onOpen} section={'design'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={widthData} onOpen={onOpen} section={'width'} />
         </>
     )
 }
 
-export default Design
+export default Width

@@ -1,7 +1,7 @@
 import React from 'react'
 import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-import { UilCube, UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
+import { UilCube,UilArrowsHAlt , UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
 import Categories from '../../components/Categories/Categories';
@@ -10,6 +10,7 @@ import Design from '../../components/Design/Design';
 import FinishType from '../../components/Finish-Type/Finish-Type';
 import FeelType from '../../components/Feel-Type/Feel-Type';
 import Weave from '../../components/Weave/Weave';
+import Width from '../../components/Width/Width';
 
 const Inventory = () => {
     return (
@@ -129,6 +130,19 @@ const Inventory = () => {
                         className="max-h-max px-5 "
                     >
                         <Weave />
+                    </Tab>
+                    <Tab
+                        key="Width"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <UilArrowsHAlt  />
+                                <span>Width</span>
+                                <Chip size="sm" variant="faded">0</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Width />
                     </Tab>
                 </Tabs>
             </div>

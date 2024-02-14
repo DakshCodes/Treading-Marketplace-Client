@@ -2,20 +2,26 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createquality,Updatequality,Deletequality} from '../../apis/quality';
+import { Createquality, Updatequality, Deletequality } from '../../apis/quality';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from "recoil"
 import { qualityDataState } from "../../store/quality/qualityAtom"
+import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { categoryDataState } from '../../store/category/category';
 
 const Quality = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
     const [updateId, setUpdateId] = useState(null)
+    const [refcat, setrefcat] = useState('')
 
     const [QualitiesData, setQualitiesData] = useRecoilState(qualityDataState)
-    console.log(QualitiesData ,"qualityDataState")
+    console.log(QualitiesData, "qualityDataState")
+
+    const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
+    console.log(categoriesData, "categoryDataState")
 
     // Data Format
     const columns = [
@@ -32,10 +38,11 @@ const Quality = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
-
     // Create The quality
     const createquality = async (values) => {
         try {
+            values.ref = refcat;
+            console.log(values,"values")
             // dispatch(SetLoader(true));
             const response = await Createquality(values);
             // dispatch(SetLoader(false));
@@ -135,6 +142,7 @@ const Quality = () => {
         initialValues: {
             name: '',
             verified: false,
+            ref: "",
         },
         onSubmit: async values => {
             if (updateId) {
@@ -144,6 +152,8 @@ const Quality = () => {
             }
         },
     });
+
+    console.log(refcat,'ref')
 
 
     return (
@@ -168,13 +178,94 @@ const Quality = () => {
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
-                                        <div className="flex flex-col gap-2 p-8">
+                                        <div className="flex flex-col gap-5 p-8">
                                             <input
                                                 autoFocus
                                                 {...formik.getFieldProps('name')}
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
-                                                placeholder="quality name.."
+                                                placeholder="Quality name.."
                                             />
+                                            <Autocomplete
+                                                classNames={{
+                                                    base: "max-w-full border-[#fff] ",
+                                                    listboxWrapper: "max-h-[320px]",
+                                                    selectorButton: "text-[#fff]",
+                                                }}
+                                                onSelectionChange={setrefcat}
+                                                value={refcat}
+                                                defaultItems={categoriesData}
+                                                inputProps={{
+                                                    classNames: {
+                                                        input: "ml-1 text-[#fff] font-font1",
+                                                        inputWrapper: "h-[50px]",
+                                                        label: "text-[#fff]",
+                                                    },
+                                                }}
+                                                listboxProps={{
+                                                    hideSelectedIcon: true,
+                                                    itemClasses: {
+                                                        base: [
+                                                            "rounded-medium",
+                                                            "text-[#000]",
+                                                            "transition-opacity",
+                                                            "data-[hover=true]:text-foreground",
+                                                            "dark:data-[hover=true]:bg-default-50",
+                                                            "data-[pressed=true]:opacity-70",
+                                                            "data-[hover=true]:bg-default-200",
+                                                            "data-[selectable=true]:focus:bg-default-100",
+                                                            "data-[focus-visible=true]:ring-default-500",
+                                                        ],
+                                                    },
+                                                }}
+                                                aria-label="Select an Category"
+                                                placeholder="Enter an Category"
+                                                popoverProps={{
+                                                    offset: 10,
+                                                    classNames: {
+                                                        base: "rounded-large",
+                                                        content: "p-1  border-none bg-background",
+
+                                                    },
+                                                }}
+                                                startContent={<svg
+                                                    aria-hidden="true"
+                                                    fill="none"
+                                                    focusable="false"
+                                                    height={20}
+                                                    role="presentation"
+                                                    viewBox="0 0 24 24"
+                                                    width={20}
+                                                    color={"#fff"}
+                                                >
+                                                    <path
+                                                        d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                                        stroke="currentColor"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2.5}
+                                                    />
+                                                    <path
+                                                        d="M22 22L20 20"
+                                                        stroke="currentColor"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2.5}
+                                                    />
+                                                </svg>}
+                                                variant="bordered"
+                                            >
+                                                {(item) => (
+                                                    <AutocompleteItem key={item._id} textValue={item.name}>
+                                                        <div className="flex justify-between items-center">
+                                                            <div className="flex gap-2 items-center">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-small">{item.name}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </AutocompleteItem>
+                                                )}
+                                            </Autocomplete>
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
                                                 Verified
                                                 <div className="relative inline-block">
