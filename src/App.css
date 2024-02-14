@@ -77,6 +77,5 @@ body {
   height: max-content;
   width: 100%;
   display: flex;
-  justify-content: flex-end;
   overflow: hidden;
 }

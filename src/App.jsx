@@ -9,6 +9,7 @@ import Inventory from './pages/Inventory/Inventory';
 import { useRecoilValue } from 'recoil';
 import { darkmodeAtom } from './store/darkmode/darkAtom';
 import LoginPage from './pages/LoginPage/LoginPage';
+import PrivateRoute from './Private/PrivateRoute';
 
 const routesConfig = [
   { path: '/', element: <Home /> },
@@ -25,11 +26,11 @@ function generateRoutes(config) {
       key={index}
       path={route.path}
       element={
-        // <PrivateRoute>
         <DashBoardLayout>
-          {route.element}
+          <PrivateRoute>
+            {route.element}
+          </PrivateRoute>
         </DashBoardLayout>
-        // </PrivateRoute>
       }
     />
   ));

@@ -1,10 +1,10 @@
 import React from 'react'
-import { CircularProgress } from "@nextui-org/react";
+import { CircularProgress, Spinner } from "@nextui-org/react";
 
 const Loader = () => {
     return (
-        <div className='fixed h-screen w-screen bg-[#000000] flex justify-center items-center'>
-            <CircularProgress color="danger" size='lg' aria-label="Loading..." />
+        <div className="fixed backdrop-blur-sm z-[9999999] h-screen w-screen flex justify-center items-center">
+            <Spinner size='md' color="current" />
         </div>
     )
 }

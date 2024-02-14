@@ -1,5 +1,10 @@
 import './Login.css'
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
+import { useNavigate } from "react-router-dom"
+import { useEffect } from 'react'
+import { useFormik } from 'formik'
+import { loginUser } from '../../apis/user'
 
 const LoginPage = () => {
   const [activeBullet, setActiveBullet] = useState(1); // Add state for active bullet
@@ -15,12 +20,57 @@ const LoginPage = () => {
     setActiveBullet(index); // Update active bullet state
   };
 
+
+  const navigate = useNavigate();
+
+  const logInOnFinish = async (values) => {
+    try {
+
+      const response = await loginUser(values);
+
+      if (response.success) {
+        localStorage.setItem("token", response.token);
+        toast.success('Logged In successfully')
+        navigate("/")
+      }
+      else {
+        throw new Error(response.message);
+      }
+
+    } catch (error) {
+      console.log(error.message)
+      toast.error(error.message)
+    }
+  }
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/")
+    }
+  }, [])
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+
+    // validate : loginValidate,
+    validateOnBlur: false,
+    validateOnChange: false,
+    onSubmit: async values => {
+      await logInOnFinish(values)
+    },
+
+  })
+
+
   return (
     <div className='fixed h-screen w-screen bg-[#d8f275] z-50 text-[#fff] flex justify-center items-center'>
       <div className="box">
         <div className="inner-box">
           <div className="forms-wrap">
-            <form  autoComplete="off" className="sign-in-form">
+            <form autoComplete="off" className="sign-in-form">
               <div className="logo">
                 <img src="https://i.pinimg.com/564x/80/86/7e/80867e01e51baed5f0a783dbcbe43f1e.jpg" alt="easyclass" />
                 <h4>AeroSpace</h4>
@@ -34,14 +84,12 @@ const LoginPage = () => {
               </div>
               <div className="actual-form">
                 <div className="input-wrap">
-                  <input type="text" minLength={4} className="input-field" autoComplete="off" required />
-                  <label>Name</label>
+                  <input type="email" placeholder='Email'  autoFocus {...formik.getFieldProps('email')} minLength={4} className="input-field" autoComplete="off" required />
                 </div>
                 <div className="input-wrap">
-                  <input type="password" minLength={4} className="input-field" autoComplete="off" required />
-                  <label>Password</label>
+                  <input placeholder='Password'  {...formik.getFieldProps('password')} type="password" minLength={3} className="input-field" autoComplete="off" required />
                 </div>
-                <input type="submit" defaultValue="Sign In" className="sign-btn" />
+                <input onClick={formik.handleSubmit} type="submit" defaultValue="Sign In" className="sign-btn" />
                 <p className="text">
                   Forgotten your password or you login datails? <br />
                   Contact Admin

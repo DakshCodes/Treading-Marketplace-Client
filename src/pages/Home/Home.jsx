@@ -1,15 +1,14 @@
 import React from 'react'
-import { useRecoilState } from 'recoil'
-import { suppliersDataState } from '../../store/supplier/supplierAtom'
-// import { qualitiesDataState } from '../../store/supplier/supplierAtom'
+import { useRecoilValue } from 'recoil'
+import { userAtom } from '../../store/user/userAtom'
 
 const Home = () => {
-  const [data, setData] = useRecoilState(suppliersDataState)
+  const user = useRecoilValue(userAtom)
 
   // const [data2 , setData2] = useRecoilState(qualitiesDataState)
   return (
-    <div className='h-full w-full flex justify-center items-center'>
-      <h1 className='font-font2 font-[600] text-[4rem] '>Welcome back Taylor &#128075;</h1>
+    <div className='flex justify-center items-center'>
+      <h1 className='mt-20 font-font2 font-[600] text-[4rem] '>Welcome back {user?.username} &#128075;</h1>
     </div>
   )
 }
