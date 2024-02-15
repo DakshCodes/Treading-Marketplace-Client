@@ -7,21 +7,21 @@ import { useFormik } from 'formik'
 import { loginUser } from '../../apis/user'
 
 const LoginPage = () => {
+
   const [activeBullet, setActiveBullet] = useState(1); // Add state for active bullet
+  const navigate = useNavigate();
 
   const moveSlider = (index) => {
     const currentImage = document.querySelector(`.img-${index}`);
     const images = document.querySelectorAll(".image");
     images.forEach((img) => img.classList.remove("show"));
     currentImage.classList.add("show");
-
+  
     const textSlider = document.querySelector(".text-group");
     textSlider.style.transform = `translateY(${-(index - 1) * 2.2}rem)`;
     setActiveBullet(index); // Update active bullet state
   };
 
-
-  const navigate = useNavigate();
 
   const logInOnFinish = async (values) => {
     try {
@@ -55,7 +55,6 @@ const LoginPage = () => {
       password: '',
     },
 
-    // validate : loginValidate,
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async values => {
@@ -63,6 +62,8 @@ const LoginPage = () => {
     },
 
   })
+
+  
 
 
   return (
