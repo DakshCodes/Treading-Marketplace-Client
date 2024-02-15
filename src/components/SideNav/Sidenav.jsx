@@ -44,11 +44,11 @@ const Sidenav = () => {
     return (
         <>
             <nav className={status === 'close' ? 'close' : ''}>
-                <div className="logo-name">
+                <div className="logo-name flex">
                     <div className="logo-image">
                         <img src="https://i.pinimg.com/736x/73/99/de/7399de1107c7f8cd95591f3755c1e07a.jpg" alt />
                     </div>
-                    <span className="logo_name">AeroSpace</span>
+                    <span className="logo_name">Textile</span>
                 </div>
                 <div className="menu-items">
                     <ul className="nav-links">
