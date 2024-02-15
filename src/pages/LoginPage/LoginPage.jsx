@@ -74,7 +74,7 @@ const LoginPage = () => {
             <form autoComplete="off" className="sign-in-form">
               <div className="logo">
                 <img src="https://i.pinimg.com/564x/80/86/7e/80867e01e51baed5f0a783dbcbe43f1e.jpg" alt="easyclass" />
-                <h4>AeroSpace</h4>
+                <h4>Textile Industries</h4>
               </div>
               <div className="heading">
                 <h2>Welcome Back</h2>
