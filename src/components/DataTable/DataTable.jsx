@@ -111,6 +111,13 @@ export default function DataTable({ columns, users, statusOptions, section }) {
                         <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
                     </div>
                 );
+            case "supplierName":
+                return (
+                    <div className="flex flex-col">
+                        {/* <p className="text-bold text-small capitalize">{cellValue}</p> */}
+                        <p className="text-bold text-tiny capitalize text-default-400">{user.supplierName}</p>
+                    </div>
+                );
             case "status":
                 return (
                     <Chip className="capitalize" color={statusColorMap[user.status]} size="sm" variant="flat">

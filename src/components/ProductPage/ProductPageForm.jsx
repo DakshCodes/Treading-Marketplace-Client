@@ -8,12 +8,37 @@ import { useFormik } from 'formik';
 import * as z from 'zod';
 import { CreateProduct } from '../../apis/product';
 // import Arrowsvg from "../../assets/arrow.svg"
-
+import { useRecoilValue } from "recoil"
+import { suppliersDataState } from "../../store/supplier/supplierAtom"
+import { categoryDataState } from "../../store/category/category"
+import { qualityDataState } from "../../store/quality/qualityAtom"
+import { designDataState } from "../../store/design/designAtom"
+import { feeltypeDataState } from "../../store/feeltype/feeltypeAtom"
+import { finishtypeDataState } from "../../store/finishtype/finishtypeAtom"
+import { weaveDataState } from "../../store/weave/weaveAtom"
+import { widthDataState } from "../../store/width/widthAtom"
 
 const ProductPageForm = () => {
     const params = useParams();
     const productURL = params.id === 'new' ? null : params.id;
     const navigate = useNavigate();
+
+    const categoryData = useRecoilValue(categoryDataState);
+    const supplierData = useRecoilValue(suppliersDataState);
+    const weaveData = useRecoilValue(weaveDataState);
+
+    const qualityData = useRecoilValue(qualityDataState);   // depend on category
+    const designData = useRecoilValue(designDataState);     // depend on category
+    const feelTypeData = useRecoilValue(feeltypeDataState); // depend on category
+    const finishTypeData = useRecoilValue(finishtypeDataState);// depend on category
+    const widthData = useRecoilValue(widthDataState);       // depend on category
+
+    console.table(widthData)
+
+    // Function to filter items based on selected category and reference field
+    const getFilteredItems = (items, selectedCategory) => {
+        return items.filter(item => item.ref === selectedCategory);
+    };
 
     const users = [
         {
@@ -53,17 +78,60 @@ const ProductPageForm = () => {
     // Formik configuration
     const formik = useFormik({
         initialValues: {
-            supplierName: '',
-            productName: '',
-            category: '',
-            quality: '',
-            design: '',
-            weight: '',
-            remarks: '',
-            finishtype: '',
-            feeltype: '',
+            supplierName: "",
+            productName: "",
+            category: "",
+            quality: "",
+            design: "",
+            weave: "",
+            width: "",
+            finishtype: "",
+            feeltype: "",
         },
-        // validationSchema: () => productSchema,
+        validate: (values) => {
+            const errors = {};
+
+            if (!values.supplierName) {
+                errors.supplierName = "Supplier Name is required";
+            }
+
+            if (!values.productName) {
+                errors.productName = "Product Name is required";
+            }
+
+            if (!values.category) {
+                errors.category = "Category is required";
+            }
+
+            if (!values.design) {
+                errors.design = "Design is required";
+            }
+
+            if (!values.quality) {
+                errors.quality = "Quality is required";
+            }
+
+            if (!values.feeltype) {
+                errors.feeltype = "Feel Type is required";
+            }
+
+            if (!values.finishtype) {
+                errors.finishtype = "Finish Type is required";
+            }
+
+            if (!values.weave) {
+                errors.weave = "Weave is required";
+            }
+
+            if (!values.width) {
+                errors.width = "Width is required";
+            }
+
+
+            // Add validation for other fields...
+
+            return errors;
+        },
         onSubmit: async (values) => {
             // Handle form submission logic here
             console.log(values);
@@ -97,13 +165,13 @@ const ProductPageForm = () => {
                             <div className="flex flex-col">
                                 <AutoComplete
                                     placeholder={"Supplier Name"}
-                                    users={users}
+                                    users={supplierData}
                                     values={formik.values.supplierName}
                                     selectionChange={(value) => formik.setFieldValue('supplierName', value)}
 
                                 />
                                 {formik.touched.supplierName && formik.errors.supplierName ? (
-                                    <div className="text-red-500">{formik.errors.supplierName}</div>
+                                    <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.supplierName}</div>
                                 ) : null}
                                 <br />
                                 <Input
@@ -123,61 +191,75 @@ const ProductPageForm = () => {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                 />
+                                {formik.touched.productName && formik.errors.productName ? (
+                                    <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.productName}</div>
+                                ) : null}
 
                                 <div className='mt-12 mb-4 flex gap-2 font-bold border-b border-black pb-2 border-dashed  text-base font-sans'>
                                     More Details about product
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z" /></svg>
                                 </div>
-                                <div className="grid  grid-cols-3 gap-6 w-full   ">
-                                    {formik.touched.productName && formik.errors.productName ? (
-                                        <div className="text-red-500">{formik.errors.productName}</div>
-                                    ) : null}
+                                <div className="grid grid-cols-1  md:grid-cols-3 gap-6 w-full   ">
 
-                                    {/* AutoComplete for category */}
-                                    <AutoComplete
-                                        placeholder={"Enter category"}
-                                        users={users}
-                                        values={formik.values.category}
-                                        selectionChange={(value) => formik.setFieldValue('category', value)}
-                                    />
-                                    {formik.touched.category && formik.errors.category ? (
-                                        <div className="text-red-500">{formik.errors.category}</div>
-                                    ) : null}
+
+                                    <div className='flex flex-col items-start gap-2'>
+                                        {/* AutoComplete for category */}
+                                        <AutoComplete
+                                            placeholder={"Enter category"}
+                                            users={categoryData}
+                                            values={formik.values.category}
+                                            selectionChange={(value) => formik.setFieldValue('category', value)}
+                                        />
+                                        {formik.touched.category && formik.errors.category ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.category}</div>
+                                        ) : null}
+
+                                    </div>
+
 
                                     {/* AutoComplete for quality */}
-                                    <AutoComplete
-                                        placeholder={"Enter quality"}
-                                        users={users}
-                                        values={formik.values.quality}
-                                        selectionChange={(value) => formik.setFieldValue('quality', value)}
-                                    />
-                                    {formik.touched.quality && formik.errors.quality ? (
-                                        <div className="text-red-500">{formik.errors.quality}</div>
-                                    ) : null}
+                                    <div className='flex flex-col items-start gap-2'>
+
+                                        <AutoComplete
+                                            placeholder={"Enter quality"}
+                                            users={getFilteredItems(qualityData, formik.values.category)}
+                                            values={formik.values.quality}
+                                            selectionChange={(value) => formik.setFieldValue('quality', value)}
+                                        />
+                                        {formik.touched.quality && formik.errors.quality ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.quality}</div>
+                                        ) : null}
+                                    </div>
 
                                     {/* AutoComplete for design */}
-                                    <AutoComplete
-                                        placeholder={"Enter design"}
-                                        users={users}
-                                        values={formik.values.design}
-                                        selectionChange={(value) => formik.setFieldValue('design', value)}
-                                    />
-                                    {formik.touched.design && formik.errors.design ? (
-                                        <div className="text-red-500">{formik.errors.design}</div>
-                                    ) : null}
+                                    <div className='flex flex-col items-start gap-2'>
 
-                                    {/* AutoComplete for weight */}
-                                    <AutoComplete
-                                        placeholder={"Enter weight"}
-                                        users={users}
-                                        values={formik.values.weight}
-                                        selectionChange={(value) => formik.setFieldValue('weight', value)}
-                                    />
-                                    {formik.touched.weight && formik.errors.weight ? (
-                                        <div className="text-red-500">{formik.errors.weight}</div>
-                                    ) : null}
+                                        <AutoComplete
+                                            placeholder={"Enter design"}
+                                            users={getFilteredItems(designData, formik.values.category)}
+                                            values={formik.values.design}
+                                            selectionChange={(value) => formik.setFieldValue('design', value)}
+                                        />
+                                        {formik.touched.design && formik.errors.design ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.design}</div>
+                                        ) : null}
+                                    </div>
 
-                                    {/* AutoComplete for remarks */}
+                                    {/* AutoComplete for weave */}
+                                    <div className='flex flex-col items-start gap-2'>
+
+                                        <AutoComplete
+                                            placeholder={"Enter weave"}
+                                            users={weaveData}
+                                            values={formik.values.weave}
+                                            selectionChange={(value) => formik.setFieldValue('weave', value)}
+                                        />
+                                        {formik.touched.weave && formik.errors.weave ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.weave}</div>
+                                        ) : null}
+
+                                    </div>
+                                    {/* AutoComplete for remarks
                                     <AutoComplete
                                         placeholder={"Enter remarks"}
                                         users={users}
@@ -186,30 +268,50 @@ const ProductPageForm = () => {
                                     />
                                     {formik.touched.remarks && formik.errors.remarks ? (
                                         <div className="text-red-500">{formik.errors.remarks}</div>
-                                    ) : null}
+                                    ) : null} */}
+
+                                    {/* AutoComplete for width */}
+                                    <div className='flex flex-col items-start gap-2'>
+
+                                        <AutoComplete
+                                            placeholder={"Enter width"}
+                                            users={getFilteredItems(widthData, formik.values.category)}
+                                            values={formik.values.width}
+                                            selectionChange={(value) => formik.setFieldValue('width', value)}
+                                        />
+                                        {formik.touched.width && formik.errors.width ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.width}</div>
+                                        ) : null}
+                                    </div>
 
                                     {/* AutoComplete for finish Type */}
-                                    <AutoComplete
-                                        placeholder={"Enter finish Type"}
-                                        users={users}
-                                        values={formik.values.finishtype}
-                                        selectionChange={(value) => formik.setFieldValue('finishtype', value)}
-                                    />
-                                    {formik.touched.finishtype && formik.errors.finishtype ? (
-                                        <div className="text-red-500">{formik.errors.finishtype}</div>
-                                    ) : null}
+                                    <div className='flex flex-col items-start gap-2'>
 
+                                        <AutoComplete
+                                            placeholder={"Enter finish Type"}
+                                            users={getFilteredItems(finishTypeData, formik.values.category)}
+                                            values={formik.values.finishtype}
+                                            selectionChange={(value) => formik.setFieldValue('finishtype', value)}
+                                        />
+                                        {formik.touched.finishtype && formik.errors.finishtype ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.finishtype}</div>
+                                        ) : null}
+
+                                    </div>
                                     {/* AutoComplete for feel Type */}
-                                    <AutoComplete
-                                        placeholder={"Enter feel Type"}
-                                        users={users}
-                                        values={formik.values.feeltype}
-                                        selectionChange={(value) => formik.setFieldValue('feeltype', value)}
-                                    />
-                                    {formik.touched.feeltype && formik.errors.feeltype ? (
-                                        <div className="text-red-500">{formik.errors.feeltype}</div>
-                                    ) : null}
+                                    <div className='flex flex-col items-start gap-2'>
 
+                                        <AutoComplete
+                                            placeholder={"Enter feel Type"}
+                                            users={getFilteredItems(feelTypeData, formik.values.category)}
+                                            values={formik.values.feeltype}
+                                            selectionChange={(value) => formik.setFieldValue('feeltype', value)}
+                                        />
+                                        {formik.touched.feeltype && formik.errors.feeltype ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.feeltype}</div>
+                                        ) : null}
+
+                                    </div>
                                 </div>
                             </div>
                             <button type="submit" className="bg-neutral-950 font-font2  max-w-max text-neutral-400 border border-neutral-400 border-b-4 font-[600] overflow-hidden relative px-8 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">

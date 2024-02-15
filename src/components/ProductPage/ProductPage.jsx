@@ -1,19 +1,26 @@
 import React from 'react'
 import DataTable from '../DataTable/DataTable';
+import { useRecoilValue } from 'recoil';
+import { productsDataState } from '../../store/product/productAtom';
  
 const ProductPage = () => {
 
     // Data Format
     const columns = [
-        { name: "ID", uid: "id", sortable: true },
-        { name: "NAME", uid: "name", sortable: true },
-        { name: "AGE", uid: "age", sortable: true },
-        { name: "ROLE", uid: "role", sortable: true },
-        { name: "TEAM", uid: "team" },
-        { name: "EMAIL", uid: "email" },
+        { name: "ID", uid: "_id", sortable: true },
+        { name: "Product Name", uid: "productName", sortable: true },
+        { name: "Supplier Name", uid: "supplierName", sortable: true },
+        { name: "Quality", uid: "quality", sortable: true },
+        { name: "Category", uid: "category" },
+        { name: "Design", uid: "design" },
+        { name: "Weave", uid: "weave" },
+        { name: "Width", uid: "width" },
+        { name: "Finish type", uid: "finishtype" },
+        { name: "Feel type", uid: "feeltype" },
         { name: "STATUS", uid: "status", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
+
 
     const statusOptions = [
         { name: "Active", uid: "active" },
@@ -54,6 +61,8 @@ const ProductPage = () => {
         },
     ];
 
+    const productsData = useRecoilValue(productsDataState);
+    console.log(productsData)
 
     return (
         <>
