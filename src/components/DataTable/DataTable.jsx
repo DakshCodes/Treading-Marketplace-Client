@@ -111,11 +111,11 @@ export default function DataTable({ columns, users, statusOptions, section }) {
                         <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
                     </div>
                 );
-            case "supplierName":
+            case "productName":
                 return (
                     <div className="flex flex-col">
                         {/* <p className="text-bold text-small capitalize">{cellValue}</p> */}
-                        <p className="text-bold text-tiny capitalize text-default-400">{user.supplierName}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.productName}</p>
                     </div>
                 );
             case "status":
