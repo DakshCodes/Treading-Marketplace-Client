@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { feeltypeDataState } from "../../store/feeltype/feeltypeAtom"
 import { categoryDataState } from '../../store/category/category';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const FeelType = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -36,14 +37,15 @@ const FeelType = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     // Create The feeltype
     const createfeeltype = async (values) => {
         try {
             values.ref = refcat;
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createfeeltype(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -55,7 +57,7 @@ const FeelType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             console.log(error.message);
             toast.error(error.message);
         }
@@ -66,9 +68,9 @@ const FeelType = () => {
     // Delete feeltype
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletefeeltype(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -80,7 +82,8 @@ const FeelType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -112,7 +115,9 @@ const FeelType = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            setIsLoading(true)
             const response = await Updatefeeltype(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.feeltype);
@@ -132,6 +137,8 @@ const FeelType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating feeltype:", error.message);
             toast.error(error.message);
         }
@@ -147,14 +154,18 @@ const FeelType = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createfeeltype(values);
+                setIsLoading(false)
             }
         },
     });
 
-    console.log(refcat,"ref")
+    console.log(refcat, "ref")
 
 
     return (

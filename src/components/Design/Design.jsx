@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from "recoil"
 import { designDataState } from "../../store/design/designAtom"
 import { categoryDataState } from '../../store/category/category';
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
 const Design = () => {
@@ -38,14 +39,15 @@ const Design = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     // Create The design
     const createdesign = async (values) => {
         try {
             values.ref = refcat;
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createdesign(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -57,7 +59,8 @@ const Design = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             console.log(error.message);
             toast.error(error.message);
         }
@@ -68,9 +71,9 @@ const Design = () => {
     // Delete design
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletedesign(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -82,7 +85,8 @@ const Design = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -115,7 +119,9 @@ const Design = () => {
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
+            setIsLoading(true)
             const response = await Updatedesign(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.design);
@@ -135,6 +141,8 @@ const Design = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating design:", error.message);
             toast.error(error.message);
         }
@@ -150,9 +158,13 @@ const Design = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createdesign(values);
+                setIsLoading(false)
             }
         },
     });

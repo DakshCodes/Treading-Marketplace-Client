@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { weaveDataState } from "../../store/weave/weaveAtom"
 import { categoryDataState } from '../../store/category/category';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const Weave = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,14 +38,16 @@ const Weave = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
 
     // Create The weave
     const createweave = async (values) => {
         try {
             values.ref = refcat;
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createweave(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -56,7 +59,8 @@ const Weave = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             console.log(error.message);
             toast.error(error.message);
         }
@@ -67,9 +71,9 @@ const Weave = () => {
     // Delete weave
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deleteweave(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -81,7 +85,8 @@ const Weave = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -114,7 +119,9 @@ const Weave = () => {
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
+            setIsLoading(true)
             const response = await Updateweave(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.weave);
@@ -134,6 +141,8 @@ const Weave = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating weave:", error.message);
             toast.error(error.message);
         }
@@ -149,9 +158,13 @@ const Weave = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createweave(values);
+                setIsLoading(false)
             }
         },
     });

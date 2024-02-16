@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { widthDataState } from "../../store/width/widthAtom"
 import { categoryDataState } from '../../store/category/category';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const Width = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,14 +38,17 @@ const Width = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
+
 
     // Create The width
     const createwidth = async (values) => {
         try {
             values.ref = refcat;
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createwidth(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -67,9 +71,9 @@ const Width = () => {
     // Delete width
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletewidth(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -81,7 +85,8 @@ const Width = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -114,7 +119,9 @@ const Width = () => {
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
+            setIsLoading(true)
             const response = await Updatewidth(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.width);
@@ -134,6 +141,8 @@ const Width = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating width:", error.message);
             toast.error(error.message);
         }
@@ -149,9 +158,13 @@ const Width = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createwidth(values);
+                setIsLoading(false)
             }
         },
     });
