@@ -97,7 +97,10 @@ const FinishType = () => {
             formik.setValues({
                 name: finishtypeData?.name,
                 verified: finishtypeData?.verified,
+                ref: finishtypeData?.ref,
             });
+
+            setrefcat(finishtypeData?.ref)
 
             setUpdateId(finishtypeId);
             onOpen(); // Open the modal
@@ -110,6 +113,7 @@ const FinishType = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            values.ref = refcat;
             const response = await Updatefinishtype(updateId, values);
             if (response.success) {
                 toast.success(response.message);
@@ -191,6 +195,7 @@ const FinishType = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",

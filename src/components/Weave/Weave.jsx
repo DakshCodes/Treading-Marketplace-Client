@@ -91,13 +91,16 @@ const Weave = () => {
         try {
 
             // changed from todoListState to filteredTodoListState
-            const weaveData = weaveData.find((element) => element._id == weaveId);
+            const weaveDataexist = WeaveData.find((element) => element._id == weaveId);
 
             // Set the initial values for Formik
             formik.setValues({
-                name: weaveData?.name,
-                verified: weaveData?.verified,
+                name: weaveDataexist?.name,
+                verified: weaveDataexist?.verified,
+                ref: weaveDataexist?.ref,
             });
+
+            setrefcat(weaveDataexist?.ref)
 
             setUpdateId(weaveId);
             onOpen(); // Open the modal
@@ -110,6 +113,7 @@ const Weave = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            values.ref = refcat;
             const response = await Updateweave(updateId, values);
             if (response.success) {
                 toast.success(response.message);
@@ -191,6 +195,7 @@ const Weave = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",

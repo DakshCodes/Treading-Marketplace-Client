@@ -91,13 +91,16 @@ const Width = () => {
         try {
 
             // changed from todoListState to filteredTodoListState
-            const widthData = widthData.find((element) => element._id == widthId);
+            const widthDataexist = widthData.find((element) => element._id == widthId);
 
             // Set the initial values for Formik
             formik.setValues({
-                name: widthData?.name,
-                verified: widthData?.verified,
+                name: widthDataexist?.name,
+                verified: widthDataexist?.verified,
+                ref: widthDataexist?.ref,
             });
+
+            setrefcat(widthDataexist?.ref)
 
             setUpdateId(widthId);
             onOpen(); // Open the modal
@@ -110,6 +113,7 @@ const Width = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            values.ref = refcat;
             const response = await Updatewidth(updateId, values);
             if (response.success) {
                 toast.success(response.message);
@@ -191,6 +195,7 @@ const Width = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",

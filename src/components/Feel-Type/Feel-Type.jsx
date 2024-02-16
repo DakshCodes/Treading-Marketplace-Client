@@ -90,13 +90,16 @@ const FeelType = () => {
         try {
 
             // changed from todoListState to filteredTodoListState
-            const feeltypeData = feeltypeData.find((element) => element._id == feeltypeId);
+            const feeltypeDataexist = feeltypeData.find((element) => element._id == feeltypeId);
 
             // Set the initial values for Formik
             formik.setValues({
-                name: feeltypeData?.name,
-                verified: feeltypeData?.verified,
+                name: feeltypeDataexist?.name,
+                verified: feeltypeDataexist?.verified,
+                ref: feeltypeDataexist?.ref,
             });
+
+            setrefcat(feeltypeDataexist?.ref)
 
             setUpdateId(feeltypeId);
             onOpen(); // Open the modal
@@ -151,6 +154,8 @@ const FeelType = () => {
         },
     });
 
+    console.log(refcat,"ref")
+
 
     return (
         <>
@@ -190,6 +195,7 @@ const FeelType = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",

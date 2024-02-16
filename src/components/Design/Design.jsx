@@ -98,7 +98,10 @@ const Design = () => {
             formik.setValues({
                 name: designData?.name,
                 verified: designData?.verified,
+                ref: designData?.ref,
             });
+
+            setrefcat(designData?.ref)
 
             setUpdateId(designId);
             onOpen(); // Open the modal
@@ -111,6 +114,7 @@ const Design = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            values.ref = refcat;
             const response = await Updatedesign(updateId, values);
             if (response.success) {
                 toast.success(response.message);
@@ -192,6 +196,7 @@ const Design = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",

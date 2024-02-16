@@ -42,7 +42,7 @@ const Quality = () => {
     const createquality = async (values) => {
         try {
             values.ref = refcat;
-            console.log(values,"values")
+            console.log(values, "values")
             // dispatch(SetLoader(true));
             const response = await Createquality(values);
             // dispatch(SetLoader(false));
@@ -98,7 +98,10 @@ const Quality = () => {
             formik.setValues({
                 name: qualityData?.name,
                 verified: qualityData?.verified,
+                ref: qualityData?.ref,
             });
+
+            setrefcat(qualityData?.ref)
 
             setUpdateId(qualityId);
             onOpen(); // Open the modal
@@ -111,6 +114,7 @@ const Quality = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            values.ref = refcat;
             const response = await Updatequality(updateId, values);
             if (response.success) {
                 toast.success(response.message);
@@ -153,7 +157,7 @@ const Quality = () => {
         },
     });
 
-    console.log(refcat,'ref')
+    console.log(refcat, 'ref')
 
 
     return (
@@ -194,6 +198,7 @@ const Quality = () => {
                                                 onSelectionChange={setrefcat}
                                                 value={refcat}
                                                 defaultItems={categoriesData}
+                                                selectedKey={refcat}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#fff] font-font1",
