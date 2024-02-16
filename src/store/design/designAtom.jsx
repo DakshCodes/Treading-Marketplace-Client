@@ -7,7 +7,7 @@ export const designDataState = atom({
     default : selector({
         key :  "designSelector",
         get : async () => {
-            const res = await axios.get(`http://localhost:5000/api/design/get-all-design`);
+            const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/design/get-all-design`);
             return res.data.designs
         }
     })

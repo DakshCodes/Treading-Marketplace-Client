@@ -7,7 +7,7 @@ export const weaveDataState = atom({
     default : selector({
         key :  "weaveSelector",
         get : async () => {
-            const res = await axios.get(`http://localhost:5000/api/weave/get-all-weave`);
+            const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/weave/get-all-weave`);
             return res.data.weaves
         }
     })

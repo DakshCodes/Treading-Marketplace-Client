@@ -6,7 +6,7 @@ export const suppliersDataState = atom({
   default: selector({
     key: "supplierAtomSelector",
     get: async () => {
-      const res = await axios.get(`http://localhost:5000/api/supplier/get-all-supplier`);
+      const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/supplier/get-all-supplier`);
       return res.data.suppliers
     }
   })
