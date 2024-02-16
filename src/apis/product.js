@@ -43,9 +43,14 @@ export const UpdateProduct = async (id, payload) => {
 export const DeleteProduct = async (id) => {
     try {
         const response = await axios.delete(`${import.meta.env.VITE_SERVER}/api/products/delete-product/${id}`);
-        return response.data;
 
+        if (response.status === 204) {
+            return { success: true, message: 'Product deleted successfully' };
+        } else {
+            return { success: false, message: `Failed to delete product - ${response.statusText}` };
+        }
     } catch (error) {
-        return error.message;
+        return { success: false, message: `Failed to delete product - ${error.message}` };
     }
 };
+
