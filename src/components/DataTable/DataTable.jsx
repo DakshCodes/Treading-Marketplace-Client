@@ -21,17 +21,16 @@ import { useNavigate } from "react-router-dom";
 import { capitalize } from "../../utils/capitalize";
 
 const statusColorMap = {
-    active: "success",
-    paused: "danger",
-    vacation: "warning",
+    true: "success",
+    false: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
 
-export default function DataTable({ columns, users, statusOptions, section }) {
+
+export default function DataTable({ columns, users, statusOptions, visible_columns, section}) {
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-    const [visibleColumns, setVisibleColumns] = React.useState(new Set(INITIAL_VISIBLE_COLUMNS));
+    const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
     const [statusFilter, setStatusFilter] = React.useState("all");
     const navigate = useNavigate()
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -94,28 +93,25 @@ export default function DataTable({ columns, users, statusOptions, section }) {
         const cellValue = user[columnKey];
 
         switch (columnKey) {
-            case "name":
-                return (
-                    <User
-                        avatarProps={{ radius: "lg", src: user.avatar }}
-                        description={user.email}
-                        name={cellValue}
-                    >
-                        {user.email}
-                    </User>
-                );
-            case "role":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-small capitalize">{cellValue}</p>
-                        <p className="text-bold text-tiny capitalize text-default-400">{user.team}</p>
-                    </div>
-                );
             case "productName":
                 return (
+                    <User
+                        avatarProps={{ radius: "lg", src: "" }}
+                        name={cellValue}
+                    >
+                        {user.productName}
+                    </User>
+                );
+            case "supplierName":
+                return (
                     <div className="flex flex-col">
-                        {/* <p className="text-bold text-small capitalize">{cellValue}</p> */}
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.productName}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.supplierName}</p>
+                    </div>
+                );
+            case "category":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.category}</p>
                     </div>
                 );
             case "status":
@@ -322,7 +318,7 @@ export default function DataTable({ columns, users, statusOptions, section }) {
             </TableHeader>
             <TableBody emptyContent={"No users found"} items={sortedItems}>
                 {(item) => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item._id}>
                         {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                     </TableRow>
                 )}

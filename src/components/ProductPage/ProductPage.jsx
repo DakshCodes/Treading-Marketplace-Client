@@ -2,7 +2,7 @@ import React from 'react'
 import DataTable from '../DataTable/DataTable';
 import { useRecoilValue } from 'recoil';
 import { productsDataState } from '../../store/product/productAtom';
- 
+
 const ProductPage = () => {
 
     // Data Format
@@ -23,10 +23,12 @@ const ProductPage = () => {
 
 
     const statusOptions = [
-        { name: "Active", uid: "active" },
-        { name: "Paused", uid: "paused" },
-        { name: "Vacation", uid: "vacation" },
+        { name: "Disabled", uid: "true" },
+        { name: "Active", uid: "false" },
     ];
+
+    const INITIAL_VISIBLE_COLUMNS = ["productName", "supplierName", "verified", "category", "actions"];
+
 
     const users = [
         {
@@ -66,7 +68,7 @@ const ProductPage = () => {
 
     return (
         <>
-            <DataTable columns={columns} statusOptions={statusOptions} users={users} section={'product'} />
+            <DataTable columns={columns} statusOptions={statusOptions} users={productsData} section={'product'} visible_columns={INITIAL_VISIBLE_COLUMNS}    />
         </>
     )
 }
