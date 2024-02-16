@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { finishtypeDataState } from "../../store/finishtype/finishtypeAtom"
 import { categoryDataState } from '../../store/category/category';
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const FinishType = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,14 +38,16 @@ const FinishType = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
 
     // Create The finishtype
     const createfinishtype = async (values) => {
         try {
             values.ref = refcat;
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createfinishtype(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -56,7 +59,8 @@ const FinishType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             console.log(error.message);
             toast.error(error.message);
         }
@@ -67,9 +71,9 @@ const FinishType = () => {
     // Delete finishtype
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletefinishtype(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -81,7 +85,8 @@ const FinishType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -114,7 +119,9 @@ const FinishType = () => {
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
+            setIsLoading(true)
             const response = await Updatefinishtype(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.finishtype);
@@ -134,6 +141,8 @@ const FinishType = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating finishtype:", error.message);
             toast.error(error.message);
         }
@@ -149,9 +158,13 @@ const FinishType = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createfinishtype(values);
+                setIsLoading(false)
             }
         },
     });

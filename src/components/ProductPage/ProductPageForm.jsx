@@ -8,7 +8,7 @@ import { useFormik } from 'formik';
 import * as z from 'zod';
 import { CreateProduct, UpdateProduct } from '../../apis/product';
 // import Arrowsvg from "../../assets/arrow.svg"
-import { useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { suppliersDataState } from "../../store/supplier/supplierAtom"
 import { categoryDataState } from "../../store/category/category"
 import { qualityDataState } from "../../store/quality/qualityAtom"
@@ -18,6 +18,7 @@ import { finishtypeDataState } from "../../store/finishtype/finishtypeAtom"
 import { weaveDataState } from "../../store/weave/weaveAtom"
 import { widthDataState } from "../../store/width/widthAtom"
 import { productsDataState } from '../../store/product/productAtom';
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const ProductPageForm = () => {
     const params = useParams();
@@ -76,10 +77,22 @@ const ProductPageForm = () => {
     };
 
     useEffect(() => {
-        if(productURL){
+        if (productURL) {
             handleUpdate(productURL);
         }
     }, [])
+
+    const updateDependentFields = (value) => {
+        formik.setValues({
+            ...formik.values,
+            category: value,
+            quality: "",
+            design: "",
+            width: "",
+            finishtype: "",
+            feeltype: "",
+        });
+    };
 
 
     const users = [
@@ -116,6 +129,8 @@ const ProductPageForm = () => {
     //     finishtype: z.string().minLength(1)('Finish Type is required'),
     //     feeltype: z.string().minLength(1)('Feel Type is required'),
     // });
+
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     // Formik configuration
     const formik = useFormik({
@@ -181,12 +196,15 @@ const ProductPageForm = () => {
                 // dispatch(SetLoader(true));
                 let response = null;
                 if (updateId) {
-                    response = await UpdateProduct(updateId , values);
+                    setIsLoading(true);
+                    response = await UpdateProduct(updateId, values);
+                    setIsLoading(false);
                 } else {
-
+                    setIsLoading(true);
                     response = await CreateProduct(values);
+                    setIsLoading(false);
                 }
-                // dispatch(SetLoader(false));
+        
                 if (response.success) {
                     navigate('/inventory');
                     toast.success(response.message);
@@ -197,12 +215,15 @@ const ProductPageForm = () => {
                     throw new Error(response.message);
                 }
             } catch (error) {
-                // dispatch(SetLoader(false));
+                setIsLoading(false);
+
                 console.log(error.message);
                 toast.error(error.message);
             }
         },
     });
+
+    console.log(formik.values);
 
     return (
         <>
@@ -257,7 +278,10 @@ const ProductPageForm = () => {
                                             placeholder={"Enter category"}
                                             users={categoryData}
                                             values={formik.values.category}
-                                            selectionChange={(value) => formik.setFieldValue('category', value)}
+                                            selectionChange={(value) => {
+                                                formik.setFieldValue('category', value);
+                                                updateDependentFields(value); // Reset dependent fields on category change
+                                            }}
                                         />
                                         {formik.touched.category && formik.errors.category ? (
                                             <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.category}</div>

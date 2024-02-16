@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useRecoilState, useRecoilValue } from "recoil"
 import { suppliersDataState } from "../../store/supplier/supplierAtom"
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const Suppliers = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -36,12 +37,14 @@ const Suppliers = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "brand", "verified", "experienced", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     // Create The Supplier
     const creatsupplier = async (values) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createsupplier(values);
+            setIsLoading(false)
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
@@ -55,6 +58,7 @@ const Suppliers = () => {
             }
         } catch (error) {
             // dispatch(SetLoader(false));
+            setIsLoading(false)
             console.log(error.message);
             toast.error(error.message);
         }
@@ -65,9 +69,9 @@ const Suppliers = () => {
     // Delete Supplier
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletesupplier(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -79,7 +83,7 @@ const Suppliers = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             toast.error(error.message)
         }
     }
@@ -89,17 +93,19 @@ const Suppliers = () => {
         try {
 
             // changed from todoListState to filteredTodoListState
-            const supplierData = suppliersData.find((element) => element._id == supplierId);
+            const mySupplierData = suppliersData.find((element) => element._id == supplierId);
 
-            console.log("________________supplier data : ", supplierData)
+            console.log("________________supplier data : ", mySupplierData)
             // Set the initial values for Formik
             formik.setValues({
-                name: supplierData?.name,
-                brand: supplierData?.brand,
-                address: supplierData?.address,
-                verified: supplierData?.verified,
-                experienced: supplierData?.experienced,
+                name: mySupplierData?.name,
+                brand: mySupplierData?.brand,
+                address: mySupplierData?.address,
+                verified: mySupplierData?.verified,
+                experienced: mySupplierData?.experienced,
             });
+
+            console.log(formik.values)
 
             setUpdateId(supplierId);
             onOpen(); // Open the modal
@@ -108,31 +114,34 @@ const Suppliers = () => {
             toast.error(error.message);
         }
     };
-    
+
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             console.log(values, "update");
+            setIsLoading(true)
             const response = await Updatesupplier(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
-                console.log("Data update", response.supplier);
 
-                // Optimistically update UI
                 setSuppliersData((prevData) => {
-                    const updatedSuppliers = prevData.map((supplier) =>
-                        supplier._id === updateId ? response.supplier : supplier
+                    const updatedSuppliers = prevData.map((supplier) => {
+                        // console.log(supplier._id === updateId ? response.supplier : supplier)
+                        return supplier._id === updateId ? response.supplier : supplier
+                    }
                     );
                     return updatedSuppliers;
                 });
 
-                // Close the modal and reset update ID
+
                 onOpenChange(false);
                 setUpdateId(null);
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
             console.error("Error updating supplier:", error.message);
             toast.error(error.message);
         }
@@ -150,9 +159,14 @@ const Suppliers = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
-            } else {
+                setIsLoading(false)
+
+            } else {                
+                setIsLoading(true)
                 await creatsupplier(values);
+                setIsLoading(false)
             }
         },
     });

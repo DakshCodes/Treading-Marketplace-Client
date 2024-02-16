@@ -5,6 +5,7 @@ import { productsDataState } from '../../store/product/productAtom';
 import { DeleteProduct, GetAllProducts } from '../../apis/product';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const ProductPage = () => {
 
@@ -25,6 +26,8 @@ const ProductPage = () => {
         // { name: "STATUS", uid: "status", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
+
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     const productsData = useRecoilValue(productsDataState);
     const setProductsData = useSetRecoilState(productsDataState);
@@ -50,10 +53,11 @@ const ProductPage = () => {
     // Delete finishtype
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await DeleteProduct(id);
+            setIsLoading(false)
             // dispatch(SetLoader(false));
-            console.log("------------------------------------------------" ,response)
+            console.log("------------------------------------------------", response)
             if (response.success) {
                 toast.success(response.message);
                 console.log(response.message)
@@ -66,6 +70,7 @@ const ProductPage = () => {
             }
         } catch (error) {
             // dispatch(SetLoader(false));
+            setIsLoading(false)
             toast.error(error.message)
         }
     }
