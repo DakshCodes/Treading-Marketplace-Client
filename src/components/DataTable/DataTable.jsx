@@ -27,7 +27,7 @@ const statusColorMap = {
 
 
 
-export default function DataTable({ columns, users, statusOptions, visible_columns, section}) {
+export default function DataTable({ columns, users, deleteItem, statusOptions, visible_columns, section}) {
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
@@ -105,13 +105,13 @@ export default function DataTable({ columns, users, statusOptions, visible_colum
             case "supplierName":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.supplierName}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.supplierName?.name}</p>
                     </div>
                 );
             case "category":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.category}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.category?.name}</p>
                     </div>
                 );
             case "status":
@@ -132,7 +132,7 @@ export default function DataTable({ columns, users, statusOptions, visible_colum
                             <DropdownMenu className='font-2 font-medium text-[#000]'>
                                 <DropdownItem onClick={() => alert(user._id)}>View</DropdownItem>
                                 <DropdownItem onClick={() => handleEditForSection(user._id)}>Edit</DropdownItem>
-                                <DropdownItem>Delete</DropdownItem>
+                                <DropdownItem onClick={() => deleteItem(user._id)}>Delete</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </div>

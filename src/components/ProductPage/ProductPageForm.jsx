@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import './ProductForm.css'
 import { useNavigate, useParams } from 'react-router-dom';
 import { Input } from "@nextui-org/react";
@@ -6,9 +6,9 @@ import { toast } from 'react-hot-toast';
 import AutoComplete from '../Autocomplete/AutoComplete';
 import { useFormik } from 'formik';
 import * as z from 'zod';
-import { CreateProduct } from '../../apis/product';
+import { CreateProduct, UpdateProduct } from '../../apis/product';
 // import Arrowsvg from "../../assets/arrow.svg"
-import { useRecoilValue } from "recoil"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 import { suppliersDataState } from "../../store/supplier/supplierAtom"
 import { categoryDataState } from "../../store/category/category"
 import { qualityDataState } from "../../store/quality/qualityAtom"
@@ -17,11 +17,15 @@ import { feeltypeDataState } from "../../store/feeltype/feeltypeAtom"
 import { finishtypeDataState } from "../../store/finishtype/finishtypeAtom"
 import { weaveDataState } from "../../store/weave/weaveAtom"
 import { widthDataState } from "../../store/width/widthAtom"
+import { productsDataState } from '../../store/product/productAtom';
 
 const ProductPageForm = () => {
     const params = useParams();
     const productURL = params.id === 'new' ? null : params.id;
+
+    console.log(productURL)
     const navigate = useNavigate();
+    const [updateId, setUpdateId] = useState('');
 
     const categoryData = useRecoilValue(categoryDataState);
     const supplierData = useRecoilValue(suppliersDataState);
@@ -35,10 +39,48 @@ const ProductPageForm = () => {
 
     console.table(widthData)
 
+
+    const setProductsData = useSetRecoilState(productsDataState);
+    const productsData = useRecoilValue(productsDataState);
+
     // Function to filter items based on selected category and reference field
     const getFilteredItems = (items, selectedCategory) => {
         return items.filter(item => item.ref === selectedCategory);
     };
+    const handleUpdate = async (productId) => {
+        try {
+
+            // changed from todoListState to filteredTodoListState
+            const singleProductData = productsData.find((element) => element._id == productId);
+            console.log(singleProductData)
+
+            formik.setValues({
+                supplierName: singleProductData?.supplierName?._id || "5f478f5bc34b9a001f6a8b3d",
+                productName: singleProductData?.productName || "",
+                category: singleProductData?.category?._id || "5f478f5bc34b9a001f6a8b3d",
+                quality: singleProductData?.quality?._id || "5f478f5bc34b9a001f6a8b3d",
+                design: singleProductData?.design?._id || "5f478f5bc34b9a001f6a8b3d",
+                weave: singleProductData?.weave?._id || "5f478f5bc34b9a001f6a8b3d",
+                width: singleProductData?.width?._id || "5f478f5bc34b9a001f6a8b3d",
+                finishtype: singleProductData?.finishtype?._id || "5f478f5bc34b9a001f6a8b3d", // Assuming finishtype is an object with a name property
+                feeltype: singleProductData?.feeltype?._id || "5f478f5bc34b9a001f6a8b3d",
+            });
+
+
+            setUpdateId(productId);
+
+        } catch (error) {
+            console.error("Error updating finishtype:", error.message);
+            toast.error(error.message);
+        }
+    };
+
+    useEffect(() => {
+        if(productURL){
+            handleUpdate(productURL);
+        }
+    }, [])
+
 
     const users = [
         {
@@ -137,12 +179,19 @@ const ProductPageForm = () => {
             console.log(values);
             try {
                 // dispatch(SetLoader(true));
-                const response = await CreateProduct(values);
+                let response = null;
+                if (updateId) {
+                    response = await UpdateProduct(updateId , values);
+                } else {
+
+                    response = await CreateProduct(values);
+                }
                 // dispatch(SetLoader(false));
                 if (response.success) {
                     navigate('/inventory');
                     toast.success(response.message);
                     // setUpdateId(null); // Reset update ID when modal is closed
+                    setProductsData((prevValue) => [...prevValue, response.product])
 
                 } else {
                     throw new Error(response.message);

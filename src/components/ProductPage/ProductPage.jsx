@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import DataTable from '../DataTable/DataTable';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { productsDataState } from '../../store/product/productAtom';
+import { DeleteProduct, GetAllProducts } from '../../apis/product';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const ProductPage = () => {
+
+    const navigate = useNavigate()
 
     // Data Format
     const columns = [
@@ -20,6 +25,106 @@ const ProductPage = () => {
         { name: "STATUS", uid: "status", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
+
+    const productsData = useRecoilValue(productsDataState);
+    const setProductsData = useSetRecoilState(productsDataState);
+    console.log(productsData)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await GetAllProducts(); // Assuming you have an API function to fetch products
+                if (response.success) {
+                    setProductsData(response.products);
+                } else {
+                    throw new Error(response.message);
+                }
+            } catch (error) {
+                toast.error(error.message);
+            }
+        };
+
+        fetchData(); // Call the function to fetch data when the component mounts
+    }, [setProductsData]);
+
+    // Delete finishtype
+    const deleteItem = async (id) => {
+        try {
+            // dispatch(SetLoader(true));
+            const response = await DeleteProduct(id);
+            // dispatch(SetLoader(false));
+            console.log("------------------------------------------------" ,response)
+            if (response.success) {
+                toast.success(response.message);
+                console.log(response.message)
+
+                setProductsData((prevData) => prevData.filter((product) => product._id !== id));
+
+                navigate('/inventory');
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            // dispatch(SetLoader(false));
+            toast.error(error.message)
+        }
+    }
+
+    console.log(productsData)
+
+    // Update The finishtype
+    const handleUpdate = async (finishtypeId) => {
+        try {
+
+            // changed from todoListState to filteredTodoListState
+            const finishtypeData = FinishTypesData.find((element) => element._id == finishtypeId);
+
+            // Set the initial values for Formik
+            formik.setValues({
+                name: finishtypeData?.name,
+                verified: finishtypeData?.verified,
+                ref: finishtypeData?.ref,
+            });
+
+            setrefcat(finishtypeData?.ref)
+
+            setUpdateId(finishtypeId);
+            onOpen(); // Open the modal
+        } catch (error) {
+            console.error("Error updating finishtype:", error.message);
+            toast.error(error.message);
+        }
+    };
+
+    // Handle update form submission
+    const handleUpdateSubmit = async (values) => {
+        try {
+            values.ref = refcat;
+            const response = await Updatefinishtype(updateId, values);
+            if (response.success) {
+                toast.success(response.message);
+                console.log("Data update", response.finishtype);
+
+                // Optimistically update UI
+                setFinishTypesData((prevData) => {
+                    const updatedfinishtypes = prevData.map((finishtype) =>
+                        finishtype._id === updateId ? response.finishtype : finishtype
+                    );
+                    return updatedfinishtypes;
+                });
+
+                // Close the modal and reset update ID
+                onOpenChange(false);
+                setUpdateId(null);
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            console.error("Error updating finishtype:", error.message);
+            toast.error(error.message);
+        }
+    };
+
 
 
     const statusOptions = [
@@ -63,12 +168,11 @@ const ProductPage = () => {
         },
     ];
 
-    const productsData = useRecoilValue(productsDataState);
-    console.log(productsData)
+
 
     return (
         <>
-            <DataTable columns={columns} statusOptions={statusOptions} users={productsData} section={'product'} visible_columns={INITIAL_VISIBLE_COLUMNS}    />
+            <DataTable columns={columns} statusOptions={statusOptions} users={productsData} section={'product'} deleteItem={deleteItem} visible_columns={INITIAL_VISIBLE_COLUMNS} />
         </>
     )
 }
