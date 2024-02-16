@@ -6,7 +6,7 @@ export const productsDataState = atom({
   default: selector({
     key: "productAtomSelector",
     get: async () => {
-      const res = await axios.get(`http://localhost:5000/api/products/get-all-products`);
+      const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/products/get-all-products`);
       return res.data.products;
     }
   })
