@@ -10,7 +10,8 @@ import { useRecoilValue } from 'recoil';
 import { darkmodeAtom } from './store/darkmode/darkAtom';
 import LoginPage from './pages/LoginPage/LoginPage';
 import PrivateRoute from './Private/PrivateRoute';
-
+import { globalLoaderAtom } from './store/GlobalLoader/globalLoaderAtom';
+import Loader from "./components/Loader/Loader"
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
@@ -39,10 +40,15 @@ function generateRoutes(config) {
 function App() {
 
   const mode = useRecoilValue(darkmodeAtom);
+  const isLoading = useRecoilValue(globalLoaderAtom);
 
   return (
     <div className={`main-dashboard ${mode && 'dark'}`}>
       <Toaster />
+      {isLoading && <>
+        <Loader />
+
+      </>}
       <Sidenav />
       <Routes>
         {generateRoutes(routesConfig)}

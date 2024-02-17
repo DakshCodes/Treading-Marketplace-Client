@@ -9,6 +9,7 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { qualityDataState } from "../../store/quality/qualityAtom"
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 import { categoryDataState } from '../../store/category/category';
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const Quality = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -38,14 +39,17 @@ const Quality = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
+
     // Create The quality
     const createquality = async (values) => {
         try {
             values.ref = refcat;
             console.log(values, "values")
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createquality(values);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
@@ -57,7 +61,8 @@ const Quality = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             console.log(error.message);
             toast.error(error.message);
         }
@@ -68,9 +73,9 @@ const Quality = () => {
     // Delete quality
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletequality(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -82,7 +87,8 @@ const Quality = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
+
             toast.error(error.message)
         }
     }
@@ -115,7 +121,9 @@ const Quality = () => {
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
+            setIsLoading(true)
             const response = await Updatequality(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.quality);
@@ -135,6 +143,8 @@ const Quality = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
+
             console.error("Error updating quality:", error.message);
             toast.error(error.message);
         }
@@ -150,9 +160,13 @@ const Quality = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+                setIsLoading(true)
                 await createquality(values);
+                setIsLoading(false)
             }
         },
     });

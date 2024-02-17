@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useRecoilState, useRecoilValue } from "recoil"
 import { categoryDataState } from "../../store/category/category"
+import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 
 const Categories = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -16,7 +17,7 @@ const Categories = () => {
     const [updateId, setUpdateId] = useState(null)
 
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData ,"categoryDataState")
+    console.log(categoriesData, "categoryDataState")
 
     // Data Format
     const columns = [
@@ -33,12 +34,14 @@ const Categories = () => {
 
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
+    const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     // Create The category
     const createCategory = async (values) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Createcategory(values);
+            setIsLoading(false)
             // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
@@ -51,7 +54,9 @@ const Categories = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+
+            setIsLoading(false)
+
             console.log(error.message);
             toast.error(error.message);
         }
@@ -62,9 +67,9 @@ const Categories = () => {
     // Delete category
     const deleteItem = async (id) => {
         try {
-            // dispatch(SetLoader(true));
+            setIsLoading(true)
             const response = await Deletecategory(id);
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
@@ -76,7 +81,7 @@ const Categories = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
-            // dispatch(SetLoader(false));
+            setIsLoading(false)
             toast.error(error.message)
         }
     }
@@ -105,7 +110,9 @@ const Categories = () => {
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
+            setIsLoading(true)
             const response = await Updatecategory(updateId, values);
+            setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.category);
@@ -125,6 +132,7 @@ const Categories = () => {
                 throw new Error(response.message);
             }
         } catch (error) {
+            setIsLoading(false)
             console.error("Error updating category:", error.message);
             toast.error(error.message);
         }
@@ -139,9 +147,15 @@ const Categories = () => {
         },
         onSubmit: async values => {
             if (updateId) {
+
+                setIsLoading(true)
                 await handleUpdateSubmit(values);
+                setIsLoading(false)
             } else {
+
+                setIsLoading(true)
                 await createCategory(values);
+                setIsLoading(false)
             }
         },
     });

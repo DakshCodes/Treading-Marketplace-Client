@@ -53,7 +53,7 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
 
         if (hasSearchFilter) {
             filteredUsers = filteredUsers.filter((user) =>
-                user.name.toLowerCase().includes(filterValue.toLowerCase()),
+                user.productName.toLowerCase().includes(filterValue.toLowerCase()),
             );
         }
         if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
