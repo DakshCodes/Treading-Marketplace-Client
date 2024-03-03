@@ -12,21 +12,21 @@ import { CreateUnit, Deleteunit, Updateunit } from '../../apis/unit';
 import { unitValidate } from '../../helper/validate';
 
 const Unit = () => {
-    
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
     const [updateId, setUpdateId] = useState(null)
     const [unitData, setunitData] = useRecoilState(unitDataState)
-    
-       
-    
 
-   
+
+
+
+
     console.log(unitData, "unitDataState")
-   
-       
-    
+
+
+
 
     // Data Format
     const columns = [
@@ -70,7 +70,7 @@ const Unit = () => {
         } catch (error) {
             // dispatch(SetLoader(false));
             toast.error(error.message,);
-            
+
 
         }
     }
@@ -90,7 +90,7 @@ const Unit = () => {
 
                 // Update local state based on the correct identifier (use _id instead of id)
                 setunitData((prevData) => prevData.filter((unit) => unit._id !== id));
-                   
+
                 navigate('/inventory');
             } else {
                 throw new Error(response.message);
@@ -105,21 +105,18 @@ const Unit = () => {
     // Update The unit
     const handleUpdate = async (unitId) => {
         try {
-               console.log(unitId)
+            console.log(unitId)
             // changed from todoListState to filteredTodoListState
-            const unitDataexist = unitData.find((element) => {return element._id == unitId});
-            console.log(unitDataexist,'existssssssssssssssssssssss')
+            const unitDataexist = unitData.find((element) => { return element._id == unitId });
+            console.log(unitDataexist, 'existssssssssssssssssssssss')
             // Set the initial values for Formik
-            
-            formik.setValues((prev)=>{
-                return {
-                name : prev.name,
-            verified : prev.verified,}
-            })
-               
 
-            
-            setUpdateId(unitId);  
+            formik.setValues({
+                name: unitDataexist?.name,
+                verified: unitDataexist?.verified,
+            });
+
+            setUpdateId(unitId);
             onOpen() // Open the modal
         } catch (error) {
             console.error("Error updating unit:", error.message);
@@ -134,26 +131,27 @@ const Unit = () => {
             setIsLoading(true)
             const response = await Updateunit(updateId, values);
             setIsLoading(false)
-            
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.unit);
 
                 // Optimistically update UI
-    
-                setunitData((preValue)=>{
-                const updatedunits = preValue.map((unit) =>{
-                return unit._id === updateId ? response.unit : unit}
+
+                setunitData((preValue) => {
+                    const updatedunits = preValue.map((unit) => {
+                        return unit._id === updateId ? response.unit : unit
+                    }
+                    )
+                    return updatedunits;
+                })
+                formik.setValues({
+                    name: response.unit?.name,
+                    verified: response.unit?.verified,
+                }
                 )
-                return updatedunits;
-            })
-                     formik.setValues({
-                        name : response.unit?.name,
-                        verified : response.unit?.verified,
-                     }
-                     )
-                     console.log(formik.values,'ffffffffffffffffffffffffffffffff')
-// Close the modal and reset update ID
+                console.log(formik.values, 'ffffffffffffffffffffffffffffffff')
+                // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
             } else {
@@ -170,8 +168,10 @@ const Unit = () => {
 
 
     const formik = useFormik({
-        initialValues:   {name : '',
-        verified : false,},
+        initialValues: {
+            name: '',
+            verified: false,
+        },
         onSubmit: async values => {
             if (updateId) {
                 setIsLoading(true)
@@ -184,9 +184,9 @@ const Unit = () => {
             }
         },
     });
-const setUpdate = ()=>{
-    setUpdateId(false)  
-}
+    const setUpdate = () => {
+        setUpdateId(false)
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -213,7 +213,7 @@ const setUpdate = ()=>{
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
                                                 placeholder="unit name.."
                                             />
-                                           
+
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
                                                 Verified
                                                 <div className="relative inline-block">
@@ -241,8 +241,8 @@ const setUpdate = ()=>{
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
-                                        
-                                        
+
+
 
                                     >
                                         {updateId ? "Update" : "Create "}
