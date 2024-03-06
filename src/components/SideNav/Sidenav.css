@@ -9,7 +9,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #000;
+    background: #000000;
     border-radius: 5px;
     transition: all 0.3s ease;
 }

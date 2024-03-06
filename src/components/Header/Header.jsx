@@ -70,8 +70,8 @@ const Header = ({ toggleSidebar }) => {
         fileInputRef.current.click();
     };
     const [file, setFile] = useState(user?.avatar);
-    
-    const[img,setImg]= useState(user?.avatar);
+
+    const [img, setImg] = useState(user?.avatar);
 
 
     return (
