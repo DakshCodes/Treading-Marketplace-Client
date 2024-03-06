@@ -9,7 +9,6 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { unitDataState } from '../../store/unit/unitAtom';
 import { CreateUnit, Deleteunit, Updateunit } from '../../apis/unit';
-import { unitValidate } from '../../helper/validate';
 
 const Unit = () => {
     
