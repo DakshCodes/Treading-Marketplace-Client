@@ -51,7 +51,7 @@ function App() {
         <Loader />
 
       </>}
-      <Sidenav />
+      {/* <Sidenav /> */}
       <div className='h-screen overflow-scroll w-screen border-green-400'>
         <Routes>
           {generateRoutes(routesConfig)}
