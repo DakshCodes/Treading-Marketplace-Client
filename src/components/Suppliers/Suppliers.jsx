@@ -17,7 +17,7 @@ const Suppliers = () => {
     const [updateId, setUpdateId] = useState(null)
 
     const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
-    console.log(suppliersData || [])
+    // console.log(suppliersData || [])
 
     // Data Format
     const columns = [
@@ -88,37 +88,11 @@ const Suppliers = () => {
         }
     }
 
-    // Update The Supplier
-    const handleUpdate = async (supplierId) => {
-        try {
 
-            // changed from todoListState to filteredTodoListState
-            const mySupplierData = suppliersData.find((element) => element._id == supplierId);
-
-            console.log("________________supplier data : ", mySupplierData)
-            // Set the initial values for Formik
-            formik.setValues({
-                name: mySupplierData?.name,
-                brand: mySupplierData?.brand,
-                address: mySupplierData?.address,
-                verified: mySupplierData?.verified,
-                experienced: mySupplierData?.experienced,
-            });
-
-            console.log(formik.values)
-
-            setUpdateId(supplierId);
-            onOpen(); // Open the modal
-        } catch (error) {
-            console.error("Error updating supplier:", error.message);
-            toast.error(error.message);
-        }
-    };
 
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            console.log(values, "update");
             setIsLoading(true)
             const response = await Updatesupplier(updateId, values);
             setIsLoading(false)
@@ -163,7 +137,7 @@ const Suppliers = () => {
                 await handleUpdateSubmit(values);
                 setIsLoading(false)
 
-            } else {                
+            } else {
                 setIsLoading(true)
                 await creatsupplier(values);
                 setIsLoading(false)
@@ -171,7 +145,31 @@ const Suppliers = () => {
         },
     });
 
-    console.log(formik.values, "values")
+    const handleUpdate = async (supplierId) => {
+        try {
+            const mySupplierData = suppliersData.find((element) => element._id == supplierId);
+
+            console.log(mySupplierData, "exist")
+
+            formik.setValues({
+                name: mySupplierData?.name,
+                brand: mySupplierData?.brand,
+                address: mySupplierData?.address,
+                verified: mySupplierData?.verified,
+                experienced: mySupplierData?.experienced,
+            });
+
+            setUpdateId(supplierId);
+            onOpen(); // Open the modal
+        } catch (error) {
+            console.error("Error updating supplier:", error.message);
+            toast.error(error.message);
+        }
+    };
+
+
+    // console.log(formik.values, "values")
+    // console.log("supplier data outside: ", suppliersData)
 
     return (
         <>

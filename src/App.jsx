@@ -12,9 +12,11 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import PrivateRoute from './Private/PrivateRoute';
 import { globalLoaderAtom } from './store/GlobalLoader/globalLoaderAtom';
 import Loader from "./components/Loader/Loader"
+import Challan from './pages/Challan/Challan';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
+  { path: '/challan', element: <Challan /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
@@ -49,14 +51,16 @@ function App() {
         <Loader />
 
       </>}
-      <Sidenav />
-      <Routes>
-        {generateRoutes(routesConfig)}
-        <Route
-          path='/login'
-          element={<LoginPage />}
-        />
-      </Routes>
+      {/* <Sidenav /> */}
+      <div className='h-screen overflow-scroll w-screen border-green-400'>
+        <Routes>
+          {generateRoutes(routesConfig)}
+          <Route
+            path='/login'
+            element={<LoginPage />}
+          />
+        </Routes>
+      </div>
     </div>
   )
 }
