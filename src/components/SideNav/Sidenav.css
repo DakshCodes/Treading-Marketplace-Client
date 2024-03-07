@@ -98,7 +98,7 @@ nav .menu-items {
     text-decoration: none;
     position: relative;
     font-family: var(--font4);
-    transition: var(--tran-05);
+    transition: all 0.3s;
 }
 
 nav.close .menu-items li a {
@@ -133,7 +133,7 @@ body.dark li a:hover:before {
 }
 
 .menu-items li a:hover .link-name {
-    color: var(--primary-color);
+    color: #000;
 }
 
 .menu-items li a svg {

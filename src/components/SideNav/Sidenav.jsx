@@ -17,7 +17,7 @@ const MenuItem = ({ icon, title, classNames, href }) => (
 );
 
 const Sidenav = () => {
-    
+
     const [user, setUser] = useRecoilState(userAtom);
     const [status, setStatus] = useState(() => localStorage.getItem('status') || 'open');
     const path = useLocation().pathname;
@@ -77,7 +77,9 @@ const Sidenav = () => {
                             )}
                         />
                         <MenuItem
-                            title="Projects"
+                            href="/chalan"
+                            title="Chalan"
+                            classNames={`${path == '/chalan' && 'active-tab'}`}
                             icon={(
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g id="SVGRepo_bgCarrier" strokeWidth={0} />
