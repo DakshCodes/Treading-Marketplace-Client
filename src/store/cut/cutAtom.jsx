@@ -7,7 +7,7 @@ export const cutDataState = atom({
     default : selector({
         key :  "cutSelector",
         get : async () => {
-            const res = await axios.get(`http://localhost:5000/api/cut/get-all-cuts`);
+            const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/cut/get-all-cuts`);
             return res.data.cuts
         }
     })
