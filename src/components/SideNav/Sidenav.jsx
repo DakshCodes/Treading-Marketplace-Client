@@ -77,15 +77,9 @@ const Sidenav = () => {
                             )}
                         />
                         <MenuItem
-<<<<<<< HEAD
-                            href="/chalan"
-                            title="Chalan"
-                            classNames={`${path == '/chalan' && 'active-tab'}`}
-=======
                             href="/challan"
                             title="Challan"
                             classNames={`${path == '/challan' && 'active-tab'}`}
->>>>>>> 9e1f146d6db5f7312bcd314f12ded9969b2b1faa
                             icon={(
                                 <svg xmlns="http://www.w3.org/2000/svg" width="35" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="butt" strokeLinejoin="bevel"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z" /><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8" /></svg>
                             )}
