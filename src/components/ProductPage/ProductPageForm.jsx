@@ -65,6 +65,7 @@ const ProductPageForm = () => {
                 width: singleProductData?.width?._id || "5f478f5bc34b9a001f6a8b3d",
                 finishtype: singleProductData?.finishtype?._id || "5f478f5bc34b9a001f6a8b3d", // Assuming finishtype is an object with a name property
                 feeltype: singleProductData?.feeltype?._id || "5f478f5bc34b9a001f6a8b3d",
+                pricePerPiece : singleProductData?.pricePerPiece || "5f478f5bc34b9a001f6a8b3d",
             });
 
 
@@ -144,6 +145,7 @@ const ProductPageForm = () => {
             width: "",
             finishtype: "",
             feeltype: "",
+            pricePerPiece: null,
         },
         validate: (values) => {
             const errors = {};
@@ -183,6 +185,9 @@ const ProductPageForm = () => {
             if (!values.width) {
                 errors.width = "Width is required";
             }
+            if (!values.pricePerPiece) {
+                errors.width = "Price Per Piece is required";
+            }
 
 
             // Add validation for other fields...
@@ -204,7 +209,7 @@ const ProductPageForm = () => {
                     response = await CreateProduct(values);
                     setIsLoading(false);
                 }
-        
+
                 if (response.success) {
                     navigate('/inventory');
                     toast.success(response.message);
@@ -230,7 +235,7 @@ const ProductPageForm = () => {
             <main className="demo-page-content">
                 <div className="flex h-full overflow-auto max-w-full">
                     <div className="w-full  rounded-[24px] shadow-md p-6 overflow-auto">
-                        <h2 className="text-3xl font-bold mb-4 font-font2">Create Product</h2>
+                        <h2 className="text-3xl font-bold mb-4 font-font2">{updateId ? "Update " : "Create "}Product</h2>
                         <form onSubmit={formik.handleSubmit} className="flex flex-wrap font-font1 flex-col gap-10 mt-5">
                             <div className="flex flex-col">
                                 <AutoComplete
@@ -384,6 +389,30 @@ const ProductPageForm = () => {
                                             <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.feeltype}</div>
                                         ) : null}
 
+                                    </div>
+                                    {/* Input for Prce Per piece */}
+                                    <div className='flex flex-col items-start gap-2'>
+
+                                        <Input
+                                            type="number"
+                                            placeholder="Price Per Piece (in rs.)"
+                                            labelPlacement="outside"
+                                            classNames={{
+                                                label: '!text-[#fff]  font-font1',
+                                                base: "max-w-[272px]",
+                                                input: 'font-font1 text-[1rem]',
+                                                inputWrapper: "h-[48px]  w-full",
+                                            }}
+                                            variant="flat"
+                                            id="pricePerPiece"
+                                            name="pricePerPiece"
+                                            value={formik.values.pricePerPiece}
+                                            onChange={formik.handleChange}
+                                            onBlur={formik.handleBlur}
+                                        />
+                                        {formik.touched.pricePerPiece && formik.errors.pricePerPiece ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.pricePerPiece}</div>
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
