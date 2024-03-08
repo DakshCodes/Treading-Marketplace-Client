@@ -87,7 +87,6 @@ const Challan = () => {
         // Update local state based on the correct identifier (use _id instead of id)
         setChallansData((prevData) => prevData.filter((supplier) => supplier._id !== id));
 
-        navigate('/inventory');
       } else {
         throw new Error(response.message);
       }
@@ -117,6 +116,8 @@ const Challan = () => {
           return updatedSuppliers;
         });
 
+        formik.setValues('');
+
 
         onOpenChange(false);
         setUpdateId(null);
@@ -131,7 +132,8 @@ const Challan = () => {
   };
 
 
-
+  
+  
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -153,13 +155,13 @@ const Challan = () => {
       }
     },
   });
-
+  
   const handleUpdate = async (supplierId) => {
     try {
       const mySupplierData = challansData.find((element) => element._id == supplierId);
 
       console.log(mySupplierData, "exist");
-
+      
       formik.setValues({
         name: mySupplierData?.name,
         products: mySupplierData?.products.map((product) => ({
@@ -183,10 +185,12 @@ const Challan = () => {
     }
   };
 
+  console.log(formik?.values?.supplier , "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable = () => {
     if (productref && cutref) {
-      const newProduct = { product: productref, cut: cutref, qty: "", total: "", price: "10", overall: "" };
+      const pricePerPiece = productsData?.filter(item => item?._id === productref)[0]?.pricePerPiece;
+      const newProduct = { product: productref, cut: cutref, qty: "", total: "", price: pricePerPiece || "10", overall: "" };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -245,7 +249,7 @@ const Challan = () => {
           onOpenChange={(newState) => {
             onOpenChange(newState);
             if (!newState) {
-              formik.setValues({})
+              formik.resetForm();
             }
           }}
         >
@@ -294,9 +298,9 @@ const Challan = () => {
                                 }}
 
                                 onSelectionChange={onSupplierChange}
-                                value={supplierRef}
+                                value={formik?.values?.supplier}
                                 defaultItems={suppliersData}
-                                selectedKey={supplierRef}
+                                selectedKey={formik?.values?.supplier}
                                 inputProps={{
                                   classNames: {
                                     input: "ml-1 text-[#000] font-font1",
@@ -375,7 +379,7 @@ const Challan = () => {
                                   <input
                                     onChange={formik.handleChange}
                                     name="verified" // Associate the input with the form field 'verified'
-                                    checked={formik.values.verified} // Set the checked state from formik values
+                                    checked={formik?.values?.verified} // Set the checked state from formik values
                                     className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                                     type="checkbox"
                                   />
