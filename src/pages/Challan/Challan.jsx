@@ -19,6 +19,7 @@ const Challan = () => {
   const [updateId, setUpdateId] = useState(null)
   const [productref, setproductref] = useState(null)
   const [supplierRef, setsupplierRef] = useState(null)
+  const [qty, setqty] = useState(null)
   const [cutref, setcutref] = useState(null)
 
   const [challansData, setChallansData] = useRecoilState(challanDataState)
@@ -132,8 +133,8 @@ const Challan = () => {
   };
 
 
-  
-  
+
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -155,13 +156,13 @@ const Challan = () => {
       }
     },
   });
-  
+
   const handleUpdate = async (supplierId) => {
     try {
       const mySupplierData = challansData.find((element) => element._id == supplierId);
 
       console.log(mySupplierData, "exist");
-      
+
       formik.setValues({
         name: mySupplierData?.name,
         products: mySupplierData?.products.map((product) => ({
@@ -185,39 +186,53 @@ const Challan = () => {
     }
   };
 
-  console.log(formik?.values?.supplier , "Supplir -----------------------------------------------------------------------")
+  console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable = () => {
     if (productref && cutref) {
+      let cut = 1;
       const pricePerPiece = productsData?.filter(item => item?._id === productref)[0]?.pricePerPiece;
-      const newProduct = { product: productref, cut: cutref, qty: "", total: "", price: pricePerPiece || "10", overall: "" };
+      const cutvalue = cutData.find(cut => cut._id === cutref)
+      if (cutvalue?.isNameNumerical) {
+        cut = parseFloat(cutvalue?.name);
+      }
+      console.log(pricePerPiece)
+      const price = parseFloat(pricePerPiece);
+      const total = isNaN(cut) ? 0 : parseFloat(qty) * cut;
+      const overall = isNaN(price) ? 0 : total * price;
+      
+      console.log(total)
+      console.log(price)
+      console.log(overall)
+      const newProduct = { product: productref, cut: cutref, qty: qty, total: total, price: pricePerPiece || "0", overall: overall };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
       setproductref("")
       setcutref("")
+      setqty("")
     }
   };
 
-  const handleQtyChange = (index, value) => {
-    formik.setValues((prevValues) => {
-      const updatedProducts = [...prevValues.products];
-      const product = { ...updatedProducts[index], qty: value };
-      console.log(product)
-      console.log(product.cut)
-      const cutvalue = cutData.find(cut => cut._id === product.cut)?.name
-      console.log(cutvalue)
-      const cut = parseFloat(cutvalue);
-      const price = parseFloat(product.price);
-      console.log(cut)
-      console.log(price)
-      const total = isNaN(cut) ? 0 : product.qty * cut;
-      const overall = isNaN(price) ? 0 : total * price;
-      updatedProducts[index] = { ...product, total, overall };
-      return { ...prevValues, products: updatedProducts };
-    });
-  };
+  // const handleQtyChange = (index, value) => {
+  //   // formik.setValues((prevValues) => {
+  //   //   const updatedProducts = [...prevValues.products];
+  //   //   const product = { ...updatedProducts[index], qty: value };
+  //   //   console.log(product)
+  //   //   console.log(product.cut)
+  //   //   const cutvalue = cutData.find(cut => cut._id === product.cut)?.name
+  //   //   console.log(cutvalue)
+  //   //   const cut = parseFloat(cutvalue);
+  //   //   const price = parseFloat(product.price);
+  //   //   console.log(cut)
+  //   //   console.log(price)
+  //   //   const total = isNaN(cut) ? 0 : product.qty * cut;
+  //   //   const overall = isNaN(price) ? 0 : total * price;
+  //   //   updatedProducts[index] = { ...product, total, overall };
+  //   //   return { ...prevValues, products: updatedProducts };
+  //   // });
+  // };
 
 
   const onSupplierChange = (value) => {
@@ -236,8 +251,8 @@ const Challan = () => {
   };
 
 
-  // console.log(formik.values, "values")
-  console.log("challan: ", challansData)
+  console.log(formik.values, "values")
+  // console.log("challan: ", challansData)
 
   return (
     <>
@@ -389,7 +404,7 @@ const Challan = () => {
                             </div>
                             <div className="img-form flex flex-col gap-5">
                               <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
-                              <div className='grid grid-cols-2 gap-5' >
+                              <div className='grid grid-cols-2 gap-5 w-full' >
                                 <Autocomplete
                                   classNames={{
                                     base: "max-w-full border-[#fff] ",
@@ -557,6 +572,19 @@ const Challan = () => {
                                   )}
                                 </Autocomplete>
                               </div>
+                              <Input
+                                classNames={{
+                                  label: "font-[600] font-font1",
+                                  input: "font-[500] font-font1",
+                                }}
+                                labelPlacement="outside"
+                                label="Product Qty"
+                                type="number"
+                                placeholder="0"
+                                value={qty}
+                                className='max-w-[18rem] m-auto'
+                                onChange={(e) => setqty(e.target.value)}
+                              />
                               <Button
                                 // isLoading={loading}
                                 className="font-font1 max-w-[13rem] w-full m-auto text-[#fff] bg-[#000] font-medium "
@@ -595,14 +623,7 @@ const Challan = () => {
                                         {cutData.find(product => product._id === object.cut)?.name}
                                       </TableCell>
                                       <TableCell>
-                                        <Input
-                                          type="number"
-                                          placeholder="0"
-                                          labelPlacement="outside"
-                                          className='max-w-[5rem] m-auto'
-                                          value={object.qty}
-                                          onChange={(e) => handleQtyChange(index, e.target.value)}
-                                        />
+                                        {object.qty}
                                       </TableCell>
                                       <TableCell>
                                         {object.total}
