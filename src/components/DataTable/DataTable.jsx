@@ -99,19 +99,19 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
                         avatarProps={{ radius: "lg", src: "" }}
                         name={cellValue}
                     >
-                        {user.productName}
+                        {user.productName || "NA"}
                     </User>
                 );
             case "supplierName":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.supplierName?.name}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.supplierName?.name || "NA"}</p>
                     </div>
                 );
             case "category":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.category?.name}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.category?.name || "NA"}</p>
                     </div>
                 );
             case "status":

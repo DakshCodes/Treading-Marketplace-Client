@@ -19,6 +19,7 @@ import { weaveDataState } from "../../store/weave/weaveAtom"
 import { widthDataState } from "../../store/width/widthAtom"
 import { productsDataState } from '../../store/product/productAtom';
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { unitDataState } from '../../store/unit/unitAtom';
 
 const ProductPageForm = () => {
     const params = useParams();
@@ -65,7 +66,10 @@ const ProductPageForm = () => {
                 width: singleProductData?.width?._id || "5f478f5bc34b9a001f6a8b3d",
                 finishtype: singleProductData?.finishtype?._id || "5f478f5bc34b9a001f6a8b3d", // Assuming finishtype is an object with a name property
                 feeltype: singleProductData?.feeltype?._id || "5f478f5bc34b9a001f6a8b3d",
-                pricePerPiece : singleProductData?.pricePerPiece || "5f478f5bc34b9a001f6a8b3d",
+                pricePerUnit: {
+                    magnitude: singleProductData?.pricePerUnit?.magnitude || null,
+                    unit: singleProductData?.pricePerUnit?.unit || null,
+                },
             });
 
 
@@ -87,11 +91,11 @@ const ProductPageForm = () => {
         formik.setValues({
             ...formik.values,
             category: value,
-            quality: "",
-            design: "",
-            width: "",
-            finishtype: "",
-            feeltype: "",
+            quality: "5f478f5bc34b9a001f6a8b3d",
+            design: "5f478f5bc34b9a001f6a8b3d",
+            width: "5f478f5bc34b9a001f6a8b3d",
+            finishtype: "5f478f5bc34b9a001f6a8b3d",
+            feeltype: "5f478f5bc34b9a001f6a8b3d",
         });
     };
 
@@ -136,16 +140,19 @@ const ProductPageForm = () => {
     // Formik configuration
     const formik = useFormik({
         initialValues: {
-            supplierName: "",
+            supplierName: "5f478f5bc34b9a001f6a8b3d",
             productName: "",
-            category: "",
-            quality: "",
-            design: "",
-            weave: "",
-            width: "",
-            finishtype: "",
-            feeltype: "",
-            pricePerPiece: null,
+            category: "5f478f5bc34b9a001f6a8b3d",
+            quality: "5f478f5bc34b9a001f6a8b3d",
+            design: "5f478f5bc34b9a001f6a8b3d",
+            weave: "5f478f5bc34b9a001f6a8b3d",
+            width: "5f478f5bc34b9a001f6a8b3d",
+            finishtype: "5f478f5bc34b9a001f6a8b3d",
+            feeltype: "5f478f5bc34b9a001f6a8b3d",
+            pricePerUnit: {
+                magnitude: null,
+                unit: null
+            },
         },
         validate: (values) => {
             const errors = {};
@@ -185,8 +192,8 @@ const ProductPageForm = () => {
             if (!values.width) {
                 errors.width = "Width is required";
             }
-            if (!values.pricePerPiece) {
-                errors.width = "Price Per Piece is required";
+            if (!values.pricePerUnit || values.pricePerUnit.magnitude === null || values.pricePerUnit.unit === null) {
+                errors.pricePerUnit = "Both Magnitude and Unit are required for Price Per Unit";
             }
 
 
@@ -197,6 +204,7 @@ const ProductPageForm = () => {
         onSubmit: async (values) => {
             // Handle form submission logic here
             console.log(values);
+            // return;
             try {
                 // dispatch(SetLoader(true));
                 let response = null;
@@ -227,6 +235,9 @@ const ProductPageForm = () => {
             }
         },
     });
+
+    const units = useRecoilValue(unitDataState);
+
 
     console.log(formik.values);
 
@@ -392,8 +403,30 @@ const ProductPageForm = () => {
                                     </div>
                                     {/* Input for Prce Per piece */}
                                     <div className='flex flex-col items-start gap-2'>
+                                        <div className='flex gap-2 h-full items-center'>
+                                            Rs.
+                                            <input
+                                                type="number"
+                                                value={formik.values?.pricePerUnit?.magnitude}
+                                                onChange={(e) => formik.setFieldValue('pricePerUnit.magnitude', e.target.value)}
+                                                onBlur={formik.handleBlur}
+                                                id="pricePerUnit"
+                                                name="pricePerUnit"
+                                                className='border h-full outline-none w-[180px] px-2'
+                                                placeholder='Price per Piece'
+                                            />
+                                            /
+                                            <div>
+                                                <AutoComplete
+                                                    placeholder={"Unit"}
+                                                    users={units}
+                                                    values={formik.values?.pricePerUnit?.unit}
+                                                    selectionChange={(value) => formik.setFieldValue('pricePerUnit.unit', value)}
+                                                />
 
-                                        <Input
+                                            </div>
+                                        </div>
+                                        {/* <Input
                                             type="number"
                                             placeholder="Price Per Piece (in rs.)"
                                             labelPlacement="outside"
@@ -409,9 +442,11 @@ const ProductPageForm = () => {
                                             value={formik.values.pricePerPiece}
                                             onChange={formik.handleChange}
                                             onBlur={formik.handleBlur}
-                                        />
-                                        {formik.touched.pricePerPiece && formik.errors.pricePerPiece ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.pricePerPiece}</div>
+                                        /> */}
+                                        {formik.touched.pricePerUnit && formik.errors.pricePerUnit ? (
+                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">
+                                                *{formik.errors.pricePerUnit}
+                                            </div>
                                         ) : null}
                                     </div>
                                 </div>
