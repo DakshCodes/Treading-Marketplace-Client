@@ -2,6 +2,7 @@ import axios from "axios"
 
 export const Createcut = async (payload) => {
     try {
+        console.log(payload,'pppppppppppppppppppppp')
         const response = await axios.post(`http://localhost:5000/api/cut/create-cut`, payload);
         return response.data;
 

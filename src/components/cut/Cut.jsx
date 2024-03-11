@@ -19,6 +19,8 @@ const Cut = () => {
     const [updateId, setUpdateId] = useState(null)
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
     const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+    
     
 
     // Data Format
@@ -43,11 +45,12 @@ const Cut = () => {
     // Create The width
     const createcut = async (values) => {
         try {
-            formik.resetForm()
-            values.ref = refcat;
 
+            values.ref = refcat;
             setIsLoading(true)
             const response = await Createcut(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
@@ -56,7 +59,7 @@ const Cut = () => {
                 setcutData([...cutData, response.cutDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
-                formik.setValues(values)
+            
 
             } else {
                 throw new Error(response.message);
@@ -97,17 +100,15 @@ const Cut = () => {
         }
     }
 
-    // Update The cut
-    // Set function
-
     const updateFormWithCutData = (cutId, updatedCutData) => {
         const cutDataexist = updatedCutData.find((element) => element._id === cutId);
         console.log(cutDataexist, updatedCutData, 'existssssssssssssssssssssss');
+        setrefcat(()=>(cutDataexist?.ref))
         formik.setValues({
           name: cutDataexist?.name,
           verified: cutDataexist?.verified,
           isNameNumerical: cutDataexist?.isNameNumerical,
-          ref: cutDataexist?.ref,
+        //   ref: cutDataexist?.ref,
         });
       };
       
@@ -116,22 +117,25 @@ const Cut = () => {
       // Use updateFormWithCutData in the useEffect
       useEffect(() => {
         updateFormWithCutData(updateId, cutData);
-      }, [cutData, updateId]);
+        setUpdated(false);
+      }, [updated]);
       
       // ...
       
       // Call updateFormWithCutData wherever needed
       const handleUpdate = (cutId) => {
         try {
+          setUpdated(true)
           updateFormWithCutData(cutId, cutData);
+          
           setUpdateId(cutId)
             onOpen();
+
         } catch (error) {
           console.error("Error updating cut:", error.message);
           toast.error(error.message);
         }
       };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
@@ -152,7 +156,9 @@ const Cut = () => {
                 
                 return updatedcuts;
             })
-
+            formik.resetForm();
+            // setUpdated(true)
+            console.log(updated,'updateddddddddddddddddddddddddd')
 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
@@ -187,7 +193,8 @@ const Cut = () => {
         },
     });
 const setUpdate = ()=>{
-    setUpdateId(false)  
+    setUpdateId(false)
+    // formik.resetForm();  
 }
     return (
         <>
@@ -302,7 +309,7 @@ const setUpdate = ()=>{
                                                 Verified
                                                 <div className="relative inline-block">
                                                     <input
-                                                        onChange={formik.handleChange}
+                                                        onChange={(e) => formik.handleChange(e)}
                                                         name="verified" // Associate the input with the form field 'verified'
                                                         checked={formik.values.verified} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
@@ -315,7 +322,7 @@ const setUpdate = ()=>{
                                                 isNameNumercal
                                                 <div className="relative inline-block">
                                                     <input
-                                                        onChange={formik.handleChange}
+                                                        onChange={(e) => formik.handleChange(e)}
                                                         name="isNameNumerical" // Associate the input with the form field 'experienced'
                                                         checked={formik.values.isNameNumerical} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
