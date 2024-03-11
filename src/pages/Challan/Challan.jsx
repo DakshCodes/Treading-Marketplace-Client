@@ -5,10 +5,12 @@ import { useFormik } from 'formik'
 import { Createchallan, Deletechallan, Updatechallan } from '../../apis/challan';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilState } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { challanDataState } from '../../store/challan/challan';
 import { productsDataState } from '../../store/product/productAtom';
+import { useRecoilValue } from 'recoil';
+import { getProductById } from '../../store/product/productAtom';
 import { cutDataState } from '../../store/cut/cutAtom';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
 
@@ -19,14 +21,20 @@ const Challan = () => {
   const [updateId, setUpdateId] = useState(null)
   const [productref, setproductref] = useState(null)
   const [supplierRef, setsupplierRef] = useState(null)
+  const [customerRef, setcustomerRef] = useState(null)
   const [qty, setqty] = useState(null)
+  const [qtyType, setqtyType] = useState(null)
   const [cutref, setcutref] = useState(null)
 
   const [challansData, setChallansData] = useRecoilState(challanDataState)
+  const [challanNumber, setchallanNumber] = useState("")
 
   const [productsData, setProductsData] = useRecoilState(productsDataState)
 
+  // const products = useRecoilValue(getProductById(supplierRef));
+
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
+
 
   const [cutData, setcutData] = useRecoilState(cutDataState)
   // console.log(suppliersData || [])
@@ -34,8 +42,11 @@ const Challan = () => {
   // Data Format
   const columns = [
     { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "name", sortable: true },
+    { name: "CHALLAN NO.", uid: "challanNo", sortable: true },
     { name: "TYPE", uid: "type", sortable: true },
+    { name: "CUSTOMER", uid: "customer", sortable: true },
+    { name: "SUPPLIER", uid: "supplier", sortable: true },
+    { name: "PRODUCTS", uid: "products", sortable: true },
     { name: "VERIFIED", uid: "verified", sortable: true },
     { name: "ACTIONS", uid: "actions" },
   ];
@@ -45,7 +56,7 @@ const Challan = () => {
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["name", "type", "verified", "experienced", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["challanNo", "customer", "type", "supplier", "products", "verified", "actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
@@ -137,19 +148,22 @@ const Challan = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: '',
+      challanNo: '',
+      customer: '',
       type: 'supplier',
       supplier: '',
       products: [],
-      verified: false,
+      verified: true,
     },
     onSubmit: async values => {
       if (updateId) {
         setIsLoading(true)
         await handleUpdateSubmit(values);
         setIsLoading(false)
-
       } else {
+        console.log(challanNumber)
+        values.challanNo = challanNumber;
+        console.log(values, "going")
         setIsLoading(true)
         await creatsupplier(values);
         setIsLoading(false)
@@ -164,7 +178,8 @@ const Challan = () => {
       console.log(mySupplierData, "exist");
 
       formik.setValues({
-        name: mySupplierData?.name,
+        customer: mySupplierData?.customer,
+        challanNo: mySupplierData?.challanNo,
         products: mySupplierData?.products.map((product) => ({
           cut: product.cut,
           overall: product.overall,
@@ -178,6 +193,8 @@ const Challan = () => {
         verified: mySupplierData?.verified,
       });
 
+      // setchallanNumber(mySupplierData?.challanNo)
+
       setUpdateId(supplierId);
       onOpen(); // Open the modal
     } catch (error) {
@@ -186,7 +203,7 @@ const Challan = () => {
     }
   };
 
-  console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
+  // console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable = () => {
     if (productref && cutref) {
@@ -196,15 +213,11 @@ const Challan = () => {
       if (cutvalue?.isNameNumerical) {
         cut = parseFloat(cutvalue?.name);
       }
-      console.log(pricePerPiece)
       const price = parseFloat(pricePerPiece);
       const total = isNaN(cut) ? 0 : parseFloat(qty) * cut;
       const overall = isNaN(price) ? 0 : total * price;
-      
-      console.log(total)
-      console.log(price)
-      console.log(overall)
-      const newProduct = { product: productref, cut: cutref, qty: qty, total: total, price: pricePerPiece || "0", overall: overall };
+
+      const newProduct = { product: productref, cut: cutref, qty: qty , total: total, price: pricePerPiece || 0, overall: overall };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -241,6 +254,12 @@ const Challan = () => {
       return { ...prevValues, supplier: value };
     });
   };
+  const onCustomerChange = (value) => {
+    setcustomerRef(value)
+    formik.setValues((prevValues) => {
+      return { ...prevValues, customer: value };
+    });
+  };
 
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
@@ -251,8 +270,21 @@ const Challan = () => {
   };
 
 
+  useEffect(() => {
+    const generateRandomChar = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return chars.charAt(Math.floor(Math.random() * chars.length));
+    };
+
+    const newChallanNumber = Array.from({ length: 10 }, generateRandomChar).join('');
+    setchallanNumber(newChallanNumber);
+  }, [onOpenChange]);
+
+
   console.log(formik.values, "values")
-  // console.log("challan: ", challansData)
+  // console.log("product: ", productsData)
+  // console.log("data ", challansData)
+  // console.log("cut: ", cutData)
 
   return (
     <>
@@ -291,116 +323,196 @@ const Challan = () => {
                             // title={(slider?.viewall === "Products") ? "You Can Only Create One" : "Categories"}4
                             title="Supplier"
                           >
-                            <div className='flex flex-col gap-10'>
+                            <div className='flex  gap-5 mt-5 flex-col'>
                               <Input size={'md'}
                                 classNames={{
                                   label: "font-[600] font-font1",
                                   input: "font-[500] font-font1",
                                 }}
-                                className="flex-grow max-w-[18rem]"
+                                className="flex-grow max-w-[18rem] bg-[#000]"
                                 labelPlacement="outside"
-                                type="text" label="Challan Name"
-                                placeholder='Name'
-                                {...formik.getFieldProps("name")}
-                                value={formik?.values?.name}
+                                type="text" label="Challan No."
+                                placeholder={formik.values.challanNo && formik.values.challanNo || "Generate after Creation "}
+                                disabled={true}
+                                // value={challanNumber}
                                 variant="flat"
                               />
-                              <Autocomplete
-                                classNames={{
-                                  base: "max-w-[18rem] border-[#fff] ",
-                                  listboxWrapper: "max-h-[270px]",
-                                  selectorButton: "text-[#000]",
-                                }}
+                              <div className='flex items-center gap-10 mt-5'>
+                                <Autocomplete
+                                  labelPlacement="outside"
+                                  label="Customer Name"
+                                  classNames={{
+                                    base: "max-w-[18rem] border-[#fff] ",
 
-                                onSelectionChange={onSupplierChange}
-                                value={formik?.values?.supplier}
-                                defaultItems={suppliersData}
-                                selectedKey={formik?.values?.supplier}
-                                inputProps={{
-                                  classNames: {
-                                    input: "ml-1 text-[#000] font-font1",
-                                    inputWrapper: "h-[20px]",
-                                    label: "text-[#000]",
-                                  },
-                                }}
-                                listboxProps={{
-                                  hideSelectedIcon: true,
-                                  itemClasses: {
-                                    base: [
-                                      "rounded-medium",
-                                      "text-[#000]",
-                                      "transition-opacity",
-                                      "data-[hover=true]:text-foreground",
-                                      "dark:data-[hover=true]:bg-default-50",
-                                      "data-[pressed=true]:opacity-70",
-                                      "data-[hover=true]:bg-default-200",
-                                      "data-[selectable=true]:focus:bg-default-100",
-                                      "data-[focus-visible=true]:ring-default-500",
-                                    ],
-                                  },
-                                }}
-                                aria-label="Select an Supplier"
-                                placeholder="Enter an Supplier"
-                                popoverProps={{
-                                  offset: 10,
-                                  classNames: {
-                                    base: "rounded-large",
-                                    content: "p-1  border-none bg-background",
+                                    listboxWrapper: "max-h-[270px]",
+                                    selectorButton: "text-[#000]",
+                                  }}
 
-                                  },
-                                }}
-                                startContent={<svg
-                                  aria-hidden="true"
-                                  fill="none"
-                                  focusable="false"
-                                  height={20}
-                                  role="presentation"
-                                  viewBox="0 0 24 24"
-                                  width={20}
-                                  color={"#000"}
+                                  onSelectionChange={onCustomerChange}
+                                  value={formik?.values?.customer}
+                                  defaultItems={suppliersData}
+                                  selectedKey={formik?.values?.customer}
+                                  inputProps={{
+                                    classNames: {
+                                      input: "ml-1 text-[#000] font-font1",
+                                      inputWrapper: "h-[20px]",
+                                      label: "font-[600] font-font1",
+                                    },
+                                  }}
+                                  listboxProps={{
+                                    hideSelectedIcon: true,
+                                    itemClasses: {
+                                      base: [
+                                        "rounded-medium",
+                                        "text-[#000]",
+                                        "transition-opacity",
+                                        "data-[hover=true]:text-foreground",
+                                        "dark:data-[hover=true]:bg-default-50",
+                                        "data-[pressed=true]:opacity-70",
+                                        "data-[hover=true]:bg-default-200",
+                                        "data-[selectable=true]:focus:bg-default-100",
+                                        "data-[focus-visible=true]:ring-default-500",
+                                      ],
+                                    },
+                                  }}
+                                  aria-label="Select an Customer "
+                                  placeholder="Enter an Customer "
+                                  popoverProps={{
+                                    offset: 10,
+                                    classNames: {
+                                      base: "rounded-large",
+                                      content: "p-1  border-none bg-background",
+
+                                    },
+                                  }}
+                                  startContent={<svg
+                                    aria-hidden="true"
+                                    fill="none"
+                                    focusable="false"
+                                    height={20}
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                    width={20}
+                                    color={"#000"}
+                                  >
+                                    <path
+                                      d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                    <path
+                                      d="M22 22L20 20"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                  </svg>}
+
+                                  variant="flat"
                                 >
-                                  <path
-                                    d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                  />
-                                  <path
-                                    d="M22 22L20 20"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                  />
-                                </svg>}
-                                variant="flat"
-                              >
-                                {(item) => (
-                                  <AutocompleteItem key={item?._id} textValue={item?.name}>
-                                    <div className="flex justify-between items-center">
-                                      <div className="flex gap-2 items-center">
-                                        <div className="flex flex-col">
-                                          <span className="text-small">{item?.name}</span>
+                                  {(item) => (
+                                    <AutocompleteItem key={item?._id} textValue={item?.name}>
+                                      <div className="flex justify-between items-center">
+                                        <div className="flex gap-2 items-center">
+                                          <div className="flex flex-col">
+                                            <span className="text-small">{item?.name}</span>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </AutocompleteItem>
-                                )}
-                              </Autocomplete>
-                              <label className="flex cursor-pointer items-center justify-start p-1 text-[#000] gap-4 font-font1 ">
-                                Verified
-                                <div className="relative inline-block">
-                                  <input
-                                    onChange={formik.handleChange}
-                                    name="verified" // Associate the input with the form field 'verified'
-                                    checked={formik?.values?.verified} // Set the checked state from formik values
-                                    className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                    type="checkbox"
-                                  />
-                                  <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                </div>
-                              </label>
+                                    </AutocompleteItem>
+                                  )}
+                                </Autocomplete>
+                                <Autocomplete
+                                  labelPlacement="outside"
+                                  label="Supplier Name"
+                                  classNames={{
+                                    base: "max-w-[18rem] border-[#fff] ",
+
+                                    listboxWrapper: "max-h-[270px]",
+                                    selectorButton: "text-[#000]",
+                                  }}
+
+                                  onSelectionChange={onSupplierChange}
+                                  value={formik?.values?.supplier}
+                                  defaultItems={suppliersData}
+                                  selectedKey={formik?.values?.supplier}
+                                  inputProps={{
+                                    classNames: {
+                                      input: "ml-1 text-[#000] font-font1",
+                                      inputWrapper: "h-[20px]",
+                                      label: "font-[600] font-font1",
+                                    },
+                                  }}
+                                  listboxProps={{
+                                    hideSelectedIcon: true,
+                                    itemClasses: {
+                                      base: [
+                                        "rounded-medium",
+                                        "text-[#000]",
+                                        "transition-opacity",
+                                        "data-[hover=true]:text-foreground",
+                                        "dark:data-[hover=true]:bg-default-50",
+                                        "data-[pressed=true]:opacity-70",
+                                        "data-[hover=true]:bg-default-200",
+                                        "data-[selectable=true]:focus:bg-default-100",
+                                        "data-[focus-visible=true]:ring-default-500",
+                                      ],
+                                    },
+                                  }}
+                                  aria-label="Select an Supplier"
+                                  placeholder="Enter an Supplier"
+                                  popoverProps={{
+                                    offset: 10,
+                                    classNames: {
+                                      base: "rounded-large",
+                                      content: "p-1  border-none bg-background",
+
+                                    },
+                                  }}
+                                  startContent={<svg
+                                    aria-hidden="true"
+                                    fill="none"
+                                    focusable="false"
+                                    height={20}
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                    width={20}
+                                    color={"#000"}
+                                  >
+                                    <path
+                                      d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                    <path
+                                      d="M22 22L20 20"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                  </svg>}
+
+                                  variant="flat"
+                                >
+                                  {(item) => (
+                                    <AutocompleteItem key={item?._id} textValue={item?.name}>
+                                      <div className="flex justify-between items-center">
+                                        <div className="flex gap-2 items-center">
+                                          <div className="flex flex-col">
+                                            <span className="text-small">{item?.name}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </AutocompleteItem>
+                                  )}
+                                </Autocomplete>
+                              </div>
                             </div>
                             <div className="img-form flex flex-col gap-5">
                               <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
@@ -414,7 +526,7 @@ const Challan = () => {
 
                                   onSelectionChange={setproductref}
                                   value={productref}
-                                  defaultItems={productsData}
+                                  items={(supplierRef && productsData?.filter(product => product?.supplierName?._id === supplierRef) || [])}
                                   selectedKey={productref}
                                   inputProps={{
                                     classNames: {
@@ -498,6 +610,7 @@ const Challan = () => {
                                   onSelectionChange={setcutref}
                                   value={cutref}
                                   defaultItems={cutData}
+                                  // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                   selectedKey={cutref}
                                   inputProps={{
                                     classNames: {
@@ -573,16 +686,30 @@ const Challan = () => {
                                 </Autocomplete>
                               </div>
                               <Input
+                                label="Product Qty"
                                 classNames={{
                                   label: "font-[600] font-font1",
                                   input: "font-[500] font-font1",
                                 }}
                                 labelPlacement="outside"
-                                label="Product Qty"
                                 type="number"
                                 placeholder="0"
                                 value={qty}
                                 className='max-w-[18rem] m-auto'
+                                endContent={
+                                  <div className="flex items-center">
+                                    <select
+                                      className="outline-none border-0 bg-transparent text-[#000] text-small"
+                                      id="currency"
+                                      name="currency"
+                                      onChange={(e) => setqtyType(e.target.value)}
+                                    >
+                                      <option>N/A</option>
+                                      <option>Meter</option>
+                                      <option>Pieces</option>
+                                    </select>
+                                  </div>
+                                }
                                 onChange={(e) => setqty(e.target.value)}
                               />
                               <Button

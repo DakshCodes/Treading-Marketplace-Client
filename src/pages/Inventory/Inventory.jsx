@@ -14,8 +14,34 @@ import Weave from '../../components/Weave/Weave';
 import Width from '../../components/Width/Width';
 import Unit from '../../components/unit/Unit';
 import Cut from '../../components/cut/Cut';
+import { productsDataState } from '../../store/product/productAtom';
+import { useRecoilValue } from 'recoil';
+import { suppliersDataState } from '../../store/supplier/supplierAtom';
+import { categoryDataState } from '../../store/category/category';
+import { qualityDataState } from '../../store/quality/qualityAtom';
+import { designDataState } from '../../store/design/designAtom';
+import { finishtypeDataState } from '../../store/finishtype/finishtypeAtom';
+import { feeltypeDataState } from '../../store/feeltype/feeltypeAtom';
+import { weaveDataState } from '../../store/weave/weaveAtom';
+import { widthDataState } from '../../store/width/widthAtom';
+import { unitDataState } from '../../store/unit/unitAtom';
+import { cutDataState } from '../../store/cut/cutAtom';
 
 const Inventory = () => {
+
+    const productsData = useRecoilValue(productsDataState);
+    const supplierData = useRecoilValue(suppliersDataState);
+    const categoryData = useRecoilValue(categoryDataState);
+    const qualityData = useRecoilValue(qualityDataState);
+    const designData = useRecoilValue(designDataState);
+    const finishData = useRecoilValue(finishtypeDataState);
+    const feelData = useRecoilValue(feeltypeDataState);
+    const weaveData = useRecoilValue(weaveDataState);
+    const widthData = useRecoilValue(widthDataState);
+    const unitData = useRecoilValue(unitDataState);
+    const cutData = useRecoilValue(cutDataState);
+
+
     return (
         <div className='inventory-main '>
             <div className="flex w-full flex-col mt-2">
@@ -36,7 +62,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilCube />
                                 <span>Products</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{productsData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -49,7 +75,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilUsersAlt />
                                 <span>Suppliers</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{supplierData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -62,7 +88,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilCreateDashboard />
                                 <span>Categories</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{categoryData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -75,7 +101,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilFilter />
                                 <span>Quality</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{qualityData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -88,7 +114,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilPalette />
                                 <span>Design</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{designData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -101,7 +127,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilCheckCircle />
                                 <span>Finsh-Type</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{finishData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -114,7 +140,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilLightbulbAlt />
                                 <span>Feel-Type</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{feelData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -127,7 +153,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilSlack />
                                 <span>Weave</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{weaveData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -140,7 +166,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                                 <UilArrowsHAlt  />
                                 <span>Width</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{widthData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -153,7 +179,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                               <UilRuler/>
                                 <span>Unit</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{unitData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "
@@ -166,7 +192,7 @@ const Inventory = () => {
                             <div className="flex items-center space-x-2 ">
                               <FaCut/>
                                 <span>Cut</span>
-                                <Chip size="sm" variant="faded">0</Chip>
+                                <Chip size="sm" variant="light">{cutData?.length}</Chip>
                             </div>
                         }
                         className="max-h-max px-5 "

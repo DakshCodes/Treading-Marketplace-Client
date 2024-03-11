@@ -19,6 +19,8 @@ import {
 import { UilAngleDown, UilPlus, UilEllipsisV } from '@iconscout/react-unicons'
 import { useNavigate } from "react-router-dom";
 import { capitalize } from "../../utils/capitalize";
+import { suppliersDataState } from "../../store/supplier/supplierAtom";
+import { useRecoilState } from "recoil";
 
 
 
@@ -40,6 +42,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
         direction: "ascending",
     });
     const [page, setPage] = React.useState(1);
+    const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
 
     const hasSearchFilter = Boolean(filterValue);
 
@@ -104,6 +107,18 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                         {user?.name}
                     </User>
                 );
+            case "supplier":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-900">{suppliersData.find(supplier => supplier?._id === user?.supplier)?.name}</p>
+                    </div>
+                );
+            case "products":
+                return (
+                    <div className="flex max-w-max ml-2 items-center ">
+                        <p className="text-bold text-tiny capitalize text-default-800">{user?.products?.length} Order</p>
+                    </div>
+                );
             case "brand":
                 return (
                     <div className="flex flex-col">
@@ -130,7 +145,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                 );
             case "actions":
                 return (
-                    <div className="relative flex justify-end items-center gap-2">
+                    <div className="relative flex  items-center gap-2 ">
                         <Dropdown className="bg-background border-1 border-default-200">
                             <DropdownTrigger>
                                 <Button isIconOnly radius="full" size="sm" variant="light">
@@ -146,7 +161,9 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                     </div>
                 );
             default:
-                return cellValue;
+                return <div className="flex max-w-max ml-2 items-center ">
+                    <p className="text-bold text-tiny capitalize text-default-800">{cellValue}</p>
+                </div>
         }
     }, []);
 

@@ -11,3 +11,17 @@ export const productsDataState = atom({
     }
   })
 })
+
+
+export const getProductById = selector({
+  key: "getProductById",
+  get: ({ get }) => {
+    const products = get(productsDataState);
+    return (id) => {
+      // Efficiently filter products using find or findIndex
+      const foundProduct = products.filter(product => product?.supplierName?._id === id);
+      return foundProduct;
+    };
+  }
+});
+

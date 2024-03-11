@@ -14,11 +14,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <NextUIProvider>
         <RecoilRoot>
           {/* <ErrorBoundary> */}
-            <React.Suspense fallback={<Loader />}>
-              <App />
-            </React.Suspense>
+          <React.Suspense fallback={<Loader />}>
+            <App />
+          </React.Suspense>
           {/* </ErrorBoundary> */}
-        </RecoilRoot>
+        </RecoilRoot>,
       </NextUIProvider>
     </BrowserRouter>
   </React.StrictMode >,

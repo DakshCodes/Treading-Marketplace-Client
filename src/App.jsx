@@ -16,7 +16,7 @@ import Challan from './pages/Challan/Challan';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
-  { path: '/challan', element: <Challan /> },
+  { path: '/challan', element: <div className='px-5'><Challan /></div> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
