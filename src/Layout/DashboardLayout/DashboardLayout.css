@@ -5,5 +5,5 @@
     overflow: auto;
     transition: var(--tran-05);
     padding-top: 60px;
-    overflow: hidden;
+    overflow: scroll;
 }

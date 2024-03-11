@@ -37,15 +37,7 @@ export const GetCurrentUser = async () => {
 
 
 
-export const UploadImage = async(payload) =>{
-  try {
-      const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/product/upload`,payload);
-      return response.data;
-      
-  } catch (error) {
-      return error.message;
-  }
-}
+
 export const UploadProfileImage = async(payload) =>{
   try {
       const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/uploadprofileimage`,payload);

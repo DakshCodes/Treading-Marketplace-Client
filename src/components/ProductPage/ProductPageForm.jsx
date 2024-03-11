@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import './ProductForm.css'
 import { useNavigate, useParams } from 'react-router-dom';
-import { Input } from "@nextui-org/react";
+import { Button, Input } from "@nextui-org/react";
 import { toast } from 'react-hot-toast';
 import AutoComplete from '../Autocomplete/AutoComplete';
 import { useFormik } from 'formik';
 import * as z from 'zod';
-import { CreateProduct, UpdateProduct } from '../../apis/product';
+import { CreateProduct, UpdateProduct, UploadImage } from '../../apis/product';
 // import Arrowsvg from "../../assets/arrow.svg"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { suppliersDataState } from "../../store/supplier/supplierAtom"
@@ -41,9 +41,45 @@ const ProductPageForm = () => {
 
     console.table(widthData)
 
+    const [productChartImage, setProductChartImage] = useState('');
+    const [productChartImageData, setProductChartImageData] = useState([{}]);
+
 
     const setProductsData = useSetRecoilState(productsDataState);
     const productsData = useRecoilValue(productsDataState);
+
+    const handleProductChartImageChange = (e) => {
+        setProductChartImage(e.target.files[0]);
+        console.log(e.target.files[0])
+    };
+    const uploadImage = async (e) => {
+        try {
+            const formData = new FormData();
+            let imageFile = productChartImage;
+            console.log("inside productChartImage")
+
+
+            if (imageFile) {
+                formData.append("color-chart-product", imageFile);
+                const response = await UploadImage(formData);
+
+                if (response.success) {
+                    toast.success(response.message);
+                    const newImageLink = response.url;
+                    setProductChartImageData((prevImages) => [...prevImages, { src: newImageLink }]);
+                    setProductChartImage('');
+                } else {
+                    toast.error(response.message);
+                }
+            } else {
+                toast.error('Please select an image file.');
+            }
+
+        } catch (error) {
+            toast.error(error.message);
+            console.log(error.message);
+        }
+    };
 
     // Function to filter items based on selected category and reference field
     const getFilteredItems = (items, selectedCategory) => {
@@ -99,6 +135,10 @@ const ProductPageForm = () => {
         });
     };
 
+    React.useEffect(() => {
+        formik.setFieldValue("productColorChartData", productChartImageData)
+
+    }, [productChartImageData])
 
     const users = [
         {
@@ -153,6 +193,7 @@ const ProductPageForm = () => {
                 magnitude: null,
                 unit: null
             },
+            productColorChartData: []
         },
         validate: (values) => {
             const errors = {};
@@ -203,7 +244,9 @@ const ProductPageForm = () => {
         },
         onSubmit: async (values) => {
             // Handle form submission logic here
-            console.log(values);
+            console.log(productChartImageData)
+
+            console.log(values,"+++++++++++++++");
             // return;
             try {
                 // dispatch(SetLoader(true));
@@ -235,6 +278,7 @@ const ProductPageForm = () => {
             }
         },
     });
+
 
     const units = useRecoilValue(unitDataState);
 
@@ -285,6 +329,7 @@ const ProductPageForm = () => {
                                     More Details about product
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z" /></svg>
                                 </div>
+                                {/* select form for category , width , feel type etc */}
                                 <div className="grid grid-cols-1  md:grid-cols-3 gap-6 w-full   ">
 
 
@@ -448,6 +493,45 @@ const ProductPageForm = () => {
                                                 *{formik.errors.pricePerUnit}
                                             </div>
                                         ) : null}
+                                    </div>
+                                </div>
+                                <div className='mt-12 hidden mb-4 gap-2 font-bold border-b border-black pb-2 border-dashed  text-base font-sans'>
+                                    Product Color Chart
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z" /></svg>
+                                </div>
+
+                                <div className=' hidden'>
+                                    <div className='grid grid-cols-6 gap-8'>
+                                        <input
+                                            type="file"
+                                            onChange={(e) => handleProductChartImageChange(e)}
+                                            className="hidden"
+                                            id="bannerImageInput"
+                                            name="banner_image"
+                                        />
+                                        <div className='flex gap-2 col-span-5'>
+
+                                            <label htmlFor="bannerImageInput" className="font-semibold flex items-center justify-center text-center w-full h-full rounded-lg border border-black cursor-pointer">
+                                                Select  Image ({productChartImage?.name})
+                                            </label>
+
+                                            {/* {mainImage?.name} */}
+                                        </div>
+
+                                        <div className='flex gap-2'>
+
+                                            {
+
+                                                <div className='col-span-1 flex items-center justify-center'>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 48 48">
+                                                        <path fill="#4caf50" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#ccff90" d="M34.602,14.602L21,28.199l-5.602-5.598l-2.797,2.797L21,33.801l16.398-16.402L34.602,14.602z"></path>
+                                                    </svg>
+                                                </div>
+                                            }
+                                            <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
+                                                Upload
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

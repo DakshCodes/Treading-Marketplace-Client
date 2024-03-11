@@ -20,6 +20,16 @@ export const GetAllProducts = async () => {
     }
 };
 
+export const UploadImage = async (payload) => {
+    try {
+        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/products/upload-product-chart`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+}
+
 export const GetProductById = async (id) => {
     try {
         const response = await axios.get(`${import.meta.env.VITE_SERVER}/api/products/get-product-by-id/${id}`);
