@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../../components/DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea } from "@nextui-org/react";
 import { useFormik } from 'formik'
 import { Createchallan, Deletechallan, Updatechallan } from '../../apis/challan';
 import { toast } from 'react-hot-toast';
@@ -13,6 +13,8 @@ import { useRecoilValue } from 'recoil';
 import { getProductById } from '../../store/product/productAtom';
 import { cutDataState } from '../../store/cut/cutAtom';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
+import AutoComplete from '../../components/Autocomplete/AutoComplete';
+import { unitDataState } from '../../store/unit/unitAtom';
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -23,6 +25,8 @@ const Challan = () => {
   const [supplierRef, setsupplierRef] = useState(null)
   const [customerRef, setcustomerRef] = useState(null)
   const [qty, setqty] = useState(null)
+  const [remark, setRemark] = useState("")
+  const [unit, setUnit] = useState("")
   const [qtyType, setqtyType] = useState(null)
   const [cutref, setcutref] = useState(null)
 
@@ -37,6 +41,8 @@ const Challan = () => {
 
 
   const [cutData, setcutData] = useRecoilState(cutDataState)
+
+  const units = useRecoilValue(unitDataState);
   // console.log(suppliersData || [])
 
   // Data Format
@@ -149,6 +155,7 @@ const Challan = () => {
   const formik = useFormik({
     initialValues: {
       challanNo: '',
+      remarkDesc: '',
       customer: '',
       type: 'supplier',
       supplier: '',
@@ -158,11 +165,12 @@ const Challan = () => {
     onSubmit: async values => {
       if (updateId) {
         setIsLoading(true)
+        values.remarkDesc = remark;
         await handleUpdateSubmit(values);
         setIsLoading(false)
       } else {
-        console.log(challanNumber)
         values.challanNo = challanNumber;
+        values.remarkDesc = remark;
         console.log(values, "going")
         setIsLoading(true)
         await creatsupplier(values);
@@ -180,11 +188,13 @@ const Challan = () => {
       formik.setValues({
         customer: mySupplierData?.customer,
         challanNo: mySupplierData?.challanNo,
+        remarkDesc: mySupplierData?.remarkDesc,
         products: mySupplierData?.products.map((product) => ({
           cut: product.cut,
           overall: product.overall,
           price: product.price,
           product: product.product,
+          unit: product.unit,
           qty: product.qty,
           total: product.total,
         })),
@@ -192,6 +202,8 @@ const Challan = () => {
         type: mySupplierData?.type,
         verified: mySupplierData?.verified,
       });
+
+      setRemark(mySupplierData?.remarkDesc)
 
       // setchallanNumber(mySupplierData?.challanNo)
 
@@ -217,7 +229,7 @@ const Challan = () => {
       const total = isNaN(cut) ? 0 : parseFloat(qty) * cut;
       const overall = isNaN(price) ? 0 : total * price;
 
-      const newProduct = { product: productref, cut: cutref, qty: qty , total: total, price: pricePerPiece || 0, overall: overall };
+      const newProduct = { product: productref, cut: cutref, qty: qty, unit: unit, total: total, price: pricePerPiece || 0, overall: overall };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -225,6 +237,8 @@ const Challan = () => {
       setproductref("")
       setcutref("")
       setqty("")
+    }else{
+      toast.error("Please select all fields");
     }
   };
 
@@ -297,6 +311,7 @@ const Challan = () => {
             onOpenChange(newState);
             if (!newState) {
               formik.resetForm();
+              setRemark("");
             }
           }}
         >
@@ -513,6 +528,15 @@ const Challan = () => {
                                   )}
                                 </Autocomplete>
                               </div>
+                              <Textarea
+                                variant="underlined"
+                                label="Remarks"
+                                labelPlacement="outside"
+                                placeholder="Enter your remarks"
+                                className="col-span-12 md:col-span-6 mb-6 md:mb-0 mt-5 font-[600] font-font1"
+                                value={remark}
+                                onValueChange={setRemark}
+                              />
                             </div>
                             <div className="img-form flex flex-col gap-5">
                               <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
@@ -685,33 +709,26 @@ const Challan = () => {
                                   )}
                                 </Autocomplete>
                               </div>
-                              <Input
-                                label="Product Qty"
-                                classNames={{
-                                  label: "font-[600] font-font1",
-                                  input: "font-[500] font-font1",
-                                }}
-                                labelPlacement="outside"
-                                type="number"
-                                placeholder="0"
-                                value={qty}
-                                className='max-w-[18rem] m-auto'
-                                endContent={
-                                  <div className="flex items-center">
-                                    <select
-                                      className="outline-none border-0 bg-transparent text-[#000] text-small"
-                                      id="currency"
-                                      name="currency"
-                                      onChange={(e) => setqtyType(e.target.value)}
-                                    >
-                                      <option>N/A</option>
-                                      <option>Meter</option>
-                                      <option>Pieces</option>
-                                    </select>
-                                  </div>
-                                }
-                                onChange={(e) => setqty(e.target.value)}
-                              />
+                              <div className='flex items-end justify-center gap-4 mt-4'>
+                                <Input
+                                  label="Product Qty"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  placeholder="0"
+                                  value={qty}
+                                  className='max-w-[18rem]'
+                                  onChange={(e) => setqty(e.target.value)}
+                                />
+                                <AutoComplete
+                                  placeholder={"Unit"}
+                                  users={units}
+                                  selectionChange={(value) => setUnit(value)}
+                                />
+                              </div>
                               <Button
                                 // isLoading={loading}
                                 className="font-font1 max-w-[13rem] w-full m-auto text-[#fff] bg-[#000] font-medium "
@@ -735,6 +752,7 @@ const Challan = () => {
                                 <TableColumn>CUT</TableColumn>
                                 <TableColumn>QTY</TableColumn>
                                 <TableColumn>TOTAL</TableColumn>
+                                <TableColumn>UNIT</TableColumn>
                                 <TableColumn>PRICE</TableColumn>
                                 <TableColumn>OVERALL</TableColumn>
                                 <TableColumn>ACTIONS</TableColumn>
@@ -754,6 +772,9 @@ const Challan = () => {
                                       </TableCell>
                                       <TableCell>
                                         {object.total}
+                                      </TableCell>
+                                      <TableCell>
+                                        {object.unit}
                                       </TableCell>
                                       <TableCell>
                                         {object.price}

@@ -12,14 +12,14 @@ const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
                 onSelectionChange={selectionChange}
                 classNames={{
                     base: " border border- bg-transparent",
-                    listboxWrapper: "max-h-[300px]",
+                    listboxWrapper: "max-h-[70px]",
                     selectorButton: "text-default-500",
                 }}
                 defaultItems={updatedUsers}
                 inputProps={{
                     classNames: {
-                        input: "text-[1rem] ",
-                        inputWrapper: " bg-[#fff] font-font1 h-[48px] max-w-full ",
+                        input: "text-[0.9rem] ",
+                        inputWrapper: " bg-[#fff] font-font1 h-[40px] max-w-full ",
                     },
                 }}
                 listboxProps={{
@@ -36,7 +36,7 @@ const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
                     offset: 10,
                     classNames: {
                         base: "",
-                        content: "p-1  border-default-100 bg-background",
+                        content: "p-1  border-default-100 ",
                     },
                 }}
                 variant="flat"
