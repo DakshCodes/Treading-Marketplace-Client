@@ -10,19 +10,15 @@ import { cutDataState } from '../../store/cut/cutAtom';
 import { Createcut, Deletecut, Updatecut } from '../../apis/cut';
 import { categoryDataState } from '../../store/category/category';
 
+
 const Cut = () => {
     
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
-    const [updateId, setUpdateId] = useState(null)
     const [cutData, setcutData] = useRecoilState(cutDataState)
+    const [updateId, setUpdateId] = useState(null)
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
     const [refcat, setrefcat] = useState('')
-    
-    console.log(cutData, "cutDataState")
-   
-       
     
 
     // Data Format
@@ -41,6 +37,8 @@ const Cut = () => {
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+   
+      
 
     // Create The width
     const createcut = async (values) => {
@@ -100,26 +98,39 @@ const Cut = () => {
     }
 
     // Update The cut
-    const handleUpdate = async (cutId) => {
-        try {
- 
-            formik.setValues((prev)=>{
-                return {
-                name : prev.name,
-            verified : prev.verified,
-            isNameNumerical : prev.isNameNumerical,
-            ref : prev.ref}
-            })
-               
+    // Set function
 
-            
-            setUpdateId(cutId);  
-            onOpen() // Open the modal
+    const updateFormWithCutData = (cutId, updatedCutData) => {
+        const cutDataexist = updatedCutData.find((element) => element._id === cutId);
+        console.log(cutDataexist, updatedCutData, 'existssssssssssssssssssssss');
+        formik.setValues({
+          name: cutDataexist?.name,
+          verified: cutDataexist?.verified,
+          isNameNumerical: cutDataexist?.isNameNumerical,
+          ref: cutDataexist?.ref,
+        });
+      };
+      
+      // ...
+      
+      // Use updateFormWithCutData in the useEffect
+      useEffect(() => {
+        updateFormWithCutData(updateId, cutData);
+      }, [cutData, updateId]);
+      
+      // ...
+      
+      // Call updateFormWithCutData wherever needed
+      const handleUpdate = (cutId) => {
+        try {
+          updateFormWithCutData(cutId, cutData);
+          setUpdateId(cutId)
+            onOpen();
         } catch (error) {
-            console.error("Error updating cut:", error.message);
-            toast.error(error.message);
+          console.error("Error updating cut:", error.message);
+          toast.error(error.message);
         }
-    };
+      };
 
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
@@ -134,21 +145,14 @@ const Cut = () => {
                 console.log("Data update", response.cut);
 
                 // Optimistically update UI
-    
-                setcutData((preValue)=>{
-                const updatedcuts = preValue.map((cut) =>{
-                return cut._id === updateId ? response.cut : cut}
-                )
+                const updatedcuts = cutData.map((cut) =>{
+                    return cut._id === updateId ? response.cut : cut}
+                    )
+                setcutData(()=>{
+                
                 return updatedcuts;
             })
-                     formik.setValues({
-                        name : response.cut?.name,
-                        verified : response.cut?.verified,
-                        isNameNumerical : response.cut?.isNameNumerical,
-                        ref : response.cut?.ref,
-                     }
-                     )
-                     console.log(formik.values,'ffffffffffffffffffffffffffffffff')
+
 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
