@@ -3,8 +3,8 @@ import { Input, Autocomplete, AutocompleteItem, Avatar, Button } from "@nextui-o
 import { UilPlus } from '@iconscout/react-unicons'
 
 const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
-    const updatedUsers = [...users];  // Create a copy of the array
-    updatedUsers.unshift({ "name": "N/A", "_id": "5f478f5bc34b9a001f6a8b3d" });
+    // const updatedUsers = [...users];  // Create a copy of the array
+    // updatedUsers.unshift({ "name": "N/A", "_id": null });
     return (
         <div className='flex items-center'>
             <Autocomplete
@@ -15,7 +15,7 @@ const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
                     listboxWrapper: "max-h-[70px]",
                     selectorButton: "text-default-500",
                 }}
-                defaultItems={updatedUsers}
+                defaultItems={users}
                 inputProps={{
                     classNames: {
                         input: "text-[0.9rem] ",

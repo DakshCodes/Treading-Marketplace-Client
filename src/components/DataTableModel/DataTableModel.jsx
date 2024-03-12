@@ -119,6 +119,12 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                         <p className="text-bold text-tiny capitalize text-default-800">{user?.products?.length} Order</p>
                     </div>
                 );
+            case "ref":
+                return (
+                    <div className="flex max-w-max ml-2 items-center ">
+                        <p className="text-bold text-tiny capitalize text-default-800">{user?.ref?.name}</p>
+                    </div>
+                );
             case "brand":
                 return (
                     <div className="flex flex-col">
@@ -128,6 +134,12 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
             case "verified":
                 return (
                     <Chip className="capitalize" color={statusColorMap[user?.verified]} size="sm" variant="flat">
+                        {cellValue ? "Active" : "Disabled"}
+                    </Chip>
+                );
+            case "isNameNumerical":
+                return (
+                    <Chip className="capitalize" color={statusColorMap[user?.isNameNumerical]} size="sm" variant="flat">
                         {cellValue ? "Active" : "Disabled"}
                     </Chip>
                 );
@@ -298,7 +310,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                 <Pagination
                     showControls
                     classNames={{
-                        base: "bg-[#f7f7f5]",
+                        base: "bg-[#f7f7f5] max-h-[5rem] dark:bg-[#000] dark:text-white",
                         cursor: "bg-foreground text-background",
                     }}
                     color="default"
