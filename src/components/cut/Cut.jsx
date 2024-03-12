@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal,Autocomplete,AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState,} from "recoil"
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { cutDataState } from '../../store/cut/cutAtom';
 import { Createcut, Deletecut, Updatecut } from '../../apis/cut';
@@ -12,7 +12,7 @@ import { categoryDataState } from '../../store/category/category';
 
 
 const Cut = () => {
-    
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
     const [cutData, setcutData] = useRecoilState(cutDataState)
@@ -20,14 +20,15 @@ const Cut = () => {
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
     const [refcat, setrefcat] = useState('')
     const [updated, setUpdated] = useState(false)
-    
-    
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -36,11 +37,11 @@ const Cut = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
-   
-      
+
+
 
     // Create The width
     const createcut = async (values) => {
@@ -59,7 +60,7 @@ const Cut = () => {
                 setcutData([...cutData, response.cutDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
-            
+
 
             } else {
                 throw new Error(response.message);
@@ -68,7 +69,7 @@ const Cut = () => {
         } catch (error) {
             // dispatch(SetLoader(false));
             toast.error(error.message,);
-            
+
 
         }
     }
@@ -88,7 +89,7 @@ const Cut = () => {
 
                 // Update local state based on the correct identifier (use _id instead of id)
                 setcutData((prevData) => prevData.filter((cut) => cut._id !== id));
-                   
+
                 navigate('/inventory');
             } else {
                 throw new Error(response.message);
@@ -103,83 +104,83 @@ const Cut = () => {
     const updateFormWithCutData = (cutId, updatedCutData) => {
         const cutDataexist = updatedCutData.find((element) => element._id === cutId);
         console.log(cutDataexist, updatedCutData, 'existssssssssssssssssssssss');
-        setrefcat(()=>(cutDataexist?.ref))
+        setrefcat(() => (cutDataexist?.ref))
         formik.setValues({
-          name: cutDataexist?.name,
-          verified: cutDataexist?.verified,
-          isNameNumerical: cutDataexist?.isNameNumerical,
-        //   ref: cutDataexist?.ref,
+            name: cutDataexist?.name,
+            isNameNumerical: cutDataexist?.isNameNumerical,
+            //   ref: cutDataexist?.ref,
         });
-      };
-      
-      // ...
-      
-      // Use updateFormWithCutData in the useEffect
-      useEffect(() => {
+    };
+
+    // ...
+
+    // Use updateFormWithCutData in the useEffect
+    useEffect(() => {
         updateFormWithCutData(updateId, cutData);
         setUpdated(false);
-      }, [updated]);
-      
-      // ...
-      
-      // Call updateFormWithCutData wherever needed
-      const handleUpdate = (cutId) => {
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithCutData wherever needed
+    const handleUpdate = (cutId) => {
         try {
-          setUpdated(true)
-          updateFormWithCutData(cutId, cutData);
-          
-          setUpdateId(cutId)
+            setUpdated(true)
+            updateFormWithCutData(cutId, cutData);
+
+            setUpdateId(cutId)
             onOpen();
 
         } catch (error) {
-          console.error("Error updating cut:", error.message);
-          toast.error(error.message);
+            console.error("Error updating cut:", error.message);
+            toast.error(error.message);
         }
-      };
+    };
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updatecut(updateId, values);
-            setIsLoading(false)
-            
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.cut);
 
                 // Optimistically update UI
-                const updatedcuts = cutData.map((cut) =>{
-                    return cut._id === updateId ? response.cut : cut}
-                    )
-                setcutData(()=>{
-                
-                return updatedcuts;
-            })
-            formik.resetForm();
-            // setUpdated(true)
-            console.log(updated,'updateddddddddddddddddddddddddd')
-// Close the modal and reset update ID
+                const updatedcuts = cutData.map((cut) =>
+                    cut._id === updateId ? response.cut : cut
+                );
+
+                setcutData(updatedcuts);
+                formik.resetForm();
+
+                // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating cut:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating cut:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
-        initialValues:   {name : '',
-        verified : false,
-        isNameNumerical : false,
-         ref : ''},
+        initialValues: {
+            name: '',
+            isNameNumerical: false,
+            ref: ''
+        },
         onSubmit: async values => {
             if (updateId) {
                 setIsLoading(true)
@@ -192,10 +193,10 @@ const Cut = () => {
             }
         },
     });
-const setUpdate = ()=>{
-    setUpdateId(false)
-    // formik.resetForm();  
-}
+    const setUpdate = () => {
+        setUpdateId(false)
+        // formik.resetForm();  
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -222,7 +223,7 @@ const setUpdate = ()=>{
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
                                                 placeholder="cut name.."
                                             />
-                                             <Autocomplete
+                                            <Autocomplete
                                                 classNames={{
                                                     base: "max-w-full border-[#fff] ",
                                                     listboxWrapper: "max-h-[320px]",
@@ -304,26 +305,13 @@ const setUpdate = ()=>{
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                           
+
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
+                                                isNameNumerical
                                                 <div className="relative inline-block">
                                                     <input
-                                                        onChange={(e) => formik.handleChange(e)}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                isNameNumercal
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={(e) => formik.handleChange(e)}
-                                                        name="isNameNumerical" // Associate the input with the form field 'experienced'
+                                                        onChange={(e) => formik.setFieldValue("isNameNumerical", e.target.checked)}
+                                                        name="isNameNumercal" // Associate the input with the form field 'verified'
                                                         checked={formik.values.isNameNumerical} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                                                         type="checkbox"
@@ -331,6 +319,19 @@ const setUpdate = ()=>{
                                                     <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
                                                 </div>
                                             </label>
+                                            {/* <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
+                                                isNameNumercal
+                                                <div className="relative inline-block">
+                                                    <input
+                                                        onChange={(e) => formik.setFieldValue("isNameNumercal", e.target.checked)}
+                                                        name="isNameNumerical" // Associate the input with the form field 'experienced'
+                                                        checked={formik.values.isNameNumerical} // Set the checked state from formik values
+                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+                                                        type="checkbox"
+                                                    />
+                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
+                                                </div>
+                                            </label> */}
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -345,8 +346,8 @@ const setUpdate = ()=>{
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
-                                        
-                                        
+
+
 
                                     >
                                         {updateId ? "Update" : "Create "}

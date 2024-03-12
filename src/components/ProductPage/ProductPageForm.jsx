@@ -93,15 +93,15 @@ const ProductPageForm = () => {
             console.log(singleProductData)
 
             formik.setValues({
-                supplierName: singleProductData?.supplierName?._id || "5f478f5bc34b9a001f6a8b3d",
+                supplierName: singleProductData?.supplierName?._id || null,
                 productName: singleProductData?.productName || "",
-                category: singleProductData?.category?._id || "5f478f5bc34b9a001f6a8b3d",
-                quality: singleProductData?.quality?._id || "5f478f5bc34b9a001f6a8b3d",
-                design: singleProductData?.design?._id || "5f478f5bc34b9a001f6a8b3d",
-                weave: singleProductData?.weave?._id || "5f478f5bc34b9a001f6a8b3d",
-                width: singleProductData?.width?._id || "5f478f5bc34b9a001f6a8b3d",
-                finishtype: singleProductData?.finishtype?._id || "5f478f5bc34b9a001f6a8b3d", // Assuming finishtype is an object with a name property
-                feeltype: singleProductData?.feeltype?._id || "5f478f5bc34b9a001f6a8b3d",
+                category: singleProductData?.category?._id || null,
+                quality: singleProductData?.quality?._id || null,
+                design: singleProductData?.design?._id || null,
+                weave: singleProductData?.weave?._id || null,
+                width: singleProductData?.width?._id || null,
+                finishtype: singleProductData?.finishtype?._id || null, // Assuming finishtype is an object with a name property
+                feeltype: singleProductData?.feeltype?._id || null,
                 pricePerUnit: {
                     magnitude: singleProductData?.pricePerUnit?.magnitude || null,
                     unit: singleProductData?.pricePerUnit?.unit || null,
@@ -127,11 +127,11 @@ const ProductPageForm = () => {
         formik.setValues({
             ...formik.values,
             category: value,
-            quality: "5f478f5bc34b9a001f6a8b3d",
-            design: "5f478f5bc34b9a001f6a8b3d",
-            width: "5f478f5bc34b9a001f6a8b3d",
-            finishtype: "5f478f5bc34b9a001f6a8b3d",
-            feeltype: "5f478f5bc34b9a001f6a8b3d",
+            quality: null,
+            design: null,
+            width: null,
+            finishtype: null,
+            feeltype: null,
         });
     };
 
@@ -180,15 +180,15 @@ const ProductPageForm = () => {
     // Formik configuration
     const formik = useFormik({
         initialValues: {
-            supplierName: "5f478f5bc34b9a001f6a8b3d",
+            supplierName: "",
             productName: "",
-            category: "5f478f5bc34b9a001f6a8b3d",
-            quality: "5f478f5bc34b9a001f6a8b3d",
-            design: "5f478f5bc34b9a001f6a8b3d",
-            weave: "5f478f5bc34b9a001f6a8b3d",
-            width: "5f478f5bc34b9a001f6a8b3d",
-            finishtype: "5f478f5bc34b9a001f6a8b3d",
-            feeltype: "5f478f5bc34b9a001f6a8b3d",
+            category: null,
+            quality: null,
+            design: null,
+            weave: null,
+            width: null,
+            finishtype: null,
+            feeltype: null,
             pricePerUnit: {
                 magnitude: null,
                 unit: null
@@ -210,29 +210,29 @@ const ProductPageForm = () => {
                 errors.category = "Category is required";
             }
 
-            if (!values.design) {
-                errors.design = "Design is required";
-            }
+            // if (!values.design) {
+            //     errors.design = "Design is required";
+            // }
 
-            if (!values.quality) {
-                errors.quality = "Quality is required";
-            }
+            // if (!values.quality) {
+            //     errors.quality = "Quality is required";
+            // }
 
-            if (!values.feeltype) {
-                errors.feeltype = "Feel Type is required";
-            }
+            // if (!values.feeltype) {
+            //     errors.feeltype = "Feel Type is required";
+            // }
 
-            if (!values.finishtype) {
-                errors.finishtype = "Finish Type is required";
-            }
+            // if (!values.finishtype) {
+            //     errors.finishtype = "Finish Type is required";
+            // }
 
-            if (!values.weave) {
-                errors.weave = "Weave is required";
-            }
+            // if (!values.weave) {
+            //     errors.weave = "Weave is required";
+            // }
 
-            if (!values.width) {
-                errors.width = "Width is required";
-            }
+            // if (!values.width) {
+            //     errors.width = "Width is required";
+            // }
             if (!values.pricePerUnit || values.pricePerUnit.magnitude === null || values.pricePerUnit.unit === null) {
                 errors.pricePerUnit = "Both Magnitude and Unit are required for Price Per Unit";
             }
