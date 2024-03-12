@@ -18,7 +18,7 @@ const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
   { path: '/challan', element: <div className='px-5'><Challan /></div> },
-  { path: '/customers', element: <div className='px-5'><Customer/></div> },
+  { path: '/customers', element: <Customer /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,

@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { capitalize } from "../../utils/capitalize";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { useRecoilState } from "recoil";
+import { customerDataState } from "../../store/customer/customerAtom";
 
 
 
@@ -43,6 +44,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
     });
     const [page, setPage] = React.useState(1);
     const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
+    const [customerData, setcustomerData] = useRecoilState(customerDataState)
 
     const hasSearchFilter = Boolean(filterValue);
 
@@ -106,6 +108,12 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                     >
                         {user?.name}
                     </User>
+                );
+            case "customer":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-900">{customerData.find(supplier => supplier?._id === user?.customer)?.name}</p>
+                    </div>
                 );
             case "supplier":
                 return (

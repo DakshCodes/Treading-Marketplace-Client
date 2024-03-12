@@ -15,6 +15,8 @@ import { cutDataState } from '../../store/cut/cutAtom';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
 import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { unitDataState } from '../../store/unit/unitAtom';
+import { customerDataState } from '../../store/customer/customerAtom';
+import { ReceiptText, IndianRupee } from 'lucide-react'
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -24,10 +26,10 @@ const Challan = () => {
   const [productref, setproductref] = useState(null)
   const [supplierRef, setsupplierRef] = useState(null)
   const [customerRef, setcustomerRef] = useState(null)
-  const [qty, setqty] = useState(null)
+  const [qty, setqty] = useState("")
   const [remark, setRemark] = useState("")
   const [unit, setUnit] = useState("")
-  const [qtyType, setqtyType] = useState(null)
+  const [totalbill, settotalbill] = useState(null)
   const [cutref, setcutref] = useState(null)
 
   const [challansData, setChallansData] = useRecoilState(challanDataState)
@@ -38,6 +40,8 @@ const Challan = () => {
   // const products = useRecoilValue(getProductById(supplierRef));
 
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
+
+  const [customerData, setcustomerData] = useRecoilState(customerDataState)
 
 
   const [cutData, setcutData] = useRecoilState(cutDataState)
@@ -53,6 +57,7 @@ const Challan = () => {
     { name: "CUSTOMER", uid: "customer", sortable: true },
     { name: "SUPPLIER", uid: "supplier", sortable: true },
     { name: "PRODUCTS", uid: "products", sortable: true },
+    { name: "BILL", uid: "totalBill", sortable: true },
     { name: "VERIFIED", uid: "verified", sortable: true },
     { name: "ACTIONS", uid: "actions" },
   ];
@@ -62,7 +67,7 @@ const Challan = () => {
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["challanNo", "customer", "type", "supplier", "products", "verified", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["challanNo", "customer", "type", "supplier", "products", "totalBill", "verified", "actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
@@ -156,6 +161,7 @@ const Challan = () => {
     initialValues: {
       challanNo: '',
       remarkDesc: '',
+      totalBill: '',
       customer: '',
       type: 'supplier',
       supplier: '',
@@ -166,11 +172,13 @@ const Challan = () => {
       if (updateId) {
         setIsLoading(true)
         values.remarkDesc = remark;
+        values.totalBill = totalbill;
         await handleUpdateSubmit(values);
         setIsLoading(false)
       } else {
         values.challanNo = challanNumber;
         values.remarkDesc = remark;
+        values.totalBill = totalbill;
         console.log(values, "going")
         setIsLoading(true)
         await creatsupplier(values);
@@ -189,6 +197,7 @@ const Challan = () => {
         customer: mySupplierData?.customer,
         challanNo: mySupplierData?.challanNo,
         remarkDesc: mySupplierData?.remarkDesc,
+        totalBill: mySupplierData?.totalBill,
         products: mySupplierData?.products.map((product) => ({
           cut: product.cut,
           overall: product.overall,
@@ -202,7 +211,9 @@ const Challan = () => {
         type: mySupplierData?.type,
         verified: mySupplierData?.verified,
       });
-
+      
+      setsupplierRef(mySupplierData?.supplier)
+      settotalbill(mySupplierData?.totalBill)
       setRemark(mySupplierData?.remarkDesc)
 
       // setchallanNumber(mySupplierData?.challanNo)
@@ -234,11 +245,13 @@ const Challan = () => {
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
+
+      settotalbill(prevalues => prevalues + newProduct?.overall)
       setproductref("")
       setcutref("")
       setqty("")
-    }else{
-      toast.error("Please select all fields");
+    } else {
+      // toast.error("Please select all fields");
     }
   };
 
@@ -278,6 +291,7 @@ const Challan = () => {
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
       const updatedProducts = [...prevValues.products];
+      settotalbill(prev => prev - prevValues.products[index].overall)
       updatedProducts.splice(index, 1);
       return { ...prevValues, products: updatedProducts };
     });
@@ -295,10 +309,11 @@ const Challan = () => {
   }, [onOpenChange]);
 
 
-  console.log(formik.values, "values")
+  // console.log(formik.values, "values")
+  // console.log(supplierRef, "supplier")
   // console.log("product: ", productsData)
-  // console.log("data ", challansData)
-  // console.log("cut: ", cutData)
+  console.log("data ", challansData)
+  // console.log("cut: ", unit)
 
   return (
     <>
@@ -318,7 +333,7 @@ const Challan = () => {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1 text-2xl font-bold font-font2  mb-3">Create Challan</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1 text-2xl font-bold font-font2  mb-3">{updateId ? "Update Challan" : "Create Challan"}</ModalHeader>
 
                 <ModalBody className='flex flex-col gap-6'>
                   <div className="flex flex-col w-full">
@@ -334,7 +349,7 @@ const Challan = () => {
                         // disabledKeys={(slider?.viewall === "Categories") && ["Products"] || (slider?.viewall === "Products") && ["Categories"]}
                         >
                           <Tab key="Supplier"
-                            className="py-6 flex flex-col gap-10 font-[400] font-font2"
+                            className="py-6 flex flex-col  gap-10 font-[400] font-font2"
                             // title={(slider?.viewall === "Products") ? "You Can Only Create One" : "Categories"}4
                             title="Supplier"
                           >
@@ -365,7 +380,7 @@ const Challan = () => {
 
                                   onSelectionChange={onCustomerChange}
                                   value={formik?.values?.customer}
-                                  defaultItems={suppliersData}
+                                  defaultItems={customerData}
                                   selectedKey={formik?.values?.customer}
                                   inputProps={{
                                     classNames: {
@@ -739,7 +754,7 @@ const Challan = () => {
                             </div>
                             <Table
                               classNames={{
-                                base: 'max-h-[400px] max-w-[1400px] border rounded-[14px] overflow-scroll',
+                                base: 'max-h-[200px] max-w-[1400px] border rounded-[14px] overflow-scroll',
                                 table: 'min-h-[100px]  ',
                                 th: 'text-center',
                                 tr: 'text-center ',
@@ -774,7 +789,7 @@ const Challan = () => {
                                         {object.total}
                                       </TableCell>
                                       <TableCell>
-                                        {object.unit}
+                                        {units.find(product => product._id === object.unit)?.name}
                                       </TableCell>
                                       <TableCell>
                                         {object.price}
@@ -840,7 +855,18 @@ const Challan = () => {
                                 })}
                               </TableBody>
                             </Table>
-
+                            <Card>
+                              <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
+                                <div className='flex items-center gap-2'>
+                                  <ReceiptText size={20} />
+                                  <p className='font-font1 font-[500] text-[1rem]'>Total Amount.</p>
+                                </div>
+                                <div className='flex items-center '>
+                                  <IndianRupee size={20} />
+                                  <p className='font-font1 font-[500] text-[1rem]'>{totalbill || 0}.00</p>
+                                </div>
+                              </CardBody>
+                            </Card>
                           </Tab>
                           <Tab
                             className="py-6 flex flex-col gap-10 font-[400] font-font2"
@@ -861,7 +887,7 @@ const Challan = () => {
                   <Button
                     onClick={formik.handleSubmit} isLoading={isLoading}
                     className='bg-[#000] text-[#fff]'>
-                    Create
+                    {updateId ? "Update" : "Create"}
                   </Button>
                 </ModalFooter>
               </>
