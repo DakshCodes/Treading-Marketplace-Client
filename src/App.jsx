@@ -13,10 +13,12 @@ import PrivateRoute from './Private/PrivateRoute';
 import { globalLoaderAtom } from './store/GlobalLoader/globalLoaderAtom';
 import Loader from "./components/Loader/Loader"
 import Challan from './pages/Challan/Challan';
+import Customer from './pages/Customer/Customer';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
   { path: '/challan', element: <div className='px-5'><Challan /></div> },
+  { path: '/customers', element: <div className='px-5'><Customer/></div> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
