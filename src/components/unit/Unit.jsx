@@ -43,6 +43,7 @@ const Unit = () => {
     const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+    const [updated, setUpdated] = useState(false)
 
     // Create The width
     const createunit = async (values) => {
@@ -101,28 +102,38 @@ const Unit = () => {
         }
     }
 
-    // Update The unit
-    const handleUpdate = async (unitId) => {
+    const updateFormWithunitData = (unitId, updatedunitData) => {
+        const unitDataexist = updatedunitData.find((element) => element._id === unitId);
+        console.log(unitDataexist, updatedunitData, 'existssssssssssssssssssssss');
+
+        formik.setValues({
+            name: unitDataexist?.name,
+        });
+    };
+    // ...
+
+    // Use updateFormWithunitData in the useEffect
+    useEffect(() => {
+        updateFormWithunitData(updateId, unitData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithunitData wherever needed
+    const handleUpdate = (unitId) => {
         try {
-            console.log(unitId)
-            // changed from todoListState to filteredTodoListState
-            const unitDataexist = unitData.find((element) => { return element._id == unitId });
-            console.log(unitDataexist, 'existssssssssssssssssssssss')
-            // Set the initial values for Formik
+            setUpdated(true)
+            updateFormWithunitData(unitId, unitData);
 
-            formik.setValues({
-                name: unitDataexist?.name,
-                verified: unitDataexist?.verified,
-            });
+            setUpdateId(unitId)
+            onOpen();
 
-            setUpdateId(unitId);
-            onOpen() // Open the modal
         } catch (error) {
             console.error("Error updating unit:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
@@ -146,7 +157,7 @@ const Unit = () => {
                 })
                 formik.setValues({
                     name: response.unit?.name,
-                    verified: response.unit?.verified,
+                    
                 }
                 )
                 console.log(formik.values, 'ffffffffffffffffffffffffffffffff')
@@ -169,7 +180,7 @@ const Unit = () => {
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
+        
         },
         onSubmit: async values => {
             if (updateId) {
@@ -185,6 +196,9 @@ const Unit = () => {
     });
     const setUpdate = () => {
         setUpdateId(false)
+        formik.resetForm(); 
+        // setrefcat('')
+
     }
     return (
         <>
@@ -213,19 +227,7 @@ const Unit = () => {
                                                 placeholder="unit name.."
                                             />
 
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+                                           
                                         </div>
                                     </div>
                                 </ModalBody>

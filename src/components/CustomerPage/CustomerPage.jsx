@@ -103,7 +103,6 @@ const CustomerPage = () => {
     const updateFormWithcustomerData = (customerId, updatedcustomerData) => {
         const customerDataexist = updatedcustomerData.find((element) => element._id === customerId);
         console.log(customerDataexist, updatedcustomerData, 'existssssssssssssssssssssss');
-        setrefcat(()=>(customerDataexist?.ref))
         formik.setValues({
           name: customerDataexist?.name,
           companyName : customerDataexist?.companyName,

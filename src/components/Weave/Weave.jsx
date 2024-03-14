@@ -19,6 +19,7 @@ const Weave = () => {
     const [refcat, setrefcat] = useState('')
     const [WeaveData, setWeaveData] = useRecoilState(weaveDataState)
     console.log(WeaveData, "weaveDataState")
+    const [updated, setUpdated] = useState(false)
 
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
     console.log(categoriesData, "categoryDataState")
@@ -92,60 +93,76 @@ const Weave = () => {
     }
 
     // Update The weave
-    const handleUpdate = async (weaveId) => {
+    const updateFormWithWeaveData = (WeaveId, updatedWeaveData) => {
+        const WeaveDataexist = updatedWeaveData.find((element) => element._id === WeaveId);
+        console.log(WeaveDataexist, updatedWeaveData, 'existssssssssssssssssssssss');
+        setrefcat(() => (WeaveDataexist?.ref))
+
+        formik.setValues({
+            name: WeaveDataexist?.name,
+        });
+    };
+    // ...
+
+    // Use updateFormWithWeaveData in the useEffect
+    useEffect(() => {
+        updateFormWithWeaveData(updateId, WeaveData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithWeaveData wherever needed
+    const handleUpdate = (WeaveId) => {
         try {
+            setUpdated(true)
+            updateFormWithWeaveData(WeaveId, WeaveData);
 
-            // changed from todoListState to filteredTodoListState
-            const weaveDataexist = WeaveData.find((element) => element._id == weaveId);
+            setUpdateId(WeaveId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: weaveDataexist?.name,
-                verified: weaveDataexist?.verified,
-                ref: weaveDataexist?.ref,
-            });
-
-            setrefcat(weaveDataexist?.ref)
-
-            setUpdateId(weaveId);
-            onOpen(); // Open the modal
         } catch (error) {
-            console.error("Error updating weave:", error.message);
+            console.error("Error updating Weave:", error.message);
             toast.error(error.message);
         }
     };
-
-    // Handle update form submission
-    const handleUpdateSubmit = async (values) => {
+       // Handle update form submission
+       const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updateweave(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.weave);
-
+                 
                 // Optimistically update UI
-                setWeaveData((prevData) => {
-                    const updatedweaves = prevData.map((weave) =>
-                        weave._id === updateId ? response.weave : weave
-                    );
-                    return updatedweaves;
-                });
+                const updatedweaves = WeaveData.map((weave) =>
+                    weave._id === updateId ? response.weave : weave
+                );
+                
+                setWeaveData(updatedweaves);
+                
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating weave:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
+    };
+
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating weave:", error.message);
+        toast.error(error.message);
     };
 
 
@@ -153,7 +170,6 @@ const Weave = () => {
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
             ref: "",
         },
         onSubmit: async values => {
@@ -168,7 +184,12 @@ const Weave = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
+    }
 
     return (
         <>
@@ -179,9 +200,9 @@ const Weave = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
+                        // if (!newState) {
+                        //     formik.setValues({})
+                        // }
                     }}
                 >
                     <ModalContent>
@@ -281,19 +302,6 @@ const Weave = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -301,6 +309,7 @@ const Weave = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>

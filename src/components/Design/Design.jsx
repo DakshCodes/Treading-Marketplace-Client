@@ -1,34 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createdesign, Deletedesign, Updatedesign } from '../../apis/design';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
-import { designDataState } from "../../store/design/designAtom"
-import { categoryDataState } from '../../store/category/category';
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { designDataState } from '../../store/design/designAtom';
+import { Createdesign, Deletedesign, Updatedesign } from '../../apis/design';
+import { categoryDataState } from '../../store/category/category';
+
 
 const Design = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
+    const [designData, setdesignData] = useRecoilState(designDataState)
     const [updateId, setUpdateId] = useState(null)
-    const [refcat, setrefcat] = useState('')
-
-    const [DesignsData, setDesignsData] = useRecoilState(designDataState)
-    console.log(DesignsData, "designDataState")
-
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -37,32 +37,40 @@ const Design = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
+
 
     // Create The design
     const createdesign = async (values) => {
         try {
+
             values.ref = refcat;
             setIsLoading(true)
             const response = await Createdesign(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
                 console.log(response.designDoc)
-                setDesignsData([...DesignsData, response.designDoc]);
+                setdesignData([...designData, response.designDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
-            setIsLoading(false)
+            // dispatch(SetLoader(false));
+            toast.error(error.message,);
 
-            console.log(error.message);
-            toast.error(error.message);
+
         }
     }
 
@@ -70,6 +78,8 @@ const Design = () => {
 
     // Delete design
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletedesign(id);
@@ -78,7 +88,7 @@ const Design = () => {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setDesignsData((prevData) => prevData.filter((design) => design._id !== id));
+                setdesignData((prevData) => prevData.filter((design) => design._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -91,70 +101,83 @@ const Design = () => {
         }
     }
 
-    // Update The design
-    const handleUpdate = async (designId) => {
+    const updateFormWithdesignData = (designId, updateddesignData) => {
+        const designDataexist = updateddesignData.find((element) => element._id === designId);
+        console.log(designDataexist, updateddesignData, 'existssssssssssssssssssssss');
+        setrefcat(() => (designDataexist?.ref))
+
+        formik.setValues({
+            name: designDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithdesignData in the useEffect
+    useEffect(() => {
+        updateFormWithdesignData(updateId, designData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithdesignData wherever needed
+    const handleUpdate = (designId) => {
         try {
+            setUpdated(true)
+            updateFormWithdesignData(designId, designData);
 
-            // changed from todoListState to filteredTodoListState
-            const designData = DesignsData.find((element) => element._id == designId);
+            setUpdateId(designId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: designData?.name,
-                verified: designData?.verified,
-                ref: designData?.ref,
-            });
-
-            setrefcat(designData?.ref)
-
-            setUpdateId(designId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating design:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updatedesign(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.design);
 
                 // Optimistically update UI
-                setDesignsData((prevData) => {
-                    const updateddesigns = prevData.map((design) =>
-                        design._id === updateId ? response.design : design
-                    );
-                    return updateddesigns;
-                });
+                const updateddesigns = designData.map((design) =>
+                    design._id === updateId ? response.design : design
+                );
+
+                setdesignData(updateddesigns);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating design:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating design:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
-            ref: "",
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
@@ -168,8 +191,12 @@ const Design = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -179,16 +206,13 @@ const Design = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
                         {(onClose) => (
                             <>
                                 <ModalHeader className="flex flex-col gap-1 text-[2rem] font-font1">
-                                    {updateId ? "Update Design" : "Create Design"}
+                                    {updateId ? "Update design" : "Create design"}
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
@@ -249,7 +273,7 @@ const Design = () => {
                                                     height={20}
                                                     role="presentation"
                                                     viewBox="0 0 24 24"
-                                                    width={20}
+                                                    design={20}
                                                     color={"#fff"}
                                                 >
                                                     <path
@@ -257,14 +281,14 @@ const Design = () => {
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokedesign={2.5}
                                                     />
                                                     <path
                                                         d="M22 22L20 20"
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokedesign={2.5}
                                                     />
                                                 </svg>}
                                                 variant="bordered"
@@ -281,19 +305,8 @@ const Design = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -301,12 +314,16 @@ const Design = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -316,9 +333,10 @@ const Design = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={DesignsData} onOpen={onOpen} section={'design'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={designData} onOpen={onOpen} section={'design'} />
         </>
     )
 }
 
 export default Design
+

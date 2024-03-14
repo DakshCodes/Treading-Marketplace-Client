@@ -104,14 +104,13 @@ const Cut = () => {
     const updateFormWithCutData = (cutId, updatedCutData) => {
         const cutDataexist = updatedCutData.find((element) => element._id === cutId);
         console.log(cutDataexist, updatedCutData, 'existssssssssssssssssssssss');
-        setrefcat(() => (cutDataexist?.ref))
+        setrefcat(() => (cutDataexist?.ref?._id))
+
         formik.setValues({
             name: cutDataexist?.name,
             isNameNumerical: cutDataexist?.isNameNumerical,
-            //   ref: cutDataexist?.ref,
         });
     };
-
     // ...
 
     // Use updateFormWithCutData in the useEffect
@@ -195,7 +194,9 @@ const Cut = () => {
     });
     const setUpdate = () => {
         setUpdateId(false)
-        // formik.resetForm();  
+        formik.resetForm(); 
+        setrefcat('')
+
     }
     return (
         <>

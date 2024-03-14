@@ -1,34 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createquality, Updatequality, Deletequality } from '../../apis/quality';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
-import { qualityDataState } from "../../store/quality/qualityAtom"
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
-import { categoryDataState } from '../../store/category/category';
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { qualityDataState } from '../../store/quality/qualityAtom';
+import { Createquality, Deletequality, Updatequality } from '../../apis/quality';
+import { categoryDataState } from '../../store/category/category';
+
 
 const Quality = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
+    const [qualityData, setqualityData] = useRecoilState(qualityDataState)
     const [updateId, setUpdateId] = useState(null)
-    const [refcat, setrefcat] = useState('')
-
-    const [QualitiesData, setQualitiesData] = useRecoilState(qualityDataState)
-    console.log(QualitiesData, "qualityDataState")
-
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -37,34 +37,40 @@ const Quality = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
 
 
     // Create The quality
     const createquality = async (values) => {
         try {
+
             values.ref = refcat;
-            console.log(values, "values")
             setIsLoading(true)
             const response = await Createquality(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
                 console.log(response.qualityDoc)
-                setQualitiesData([...QualitiesData, response.qualityDoc]);
+                setqualityData([...qualityData, response.qualityDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
-            setIsLoading(false)
+            // dispatch(SetLoader(false));
+            toast.error(error.message,);
 
-            console.log(error.message);
-            toast.error(error.message);
+
         }
     }
 
@@ -72,6 +78,8 @@ const Quality = () => {
 
     // Delete quality
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletequality(id);
@@ -80,7 +88,7 @@ const Quality = () => {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setQualitiesData((prevData) => prevData.filter((quality) => quality._id !== id));
+                setqualityData((prevData) => prevData.filter((quality) => quality._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -93,70 +101,83 @@ const Quality = () => {
         }
     }
 
-    // Update The quality
-    const handleUpdate = async (qualityId) => {
+    const updateFormWithqualityData = (qualityId, updatedqualityData) => {
+        const qualityDataexist = updatedqualityData.find((element) => element._id === qualityId);
+        console.log(qualityDataexist, updatedqualityData, 'existssssssssssssssssssssss');
+        setrefcat(() => (qualityDataexist?.ref))
+
+        formik.setValues({
+            name: qualityDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithqualityData in the useEffect
+    useEffect(() => {
+        updateFormWithqualityData(updateId, qualityData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithqualityData wherever needed
+    const handleUpdate = (qualityId) => {
         try {
+            setUpdated(true)
+            updateFormWithqualityData(qualityId, qualityData);
 
-            // changed from todoListState to filteredTodoListState
-            const qualityData = QualitiesData.find((element) => element._id == qualityId);
+            setUpdateId(qualityId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: qualityData?.name,
-                verified: qualityData?.verified,
-                ref: qualityData?.ref,
-            });
-
-            setrefcat(qualityData?.ref)
-
-            setUpdateId(qualityId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating quality:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updatequality(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.quality);
 
                 // Optimistically update UI
-                setQualitiesData((prevData) => {
-                    const updatedqualitys = prevData.map((quality) =>
-                        quality._id === updateId ? response.quality : quality
-                    );
-                    return updatedqualitys;
-                });
+                const updatedqualitys = qualityData.map((quality) =>
+                    quality._id === updateId ? response.quality : quality
+                );
+
+                setqualityData(updatedqualitys);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating quality:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating quality:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
-            ref: "",
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
@@ -170,10 +191,12 @@ const Quality = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
-    console.log(refcat, 'ref')
-
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -183,25 +206,22 @@ const Quality = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
                         {(onClose) => (
                             <>
                                 <ModalHeader className="flex flex-col gap-1 text-[2rem] font-font1">
-                                    {updateId ? "Update Quality" : "Create Quality"}
+                                    {updateId ? "Update quality" : "Create quality"}
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
-                                        <div className="flex flex-col gap-5 p-8">
+                                        <div className="flex flex-col gap-2 p-8">
                                             <input
                                                 autoFocus
                                                 {...formik.getFieldProps('name')}
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
-                                                placeholder="Quality name.."
+                                                placeholder="quality name.."
                                             />
                                             <Autocomplete
                                                 classNames={{
@@ -253,7 +273,7 @@ const Quality = () => {
                                                     height={20}
                                                     role="presentation"
                                                     viewBox="0 0 24 24"
-                                                    width={20}
+                                                    quality={20}
                                                     color={"#fff"}
                                                 >
                                                     <path
@@ -261,14 +281,14 @@ const Quality = () => {
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokequality={2.5}
                                                     />
                                                     <path
                                                         d="M22 22L20 20"
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokequality={2.5}
                                                     />
                                                 </svg>}
                                                 variant="bordered"
@@ -285,19 +305,8 @@ const Quality = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -305,12 +314,16 @@ const Quality = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -320,9 +333,10 @@ const Quality = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={QualitiesData} onOpen={onOpen} section={'quality'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={qualityData} onOpen={onOpen} section={'quality'} />
         </>
     )
 }
 
 export default Quality
+

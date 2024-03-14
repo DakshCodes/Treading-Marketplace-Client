@@ -1,29 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createcategory, Deletecategory, Updatecategory } from '../../apis/categories';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-
-import { useRecoilState, useRecoilValue } from "recoil"
-import { categoryDataState } from "../../store/category/category"
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { categoryDataState } from '../../store/category/category';
+import { Createcategory, Deletecategory, Updatecategory } from '../../apis/categories';
+
 
 const Categories = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
+    const [categoryData, setcategoryData] = useRecoilState(categoryDataState)
     const [updateId, setUpdateId] = useState(null)
-
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -32,33 +36,40 @@ const Categories = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
+
+
     // Create The category
-    const createCategory = async (values) => {
+    const createcategory = async (values) => {
         try {
+
+            values.ref = refcat;
             setIsLoading(true)
             const response = await Createcategory(values);
+            console.log(values)
+
             setIsLoading(false)
-            // dispatch(SetLoader(false));
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
                 console.log(response.categoryDoc)
-                setCategoriesData([...categoriesData, response.categoryDoc]);
+                setcategoryData([...categoryData, response.categoryDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
+            // dispatch(SetLoader(false));
+            toast.error(error.message,);
 
-            setIsLoading(false)
 
-            console.log(error.message);
-            toast.error(error.message);
         }
     }
 
@@ -66,6 +77,8 @@ const Categories = () => {
 
     // Delete category
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletecategory(id);
@@ -74,7 +87,7 @@ const Categories = () => {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setCategoriesData((prevData) => prevData.filter((category) => category._id !== id));
+                setcategoryData((prevData) => prevData.filter((category) => category._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -82,85 +95,106 @@ const Categories = () => {
             }
         } catch (error) {
             setIsLoading(false)
+
             toast.error(error.message)
         }
     }
 
-    // Update The category
-    const handleUpdate = async (categoryId) => {
+    const updateFormWithcategoryData = (categoryId, updatedcategoryData) => {
+        const categoryDataexist = updatedcategoryData.find((element) => element._id === categoryId);
+        console.log(categoryDataexist, updatedcategoryData, 'existssssssssssssssssssssss');
+
+        formik.setValues({
+            name: categoryDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithcategoryData in the useEffect
+    useEffect(() => {
+        updateFormWithcategoryData(updateId, categoryData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithcategoryData wherever needed
+    const handleUpdate = (categoryId) => {
         try {
+            setUpdated(true)
+            updateFormWithcategoryData(categoryId, categoryData);
 
-            // changed from todoListState to filteredTodoListState
-            const categoryData = categoriesData.find((element) => element._id == categoryId);
+            setUpdateId(categoryId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: categoryData?.name,
-                verified: categoryData?.verified,
-            });
-
-            setUpdateId(categoryId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating category:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            setIsLoading(true)
+            values.ref = refcat;
+            setIsLoading(true);
             const response = await Updatecategory(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.category);
 
                 // Optimistically update UI
-                setCategoriesData((prevData) => {
-                    const updatedcategorys = prevData.map((category) =>
-                        category._id === updateId ? response.category : category
-                    );
-                    return updatedcategorys;
-                });
+                const updatedcategorys = categoryData.map((category) =>
+                    category._id === updateId ? response.category : category
+                );
+
+                setcategoryData(updatedcategorys);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-            console.error("Error updating category:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating category:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
-
                 setIsLoading(true)
                 await handleUpdateSubmit(values);
                 setIsLoading(false)
             } else {
-
                 setIsLoading(true)
-                await createCategory(values);
+                await createcategory(values);
                 setIsLoading(false)
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+       
 
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -170,16 +204,13 @@ const Categories = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
                         {(onClose) => (
                             <>
                                 <ModalHeader className="flex flex-col gap-1 text-[2rem] font-font1">
-                                    {updateId ? "Update Category" : "Create Category"}
+                                    {updateId ? "Update category" : "Create category"}
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
@@ -190,19 +221,8 @@ const Categories = () => {
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
                                                 placeholder="category name.."
                                             />
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -210,12 +230,16 @@ const Categories = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -225,9 +249,10 @@ const Categories = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={categoriesData} onOpen={onOpen} section={'category'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={categoryData} onOpen={onOpen} section={'category'} />
         </>
     )
 }
 
 export default Categories
+

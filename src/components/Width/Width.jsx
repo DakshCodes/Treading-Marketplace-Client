@@ -1,33 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createwidth, Deletewidth, Updatewidth } from '../../apis/width';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
-import { widthDataState } from "../../store/width/widthAtom"
-import { categoryDataState } from '../../store/category/category';
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { widthDataState } from '../../store/width/widthAtom';
+import { Createwidth, Deletewidth, Updatewidth } from '../../apis/width';
+import { categoryDataState } from '../../store/category/category';
+
 
 const Width = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
-    const [updateId, setUpdateId] = useState(null)
-    const [refcat, setrefcat] = useState('')
     const [widthData, setwidthData] = useRecoilState(widthDataState)
-    console.log(widthData, "widthDataState")
-
+    const [updateId, setUpdateId] = useState(null)
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -36,7 +37,7 @@ const Width = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
@@ -45,9 +46,12 @@ const Width = () => {
     // Create The width
     const createwidth = async (values) => {
         try {
+
             values.ref = refcat;
             setIsLoading(true)
             const response = await Createwidth(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
@@ -56,13 +60,17 @@ const Width = () => {
                 setwidthData([...widthData, response.widthDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
             // dispatch(SetLoader(false));
-            console.log(error.message);
-            toast.error(error.message);
+            toast.error(error.message,);
+
+
         }
     }
 
@@ -70,6 +78,8 @@ const Width = () => {
 
     // Delete width
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletewidth(id);
@@ -91,70 +101,83 @@ const Width = () => {
         }
     }
 
-    // Update The width
-    const handleUpdate = async (widthId) => {
+    const updateFormWithwidthData = (widthId, updatedwidthData) => {
+        const widthDataexist = updatedwidthData.find((element) => element._id === widthId);
+        console.log(widthDataexist, updatedwidthData, 'existssssssssssssssssssssss');
+        setrefcat(() => (widthDataexist?.ref))
+
+        formik.setValues({
+            name: widthDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithwidthData in the useEffect
+    useEffect(() => {
+        updateFormWithwidthData(updateId, widthData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithwidthData wherever needed
+    const handleUpdate = (widthId) => {
         try {
+            setUpdated(true)
+            updateFormWithwidthData(widthId, widthData);
 
-            // changed from todoListState to filteredTodoListState
-            const widthDataexist = widthData.find((element) => element._id == widthId);
+            setUpdateId(widthId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: widthDataexist?.name,
-                verified: widthDataexist?.verified,
-                ref: widthDataexist?.ref,
-            });
-
-            setrefcat(widthDataexist?.ref)
-
-            setUpdateId(widthId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating width:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updatewidth(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.width);
 
                 // Optimistically update UI
-                setwidthData((prevData) => {
-                    const updatedwidths = prevData.map((width) =>
-                        width._id === updateId ? response.width : width
-                    );
-                    return updatedwidths;
-                });
+                const updatedwidths = widthData.map((width) =>
+                    width._id === updateId ? response.width : width
+                );
+
+                setwidthData(updatedwidths);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating width:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating width:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
-            ref: "",
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
@@ -168,8 +191,12 @@ const Width = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -179,9 +206,6 @@ const Width = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
@@ -281,19 +305,8 @@ const Width = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -301,12 +314,16 @@ const Width = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -322,3 +339,4 @@ const Width = () => {
 }
 
 export default Width
+

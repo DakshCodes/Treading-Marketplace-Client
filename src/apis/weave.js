@@ -33,8 +33,9 @@ export const Deleteweave = async (id) => {
 export const Updateweave = async (id, payload) => {
     try {
         const response = await axios.put(`${import.meta.env.VITE_SERVER}/api/weave/update-weave/${id}`, payload);
-        return response.data;
 
+        return response.data;
+      
     } catch (error) {
         return error.message
     }

@@ -15,8 +15,9 @@ const Suppliers = () => {
     const navigate = useNavigate();
 
     const [updateId, setUpdateId] = useState(null)
+    const [updated, setUpdated] = useState(false)
 
-    const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
+    const [supplierData, setsupplierData] = useRecoilState(suppliersDataState)
     // console.log(suppliersData || [])
 
     // Data Format
@@ -50,7 +51,7 @@ const Suppliers = () => {
                 toast.success(response.message);
                 navigate('/inventory');
                 console.log(response.supplierDoc)
-                setSuppliersData([...suppliersData, response.supplierDoc]);
+                setsupplierData([...supplierData, response.supplierDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
             } else {
@@ -76,7 +77,7 @@ const Suppliers = () => {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setSuppliersData((prevData) => prevData.filter((supplier) => supplier._id !== id));
+                setsupplierData((prevData) => prevData.filter((supplier) => supplier._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -87,48 +88,85 @@ const Suppliers = () => {
             toast.error(error.message)
         }
     }
+    const updateFormWithsupplierData = (supplierId, updatedsupplierData) => {
+        const supplierDataexist = updatedsupplierData.find((element) => element._id === supplierId);
+        console.log(supplierDataexist, updatedsupplierData, 'existssssssssssssssssssssss');
 
-
-
-    // Handle update form submission
-    const handleUpdateSubmit = async (values) => {
-        try {
-            setIsLoading(true)
-            const response = await Updatesupplier(updateId, values);
-            setIsLoading(false)
-            if (response.success) {
-                toast.success(response.message);
-
-                setSuppliersData((prevData) => {
-                    const updatedSuppliers = prevData.map((supplier) => {
-                        // console.log(supplier._id === updateId ? response.supplier : supplier)
-                        return supplier._id === updateId ? response.supplier : supplier
-                    }
-                    );
-                    return updatedSuppliers;
-                });
-
-
-                onOpenChange(false);
-                setUpdateId(null);
-            } else {
-                throw new Error(response.message);
-            }
-        } catch (error) {
-            setIsLoading(false)
-            console.error("Error updating supplier:", error.message);
-            toast.error(error.message);
-        }
+        formik.setValues({
+            name: supplierDataexist?.name,
+            brand: supplierDataexist?.brand,
+            address: supplierDataexist?.address,
+            experienced: supplierDataexist?.experienced,
+           
+        });
     };
+    // ...
+
+    // Use updateFormWithsupplierData in the useEffect
+    useEffect(() => {
+        updateFormWithsupplierData(updateId, supplierData);
+        setUpdated(false);
+    }, [updated]);
 
 
+
+   // Call updateFormWithsupplierData wherever needed
+   const handleUpdate = (supplierId) => {
+    try {
+        setUpdated(true)
+        updateFormWithsupplierData(supplierId, supplierData);
+
+        setUpdateId(supplierId)
+        onOpen();
+
+    } catch (error) {
+        console.error("Error updating supplier:", error.message);
+        toast.error(error.message);
+    }
+};
+// Handle update form submission
+const handleUpdateSubmit = async (values) => {
+    try {
+        
+        setIsLoading(true);
+        const response = await Updatesupplier(updateId, values);
+        setIsLoading(false);
+
+        if (response.success) {
+            toast.success(response.message);
+            console.log("Data update", response.supplier);
+
+            // Optimistically update UI
+            const updatedsuppliers = supplierData.map((supplier) =>
+                supplier._id === updateId ? response.supplier : supplier
+            );
+
+            setsupplierData(updatedsuppliers);
+            formik.resetForm();
+
+            // Close the modal and reset update ID
+            onOpenChange(false);
+            setUpdateId(null);
+           
+        } else {
+            throw new Error(response.message);
+        }
+    } catch (error) {
+        handleUpdateError(error);
+    }
+};
+
+const handleUpdateError = (error) => {
+    setIsLoading(false);
+    console.error("Error updating supplier:", error.message);
+    toast.error(error.message);
+};
 
     const formik = useFormik({
         initialValues: {
             name: '',
             brand: '',
             address: '',
-            verified: false,
             experienced: false,
         },
         onSubmit: async values => {
@@ -145,27 +183,12 @@ const Suppliers = () => {
         },
     });
 
-    const handleUpdate = async (supplierId) => {
-        try {
-            const mySupplierData = suppliersData.find((element) => element._id == supplierId);
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+      
 
-            console.log(mySupplierData, "exist")
-
-            formik.setValues({
-                name: mySupplierData?.name,
-                brand: mySupplierData?.brand,
-                address: mySupplierData?.address,
-                verified: mySupplierData?.verified,
-                experienced: mySupplierData?.experienced,
-            });
-
-            setUpdateId(supplierId);
-            onOpen(); // Open the modal
-        } catch (error) {
-            console.error("Error updating supplier:", error.message);
-            toast.error(error.message);
-        }
-    };
+    }
 
 
     // console.log(formik.values, "values")
@@ -212,19 +235,7 @@ const Suppliers = () => {
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff] mt-2"
                                                 placeholder="Address.."
                                             />
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+                                            
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
                                                 Experienced
                                                 <div className="relative inline-block">
@@ -245,6 +256,7 @@ const Suppliers = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
@@ -260,7 +272,7 @@ const Suppliers = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={suppliersData} onOpen={onOpen} section={'supplier'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={supplierData} onOpen={onOpen} section={'supplier'} />
         </>
     )
 }

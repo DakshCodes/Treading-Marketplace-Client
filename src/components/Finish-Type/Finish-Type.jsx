@@ -1,33 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createfinishtype, Deletefinishtype, Updatefinishtype } from '../../apis/finishtype';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
-import { finishtypeDataState } from "../../store/finishtype/finishtypeAtom"
-import { categoryDataState } from '../../store/category/category';
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { finishtypeDataState } from '../../store/finishtype/finishtypeAtom';
+import { Createfinishtype, Deletefinishtype, Updatefinishtype } from '../../apis/finishtype';
+import { categoryDataState } from '../../store/category/category';
 
-const FinishType = () => {
+
+const Finishtype = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
+    const [finishtypeData, setfinishtypeData] = useRecoilState(finishtypeDataState)
     const [updateId, setUpdateId] = useState(null)
-    const [refcat, setrefcat] = useState('')
-    const [FinishTypesData, setFinishTypesData] = useRecoilState(finishtypeDataState)
-    console.log(FinishTypesData, "finishtypeDataState")
-
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -36,33 +37,40 @@ const FinishType = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
 
 
     // Create The finishtype
     const createfinishtype = async (values) => {
         try {
+
             values.ref = refcat;
             setIsLoading(true)
             const response = await Createfinishtype(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
                 navigate('/inventory');
                 console.log(response.finishtypeDoc)
-                setFinishTypesData([...FinishTypesData, response.finishtypeDoc]);
+                setfinishtypeData([...finishtypeData, response.finishtypeDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
-            setIsLoading(false)
+            // dispatch(SetLoader(false));
+            toast.error(error.message,);
 
-            console.log(error.message);
-            toast.error(error.message);
+
         }
     }
 
@@ -70,6 +78,8 @@ const FinishType = () => {
 
     // Delete finishtype
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletefinishtype(id);
@@ -78,7 +88,7 @@ const FinishType = () => {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setFinishTypesData((prevData) => prevData.filter((finishtype) => finishtype._id !== id));
+                setfinishtypeData((prevData) => prevData.filter((finishtype) => finishtype._id !== id));
 
                 navigate('/inventory');
             } else {
@@ -91,70 +101,83 @@ const FinishType = () => {
         }
     }
 
-    // Update The finishtype
-    const handleUpdate = async (finishtypeId) => {
+    const updateFormWithfinishtypeData = (finishtypeId, updatedfinishtypeData) => {
+        const finishtypeDataexist = updatedfinishtypeData.find((element) => element._id === finishtypeId);
+        console.log(finishtypeDataexist, updatedfinishtypeData, 'existssssssssssssssssssssss');
+        setrefcat(() => (finishtypeDataexist?.ref))
+
+        formik.setValues({
+            name: finishtypeDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithfinishtypeData in the useEffect
+    useEffect(() => {
+        updateFormWithfinishtypeData(updateId, finishtypeData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithfinishtypeData wherever needed
+    const handleUpdate = (finishtypeId) => {
         try {
+            setUpdated(true)
+            updateFormWithfinishtypeData(finishtypeId, finishtypeData);
 
-            // changed from todoListState to filteredTodoListState
-            const finishtypeData = FinishTypesData.find((element) => element._id == finishtypeId);
+            setUpdateId(finishtypeId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: finishtypeData?.name,
-                verified: finishtypeData?.verified,
-                ref: finishtypeData?.ref,
-            });
-
-            setrefcat(finishtypeData?.ref)
-
-            setUpdateId(finishtypeId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating finishtype:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
             values.ref = refcat;
-            setIsLoading(true)
+            setIsLoading(true);
             const response = await Updatefinishtype(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.finishtype);
 
                 // Optimistically update UI
-                setFinishTypesData((prevData) => {
-                    const updatedfinishtypes = prevData.map((finishtype) =>
-                        finishtype._id === updateId ? response.finishtype : finishtype
-                    );
-                    return updatedfinishtypes;
-                });
+                const updatedfinishtypes = finishtypeData.map((finishtype) =>
+                    finishtype._id === updateId ? response.finishtype : finishtype
+                );
+
+                setfinishtypeData(updatedfinishtypes);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating finishtype:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating finishtype:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
-            ref: "",
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
@@ -168,8 +191,12 @@ const FinishType = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -179,9 +206,6 @@ const FinishType = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
@@ -249,7 +273,7 @@ const FinishType = () => {
                                                     height={20}
                                                     role="presentation"
                                                     viewBox="0 0 24 24"
-                                                    width={20}
+                                                    finishtype={20}
                                                     color={"#fff"}
                                                 >
                                                     <path
@@ -257,14 +281,14 @@ const FinishType = () => {
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokefinishtype={2.5}
                                                     />
                                                     <path
                                                         d="M22 22L20 20"
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokefinishtype={2.5}
                                                     />
                                                 </svg>}
                                                 variant="bordered"
@@ -281,19 +305,8 @@ const FinishType = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -301,12 +314,16 @@ const FinishType = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -316,9 +333,10 @@ const FinishType = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={FinishTypesData} onOpen={onOpen} section={'finishtype'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={finishtypeData} onOpen={onOpen} section={'finishtype'} />
         </>
     )
 }
 
-export default FinishType
+export default Finishtype
+

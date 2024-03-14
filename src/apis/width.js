@@ -34,7 +34,7 @@ export const Updatewidth = async (id, payload) => {
     try {
         const response = await axios.put(`${import.meta.env.VITE_SERVER}/api/width/update-width/${id}`, payload);
         return response.data;
-
+   
     } catch (error) {
         return error.message
     }

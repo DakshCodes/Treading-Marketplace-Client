@@ -1,32 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, Autocomplete, AutocompleteItem, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createfeeltype, Deletefeeltype, Updatefeeltype } from '../../apis/feeltype';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from "recoil"
-import { feeltypeDataState } from "../../store/feeltype/feeltypeAtom"
-import { categoryDataState } from '../../store/category/category';
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { useRecoilState, } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
+import { feeltypeDataState } from '../../store/feeltype/feeltypeAtom';
+import { Createfeeltype, Deletefeeltype, Updatefeeltype } from '../../apis/feeltype';
+import { categoryDataState } from '../../store/category/category';
+
 
 const FeelType = () => {
+
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
-
-    const [updateId, setUpdateId] = useState(null)
-    const [refcat, setrefcat] = useState('')
     const [feeltypeData, setfeeltypeData] = useRecoilState(feeltypeDataState)
-    console.log(feeltypeData, "feeltypeDataState")
+    const [updateId, setUpdateId] = useState(null)
     const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState)
-    console.log(categoriesData, "categoryDataState")
+    const [refcat, setrefcat] = useState('')
+    const [updated, setUpdated] = useState(false)
+
+
 
     // Data Format
     const columns = [
         { name: "ID", uid: "id", sortable: true },
         { name: "NAME", uid: "name", sortable: true },
-        { name: "VERIFIED", uid: "verified", sortable: true },
+        { name: "Linked Category", uid: "ref", sortable: true },
+        { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
         { name: "ACTIONS", uid: "actions" },
     ];
 
@@ -35,16 +37,21 @@ const FeelType = () => {
         { name: "Active", uid: "false" },
     ];
 
-    const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+    const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
+
+
 
     // Create The feeltype
     const createfeeltype = async (values) => {
         try {
+
             values.ref = refcat;
             setIsLoading(true)
             const response = await Createfeeltype(values);
+            console.log(values)
+
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
@@ -53,13 +60,17 @@ const FeelType = () => {
                 setfeeltypeData([...feeltypeData, response.feeltypeDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
+
+
             } else {
                 throw new Error(response.message);
+
             }
         } catch (error) {
-            setIsLoading(false)
-            console.log(error.message);
-            toast.error(error.message);
+            // dispatch(SetLoader(false));
+            toast.error(error.message,);
+
+
         }
     }
 
@@ -67,6 +78,8 @@ const FeelType = () => {
 
     // Delete feeltype
     const deleteItem = async (id) => {
+        console.log(id)
+
         try {
             setIsLoading(true)
             const response = await Deletefeeltype(id);
@@ -88,69 +101,83 @@ const FeelType = () => {
         }
     }
 
-    // Update The feeltype
-    const handleUpdate = async (feeltypeId) => {
+    const updateFormWithfeeltypeData = (feeltypeId, updatedfeeltypeData) => {
+        const feeltypeDataexist = updatedfeeltypeData.find((element) => element._id === feeltypeId);
+        console.log(feeltypeDataexist, updatedfeeltypeData, 'existssssssssssssssssssssss');
+        setrefcat(() => (feeltypeDataexist?.ref))
+
+        formik.setValues({
+            name: feeltypeDataexist?.name,
+           
+        });
+    };
+    // ...
+
+    // Use updateFormWithfeeltypeData in the useEffect
+    useEffect(() => {
+        updateFormWithfeeltypeData(updateId, feeltypeData);
+        setUpdated(false);
+    }, [updated]);
+
+    // ...
+
+    // Call updateFormWithfeeltypeData wherever needed
+    const handleUpdate = (feeltypeId) => {
         try {
+            setUpdated(true)
+            updateFormWithfeeltypeData(feeltypeId, feeltypeData);
 
-            // changed from todoListState to filteredTodoListState
-            const feeltypeDataexist = feeltypeData.find((element) => element._id == feeltypeId);
+            setUpdateId(feeltypeId)
+            onOpen();
 
-            // Set the initial values for Formik
-            formik.setValues({
-                name: feeltypeDataexist?.name,
-                verified: feeltypeDataexist?.verified,
-                ref: feeltypeDataexist?.ref,
-            });
-
-            setrefcat(feeltypeDataexist?.ref)
-
-            setUpdateId(feeltypeId);
-            onOpen(); // Open the modal
         } catch (error) {
             console.error("Error updating feeltype:", error.message);
             toast.error(error.message);
         }
     };
-
     // Handle update form submission
     const handleUpdateSubmit = async (values) => {
         try {
-            setIsLoading(true)
+            values.ref = refcat;
+            setIsLoading(true);
             const response = await Updatefeeltype(updateId, values);
-            setIsLoading(false)
+            setIsLoading(false);
+
             if (response.success) {
                 toast.success(response.message);
                 console.log("Data update", response.feeltype);
 
                 // Optimistically update UI
-                setfeeltypeData((prevData) => {
-                    const updatedfeeltypes = prevData.map((feeltype) =>
-                        feeltype._id === updateId ? response.feeltype : feeltype
-                    );
-                    return updatedfeeltypes;
-                });
+                const updatedfeeltypes = feeltypeData.map((feeltype) =>
+                    feeltype._id === updateId ? response.feeltype : feeltype
+                );
+
+                setfeeltypeData(updatedfeeltypes);
+                formik.resetForm();
 
                 // Close the modal and reset update ID
                 onOpenChange(false);
                 setUpdateId(null);
+               
             } else {
                 throw new Error(response.message);
             }
         } catch (error) {
-            setIsLoading(false)
-
-            console.error("Error updating feeltype:", error.message);
-            toast.error(error.message);
+            handleUpdateError(error);
         }
     };
 
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
+        console.error("Error updating feeltype:", error.message);
+        toast.error(error.message);
+    };
 
 
     const formik = useFormik({
         initialValues: {
             name: '',
-            verified: false,
-            ref: "",
+            ref: ''
         },
         onSubmit: async values => {
             if (updateId) {
@@ -164,10 +191,12 @@ const FeelType = () => {
             }
         },
     });
+    const setUpdate = () => {
+        setUpdateId(false)
+        formik.resetForm(); 
+        setrefcat('')
 
-    console.log(refcat, "ref")
-
-
+    }
     return (
         <>
             <div className="flex flex-col gap-2">
@@ -177,9 +206,6 @@ const FeelType = () => {
                     size={"xl"}
                     onOpenChange={(newState) => {
                         onOpenChange(newState);
-                        if (!newState) {
-                            formik.setValues({})
-                        }
                     }}
                 >
                     <ModalContent>
@@ -247,7 +273,7 @@ const FeelType = () => {
                                                     height={20}
                                                     role="presentation"
                                                     viewBox="0 0 24 24"
-                                                    width={20}
+                                                    feeltype={20}
                                                     color={"#fff"}
                                                 >
                                                     <path
@@ -255,14 +281,14 @@ const FeelType = () => {
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokefeeltype={2.5}
                                                     />
                                                     <path
                                                         d="M22 22L20 20"
                                                         stroke="currentColor"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.5}
+                                                        strokefeeltype={2.5}
                                                     />
                                                 </svg>}
                                                 variant="bordered"
@@ -279,19 +305,8 @@ const FeelType = () => {
                                                     </AutocompleteItem>
                                                 )}
                                             </Autocomplete>
-                                            <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Verified
-                                                <div className="relative inline-block">
-                                                    <input
-                                                        onChange={formik.handleChange}
-                                                        name="verified" // Associate the input with the form field 'verified'
-                                                        checked={formik.values.verified} // Set the checked state from formik values
-                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                                        type="checkbox"
-                                                    />
-                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
-                                                </div>
-                                            </label>
+
+                            
                                         </div>
                                     </div>
                                 </ModalBody>
@@ -299,12 +314,16 @@ const FeelType = () => {
                                     <Button
                                         color="danger" variant="light"
                                         onPress={onClose}
+                                        onClick={setUpdate}
                                     >
                                         Close
                                     </Button>
                                     <Button color="primary"
                                         className="bg-foreground text-background font-font1"
                                         onClick={formik.handleSubmit}
+
+
+
                                     >
                                         {updateId ? "Update" : "Create "}
                                     </Button>
@@ -320,3 +339,4 @@ const FeelType = () => {
 }
 
 export default FeelType
+

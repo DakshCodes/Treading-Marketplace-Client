@@ -87,7 +87,7 @@ const ProductPage = () => {
             // Set the initial values for Formik
             formik.setValues({
                 name: finishtypeData?.name,
-                verified: finishtypeData?.verified,
+                
                 ref: finishtypeData?.ref,
             });
 

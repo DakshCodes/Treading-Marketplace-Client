@@ -528,6 +528,13 @@ const ProductPageForm = () => {
                                                     </svg>
                                                 </div>
                                             }
+                                             <Button
+                                        color="danger" variant="light"
+                                        // onPress={onClose}
+                                        // onClick={setUpdate}
+                                    >
+                                        Close
+                                    </Button>
                                             <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
                                                 Upload
                                             </Button>
