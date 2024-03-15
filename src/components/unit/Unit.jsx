@@ -61,7 +61,6 @@ const Unit = () => {
                 setunitData([...unitData, response.unitDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
-                formik.setValues(values)
 
             } else {
                 throw new Error(response.message);

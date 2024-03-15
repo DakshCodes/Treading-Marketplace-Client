@@ -43,7 +43,10 @@ const Suppliers = () => {
     // Create The Supplier
     const creatsupplier = async (values) => {
         try {
+            formik.resetForm();
             setIsLoading(true)
+            console.log(values,'vvvvvvvv')
+
             const response = await Createsupplier(values);
             setIsLoading(false)
             // dispatch(SetLoader(false));
@@ -237,11 +240,11 @@ const handleUpdateError = (error) => {
                                             />
                                             
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
-                                                Experienced
+                                            Experienced
                                                 <div className="relative inline-block">
                                                     <input
-                                                        onChange={formik.handleChange}
-                                                        name="experienced" // Associate the input with the form field 'experienced'
+                                                        onChange={(e) => formik.setFieldValue("experienced", e.target.checked)}
+                                                        name="experienced" // Associate the input with the form field 'verified'
                                                         checked={formik.values.experienced} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                                                         type="checkbox"
