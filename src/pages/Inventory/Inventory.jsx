@@ -1,45 +1,47 @@
 import React from 'react'
 import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-import { FaCut } from "react-icons/fa";
+// import { FaCut } from "react-icons/fa";
 import { UilRuler,UilCube,UilArrowsHAlt , UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
 import Categories from '../../components/Categories/Categories';
-import Quality from '../../components/Quality/Quality';
-import Design from '../../components/Design/Design';
-import FinishType from '../../components/Finish-Type/Finish-Type';
-import FeelType from '../../components/Feel-Type/Feel-Type';
-import Weave from '../../components/Weave/Weave';
-import Width from '../../components/Width/Width';
-import Unit from '../../components/unit/Unit';
-import Cut from '../../components/cut/Cut';
+// import Quality from '../../components/Quality/Quality';
+// import Design from '../../components/Design/Design';
+// import FinishType from '../../components/Finish-Type/Finish-Type';
+// import FeelType from '../../components/Feel-Type/Feel-Type';
+// import Weave from '../../components/Weave/Weave';
+// import Width from '../../components/Width/Width';
+// import Unit from '../../components/unit/Unit';
+// import Cut from '../../components/cut/Cut';
 import { productsDataState } from '../../store/product/productAtom';
 import { useRecoilValue } from 'recoil';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
 import { categoryDataState } from '../../store/category/category';
-import { qualityDataState } from '../../store/quality/qualityAtom';
-import { designDataState } from '../../store/design/designAtom';
-import { finishtypeDataState } from '../../store/finishtype/finishtypeAtom';
-import { feeltypeDataState } from '../../store/feeltype/feeltypeAtom';
-import { weaveDataState } from '../../store/weave/weaveAtom';
-import { widthDataState } from '../../store/width/widthAtom';
-import { unitDataState } from '../../store/unit/unitAtom';
-import { cutDataState } from '../../store/cut/cutAtom';
+// import { qualityDataState } from '../../store/quality/qualityAtom';
+// import { designDataState } from '../../store/design/designAtom';
+// import { finishtypeDataState } from '../../store/finishtype/finishtypeAtom';
+// import { feeltypeDataState } from '../../store/feeltype/feeltypeAtom';
+// import { weaveDataState } from '../../store/weave/weaveAtom';
+// import { widthDataState } from '../../store/width/widthAtom';
+// import { unitDataState } from '../../store/unit/unitAtom';
+// import { cutDataState } from '../../store/cut/cutAtom';
+import { attributeDataState } from '../../store/attributevalues/attributeAtom';
+import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
+import { PiTreeStructureBold } from "react-icons/pi";
+import { TbListTree } from "react-icons/tb";
+
+import Attribute from '../../components/Attributes/Attribute';
+import AttributeValue from '../../components/AttributeValues/AttributeValue';
 
 const Inventory = () => {
 
     const productsData = useRecoilValue(productsDataState);
     const supplierData = useRecoilValue(suppliersDataState);
     const categoryData = useRecoilValue(categoryDataState);
-    const qualityData = useRecoilValue(qualityDataState);
-    const designData = useRecoilValue(designDataState);
-    const finishData = useRecoilValue(finishtypeDataState);
-    const feelData = useRecoilValue(feeltypeDataState);
-    const weaveData = useRecoilValue(weaveDataState);
-    const widthData = useRecoilValue(widthDataState);
-    const unitData = useRecoilValue(unitDataState);
-    const cutData = useRecoilValue(cutDataState);
+    const attributeData = useRecoilValue(attributeDataState);
+    const attributeValueData = useRecoilValue(attributeValueDataState);
+
 
 
     return (
@@ -96,6 +98,32 @@ const Inventory = () => {
                         <Categories />
                     </Tab>
                     <Tab
+                        key="Attributes"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <PiTreeStructureBold />
+                                <span>Attributes</span>
+                                <Chip size="sm" variant="light">{attributeData?.length}</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Attribute/>
+                    </Tab>
+                    <Tab
+                        key="AttributeValues"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <TbListTree />
+                                <span>AttributeValues</span>
+                                <Chip size="sm" variant="light">{attributeValueData?.length}</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <AttributeValue/>
+                    </Tab>
+                    {/* <Tab
                         key="Quality"
                         title={
                             <div className="flex items-center space-x-2 ">
@@ -198,7 +226,7 @@ const Inventory = () => {
                         className="max-h-max px-5 "
                     >
                         <Cut />
-                    </Tab>
+                    </Tab> */}
                 </Tabs>
             </div>
         </div>
