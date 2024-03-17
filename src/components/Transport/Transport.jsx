@@ -7,22 +7,22 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
-import { unitDataState } from '../../store/unit/unitAtom';
-import { CreateUnit, Deleteunit, Updateunit } from '../../apis/unit';
+import { transportDataState } from '../../store/transport/transportAtom';
+import { Createtransport, Deletetransport, Updatetransport } from '../../apis/transport';
 
-const Unit = () => {
+const Transport = () => {
 
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
     const [updateId, setUpdateId] = useState(null)
-    const [unitData, setunitData] = useRecoilState(unitDataState)
+    const [transportData, settransportData] = useRecoilState(transportDataState)
 
 
 
 
 
-    console.log(unitData, "unitDataState")
+    console.log(transportData, "transportDataState")
 
 
 
@@ -46,19 +46,20 @@ const Unit = () => {
     const [updated, setUpdated] = useState(false)
 
     // Create The width
-    const createunit = async (values) => {
+    const createtransport = async (values) => {
         try {
             formik.resetForm()
 
             // values.ref = refcat;
             setIsLoading(true)
-            const response = await CreateUnit(values);
+            const response = await Createtransport(values);
+            console.log(values,'vvvvvvvvvvvvvvvvvvvvvv')
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
-                navigate('/inventory');
-                console.log(response.unitDoc)
-                setunitData([...unitData, response.unitDoc]);
+                navigate('/customers');
+                console.log(response.transportDoc)
+                settransportData([...transportData, response.transportDoc]);
                 onOpenChange(false)
                 setUpdateId(null); // Reset update ID when modal is closed
 
@@ -76,21 +77,21 @@ const Unit = () => {
 
 
 
-    // Delete unit
+    // Delete transport
     const deleteItem = async (id) => {
         console.log(id)
 
         try {
             setIsLoading(true)
-            const response = await Deleteunit(id);
+            const response = await Deletetransport(id);
             setIsLoading(false)
             if (response.success) {
                 toast.success(response.message);
 
                 // Update local state based on the correct identifier (use _id instead of id)
-                setunitData((prevData) => prevData.filter((unit) => unit._id !== id));
+                settransportData((prevData) => prevData.filter((transport) => transport._id !== id));
 
-                navigate('/inventory');
+                navigate('/customers');
             } else {
                 throw new Error(response.message);
             }
@@ -101,35 +102,35 @@ const Unit = () => {
         }
     }
 
-    const updateFormWithunitData = (unitId, updatedunitData) => {
-        const unitDataexist = updatedunitData.find((element) => element._id === unitId);
-        console.log(unitDataexist, updatedunitData, 'existssssssssssssssssssssss');
+    const updateFormWithtransportData = (transportId, updatedtransportData) => {
+        const transportDataexist = updatedtransportData.find((element) => element._id === transportId);
+        console.log(transportDataexist, updatedtransportData, 'existssssssssssssssssssssss');
 
         formik.setValues({
-            name: unitDataexist?.name,
+            name: transportDataexist?.name,
         });
     };
     // ...
 
-    // Use updateFormWithunitData in the useEffect
+    // Use updateFormWithtransportData in the useEffect
     useEffect(() => {
-        updateFormWithunitData(updateId, unitData);
+        updateFormWithtransportData(updateId, transportData);
         setUpdated(false);
     }, [updated]);
 
     // ...
 
-    // Call updateFormWithunitData wherever needed
-    const handleUpdate = (unitId) => {
+    // Call updateFormWithtransportData wherever needed
+    const handleUpdate = (transportId) => {
         try {
             setUpdated(true)
-            updateFormWithunitData(unitId, unitData);
+            updateFormWithtransportData(transportId, transportData);
 
-            setUpdateId(unitId)
+            setUpdateId(transportId)
             onOpen();
 
         } catch (error) {
-            console.error("Error updating unit:", error.message);
+            console.error("Error updating transport:", error.message);
             toast.error(error.message);
         }
     };
@@ -138,24 +139,24 @@ const Unit = () => {
         try {
             // values.ref = refcat;
             setIsLoading(true)
-            const response = await Updateunit(updateId, values);
+            const response = await Updatetransport(updateId, values);
             setIsLoading(false)
 
             if (response.success) {
                 toast.success(response.message);
-                console.log("Data update", response.unit);
+                console.log("Data update", response.transport);
 
                 // Optimistically update UI
 
-                setunitData((preValue) => {
-                    const updatedunits = preValue.map((unit) => {
-                        return unit._id === updateId ? response.unit : unit
+                settransportData((preValue) => {
+                    const updatedtransports = preValue.map((transport) => {
+                        return transport._id === updateId ? response.transport : transport
                     }
                     )
-                    return updatedunits;
+                    return updatedtransports;
                 })
                 formik.setValues({
-                    name: response.unit?.name,
+                    name: response.transport?.name,
                     
                 }
                 )
@@ -169,7 +170,7 @@ const Unit = () => {
         } catch (error) {
             setIsLoading(false)
 
-            console.error("Error updating unit:", error.message);
+            console.error("Error updating transport:", error.message);
             toast.error(error.message);
         }
     };
@@ -188,7 +189,7 @@ const Unit = () => {
                 setIsLoading(false)
             } else {
                 setIsLoading(true)
-                await createunit(values);
+                await createtransport(values);
                 setIsLoading(false)
             }
         },
@@ -214,7 +215,7 @@ const Unit = () => {
                         {(onClose) => (
                             <>
                                 <ModalHeader className="flex flex-col gap-1 text-[2rem] font-font1">
-                                    {updateId ? "Update unit" : "Create unit"}
+                                    {updateId ? "Update transport" : "Create transport"}
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl bg-[#1f1e30]">
@@ -223,7 +224,7 @@ const Unit = () => {
                                                 autoFocus
                                                 {...formik.getFieldProps('name')}
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
-                                                placeholder="unit name.."
+                                                placeholder="transport name.."
                                             />
 
                                            
@@ -253,10 +254,10 @@ const Unit = () => {
                     </ModalContent>
                 </Modal>
             </div>
-            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={unitData} onOpen={onOpen} section={'unit'} />
+            <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={transportData} onOpen={onOpen} section={'transport'} />
         </>
     )
 }
 
-export default Unit
+export default Transport
 

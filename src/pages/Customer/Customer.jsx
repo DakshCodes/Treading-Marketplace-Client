@@ -6,10 +6,14 @@ import { useRecoilValue } from 'recoil';
 import { FaUserAlt } from "react-icons/fa";
 import CustomerPage from '../../components/CustomerPage/CustomerPage';
 import { customerDataState } from '../../store/customer/customerAtom';
+import { transportDataState } from '../../store/transport/transportAtom';
+import Transport from '../../components/Transport/Transport';
+import { FaTruckFast } from "react-icons/fa6";
 
 const Customer = () => {
 
     const customersData = useRecoilValue(customerDataState);
+    const transportData = useRecoilValue(transportDataState);
  
 
 
@@ -39,6 +43,19 @@ const Customer = () => {
                         className="max-h-max px-5 "
                     >
                         <CustomerPage />
+                    </Tab>
+                    <Tab
+                        key="transport"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <FaTruckFast/>
+                                <span>Transport</span>
+                                <Chip size="sm" variant="light">{transportData?.length}</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Transport />
                     </Tab>
                     
                 </Tabs>

@@ -43,7 +43,10 @@ const Suppliers = () => {
     // Create The Supplier
     const creatsupplier = async (values) => {
         try {
+            formik.resetForm();
             setIsLoading(true)
+            console.log(values, 'vvvvvvvv')
+
             const response = await Createsupplier(values);
             setIsLoading(false)
             // dispatch(SetLoader(false));
@@ -88,7 +91,7 @@ const Suppliers = () => {
             toast.error(error.message)
         }
     }
-    
+
     const updateFormWithsupplierData = (supplierId, updatedsupplierData) => {
         const supplierDataexist = updatedsupplierData.find((element) => element._id === supplierId);
         console.log(supplierDataexist, updatedsupplierData, 'existssssssssssssssssssssss');
@@ -98,7 +101,7 @@ const Suppliers = () => {
             brand: supplierDataexist?.brand,
             address: supplierDataexist?.address,
             experienced: supplierDataexist?.experienced,
-           
+
         });
     };
     // ...
@@ -111,57 +114,57 @@ const Suppliers = () => {
 
 
 
-   // Call updateFormWithsupplierData wherever needed
-   const handleUpdate = (supplierId) => {
-    try {
-        setUpdated(true)
-        updateFormWithsupplierData(supplierId, supplierData);
+    // Call updateFormWithsupplierData wherever needed
+    const handleUpdate = (supplierId) => {
+        try {
+            setUpdated(true)
+            updateFormWithsupplierData(supplierId, supplierData);
 
-        setUpdateId(supplierId)
-        onOpen();
+            setUpdateId(supplierId)
+            onOpen();
 
-    } catch (error) {
+        } catch (error) {
+            console.error("Error updating supplier:", error.message);
+            toast.error(error.message);
+        }
+    };
+    // Handle update form submission
+    const handleUpdateSubmit = async (values) => {
+        try {
+
+            setIsLoading(true);
+            const response = await Updatesupplier(updateId, values);
+            setIsLoading(false);
+
+            if (response.success) {
+                toast.success(response.message);
+                console.log("Data update", response.supplier);
+
+                // Optimistically update UI
+                const updatedsuppliers = supplierData.map((supplier) =>
+                    supplier._id === updateId ? response.supplier : supplier
+                );
+
+                setsupplierData(updatedsuppliers);
+                formik.resetForm();
+
+                // Close the modal and reset update ID
+                onOpenChange(false);
+                setUpdateId(null);
+
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            handleUpdateError(error);
+        }
+    };
+
+    const handleUpdateError = (error) => {
+        setIsLoading(false);
         console.error("Error updating supplier:", error.message);
         toast.error(error.message);
-    }
-};
-// Handle update form submission
-const handleUpdateSubmit = async (values) => {
-    try {
-        
-        setIsLoading(true);
-        const response = await Updatesupplier(updateId, values);
-        setIsLoading(false);
-
-        if (response.success) {
-            toast.success(response.message);
-            console.log("Data update", response.supplier);
-
-            // Optimistically update UI
-            const updatedsuppliers = supplierData.map((supplier) =>
-                supplier._id === updateId ? response.supplier : supplier
-            );
-
-            setsupplierData(updatedsuppliers);
-            formik.resetForm();
-
-            // Close the modal and reset update ID
-            onOpenChange(false);
-            setUpdateId(null);
-           
-        } else {
-            throw new Error(response.message);
-        }
-    } catch (error) {
-        handleUpdateError(error);
-    }
-};
-
-const handleUpdateError = (error) => {
-    setIsLoading(false);
-    console.error("Error updating supplier:", error.message);
-    toast.error(error.message);
-};
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -186,7 +189,7 @@ const handleUpdateError = (error) => {
 
     const setUpdate = () => {
         setUpdateId(false)
-        formik.resetForm(); 
+        formik.resetForm();
     }
 
 
@@ -234,13 +237,13 @@ const handleUpdateError = (error) => {
                                                 className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff] mt-2"
                                                 placeholder="Address.."
                                             />
-                                            
+
                                             <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
                                                 Experienced
                                                 <div className="relative inline-block">
                                                     <input
-                                                        // onChange={formik.handleChange}
-                                                        name="experienced" // Associate the input with the form field 'experienced'
+                                                        onChange={(e) => formik.setFieldValue("experienced", e.target.checked)}
+                                                        name="experienced" // Associate the input with the form field 'verified'
                                                         checked={formik.values.experienced} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
                                                         type="checkbox"

@@ -89,7 +89,7 @@ const CustomerPage = () => {
                 // Update local state based on the correct identifier (use _id instead of id)
                 setcustomerData((prevData) => prevData.filter((customer) => customer._id !== id));
                    
-                navigate('/inventory');
+                navigate('/customers');
             } else {
                 throw new Error(response.message);
             }
@@ -189,7 +189,7 @@ const CustomerPage = () => {
     });
 const setUpdate = ()=>{
     setUpdateId(false)
-    // formik.resetForm();  
+    formik.resetForm();  
 }
     return (
         <>
