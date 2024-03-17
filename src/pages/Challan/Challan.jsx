@@ -9,14 +9,12 @@ import { useRecoilState } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { challanDataState } from '../../store/challan/challan';
 import { productsDataState } from '../../store/product/productAtom';
-import { useRecoilValue } from 'recoil';
-import { getProductById } from '../../store/product/productAtom';
 import { cutDataState } from '../../store/cut/cutAtom';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
 import AutoComplete from '../../components/Autocomplete/AutoComplete';
-import { unitDataState } from '../../store/unit/unitAtom';
 import { customerDataState } from '../../store/customer/customerAtom';
-import { ReceiptText, IndianRupee } from 'lucide-react'
+import { IndianRupee } from 'lucide-react'
+import { UploadImageChallan } from '../../apis/product';
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,6 +35,8 @@ const Challan = () => {
 
   const [productsData, setProductsData] = useRecoilState(productsDataState)
 
+  const [updated, setUpdated] = useState(false)
+
   // const products = useRecoilValue(getProductById(supplierRef));
 
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
@@ -46,8 +46,9 @@ const Challan = () => {
 
   const [cutData, setcutData] = useRecoilState(cutDataState)
 
-  const units = useRecoilValue(unitDataState);
-  // console.log(suppliersData || [])
+  const [productChartImage, setProductChartImage] = useState('');
+  const [productChartImageData, setProductChartImageData] = useState([]);
+
 
   // Data Format
   const columns = [
@@ -80,13 +81,14 @@ const Challan = () => {
       // dispatch(SetLoader(false));
       if (response.success) {
         toast.success(response.message);
-        navigate('/challan');
         console.log(response.challanDoc)
         setChallansData([...challansData, response.challanDoc]);
-        onOpenChange(false)
         setUpdateId(null); // Reset update ID when modal is closed
+        onOpenChange(false)
       } else {
-        throw new Error(response.message);
+        console.log(response.response.data.error);
+        toast.error(response.response.data.error);
+        // throw new Error(response.error);
       }
     } catch (error) {
       // dispatch(SetLoader(false));
@@ -130,16 +132,22 @@ const Challan = () => {
       if (response.success) {
         toast.success(response.message);
 
-        setChallansData((prevData) => {
-          const updatedSuppliers = prevData.map((supplier) => {
-            // console.log(supplier._id === updateId ? response.supplier : supplier)
-            return supplier._id === updateId ? response.challan : supplier
-          }
-          );
-          return updatedSuppliers;
-        });
+        // setChallansData((prevData) => {
+        //   const updatedSuppliers = prevData.map((supplier) => {
+        //     // console.log(supplier._id === updateId ? response.supplier : supplier)
+        //     return supplier._id === updateId ? response.challan : supplier
+        //   }
+        //   );
+        //   return updatedSuppliers;
+        // });
+        // Optimistically update UI
+        const updatedsuppliers = challansData.map((supplier) =>
+          supplier._id === updateId ? response.challan : supplier
+        );
 
-        formik.setValues('');
+        setChallansData(updatedsuppliers);
+
+        formik.resetForm();
 
 
         onOpenChange(false);
@@ -160,7 +168,7 @@ const Challan = () => {
   const formik = useFormik({
     initialValues: {
       challanNo: '',
-      remarkDesc: '',
+      challanDate: null,
       totalBill: '',
       customer: '',
       type: 'supplier',
@@ -171,15 +179,14 @@ const Challan = () => {
     onSubmit: async values => {
       if (updateId) {
         setIsLoading(true)
-        values.remarkDesc = remark;
-        values.totalBill = totalbill;
+        console.log(values, "update")
+        generateToatl()
         await handleUpdateSubmit(values);
         setIsLoading(false)
       } else {
         values.challanNo = challanNumber;
-        values.remarkDesc = remark;
-        values.totalBill = totalbill;
         console.log(values, "going")
+        generateToatl()
         setIsLoading(true)
         await creatsupplier(values);
         setIsLoading(false)
@@ -187,39 +194,45 @@ const Challan = () => {
     },
   });
 
+  const updateFormWithsupplierData = (supplierId, updatedsupplierData) => {
+    const mySupplierData = updatedsupplierData.find((element) => element._id === supplierId);
+    console.log(mySupplierData, updatedsupplierData, 'existssssssssssssssssssssss');
+
+    formik.setValues({
+      challanNo: mySupplierData?.challanNo,
+      challanDate: mySupplierData?.challanDate,
+      totalBill: mySupplierData?.totalBill,
+      customer: mySupplierData?.customer,
+      products: mySupplierData?.products.map((product) => ({
+        cut: product.cut,
+        overall: product.overall,
+        price: product.price,
+        product: product.product,
+        unit: product.unit,
+        challanChartImages: product.challanChartImages,
+        qtyMtr: product.qtyMtr,
+        qtyPcs: product.qtyPcs,
+        remarkDesc: product.remarkDesc,
+        total: product.total,
+      })),
+      supplier: mySupplierData?.supplier,
+      type: mySupplierData?.type,
+      verified: mySupplierData?.verified,
+    });
+
+    setsupplierRef(mySupplierData?.supplier)
+    settotalbill(mySupplierData?.totalBill)
+    setRemark(mySupplierData?.remarkDesc)
+  };
+
+
   const handleUpdate = async (supplierId) => {
     try {
-      const mySupplierData = challansData.find((element) => element._id == supplierId);
+      console.log(supplierId, "id")
+      updateFormWithsupplierData(supplierId, challansData);
 
-      console.log(mySupplierData, "exist");
-
-      formik.setValues({
-        customer: mySupplierData?.customer,
-        challanNo: mySupplierData?.challanNo,
-        remarkDesc: mySupplierData?.remarkDesc,
-        totalBill: mySupplierData?.totalBill,
-        products: mySupplierData?.products.map((product) => ({
-          cut: product.cut,
-          overall: product.overall,
-          price: product.price,
-          product: product.product,
-          unit: product.unit,
-          qty: product.qty,
-          total: product.total,
-        })),
-        supplier: mySupplierData?.supplier,
-        type: mySupplierData?.type,
-        verified: mySupplierData?.verified,
-      });
-      
-      setsupplierRef(mySupplierData?.supplier)
-      settotalbill(mySupplierData?.totalBill)
-      setRemark(mySupplierData?.remarkDesc)
-
-      // setchallanNumber(mySupplierData?.challanNo)
-
-      setUpdateId(supplierId);
-      onOpen(); // Open the modal
+      setUpdateId(supplierId)
+      onOpen();
     } catch (error) {
       console.error("Error updating supplier:", error.message);
       toast.error(error.message);
@@ -229,50 +242,79 @@ const Challan = () => {
   // console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable = () => {
-    if (productref && cutref) {
-      let cut = 1;
-      const pricePerPiece = productsData?.filter(item => item?._id === productref)[0]?.pricePerPiece;
+    if (productref && cutref && unit) {
+      let qtyMeter;
+      const pricePerPiece = productsData?.filter(item => item?._id === productref)[0]?.pricePerUnit?.magnitude;
       const cutvalue = cutData.find(cut => cut._id === cutref)
       if (cutvalue?.isNameNumerical) {
-        cut = parseFloat(cutvalue?.name);
+        qtyMeter = Math.floor(qty * parseFloat(cutvalue?.name));
       }
+      let overall = 0;
       const price = parseFloat(pricePerPiece);
-      const total = isNaN(cut) ? 0 : parseFloat(qty) * cut;
-      const overall = isNaN(price) ? 0 : total * price;
+      console.log(unit)
+      if (unit === '1') {
+        console.log("in")
+        overall = isNaN(price) ? 0 : Math.floor(qty * price);
+      }
+      if (unit === '2') {
+        console.log("in")
+        overall = isNaN(price) ? 0 : Math.floor(qtyMeter * price);
+      }
 
-      const newProduct = { product: productref, cut: cutref, qty: qty, unit: unit, total: total, price: pricePerPiece || 0, overall: overall };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtyMeter, challanChartImages: productChartImageData, price: pricePerPiece || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
-
-      settotalbill(prevalues => prevalues + newProduct?.overall)
       setproductref("")
+      setProductChartImageData([])
+      setProductChartImage("")
       setcutref("")
+      setUnit("")
       setqty("")
+      setRemark("")
     } else {
       // toast.error("Please select all fields");
     }
   };
 
-  // const handleQtyChange = (index, value) => {
-  //   // formik.setValues((prevValues) => {
-  //   //   const updatedProducts = [...prevValues.products];
-  //   //   const product = { ...updatedProducts[index], qty: value };
-  //   //   console.log(product)
-  //   //   console.log(product.cut)
-  //   //   const cutvalue = cutData.find(cut => cut._id === product.cut)?.name
-  //   //   console.log(cutvalue)
-  //   //   const cut = parseFloat(cutvalue);
-  //   //   const price = parseFloat(product.price);
-  //   //   console.log(cut)
-  //   //   console.log(price)
-  //   //   const total = isNaN(cut) ? 0 : product.qty * cut;
-  //   //   const overall = isNaN(price) ? 0 : total * price;
-  //   //   updatedProducts[index] = { ...product, total, overall };
-  //   //   return { ...prevValues, products: updatedProducts };
-  //   // });
-  // };
+  const handleQtyChange = (index, value) => {
+    formik.setValues((prevValues) => {
+      const updatedProducts = [...prevValues.products];
+      const product = { ...updatedProducts[index], price: value };
+      let overallprice = product.overall;
+      if (product.unit === "1") {
+        const price = parseFloat(product.price);
+        console.log(price)
+        console.log(product.qtyPcs)
+        overallprice = parseFloat(product.qtyPcs) * parseFloat(price);
+      }
+      if (product.unit === "2") {
+        const price = parseFloat(product.price);
+        overallprice = parseFloat(product.qtyMtr) * price;
+      }
+      updatedProducts[index] = { ...product, overall: overallprice };
+      return { ...prevValues, products: updatedProducts };
+    });
+  };
+  const handleQtyMeterChange = (index, value) => {
+    console.log(value, "metervalue...........................")
+    formik.setValues((prevValues) => {
+      const updatedProducts = [...prevValues.products];
+      const product = { ...updatedProducts[index], qtyMtr: value };
+
+      console.log(product)
+
+      let overallprice = product.overall;
+      if (product.unit === "2") {
+        const price = parseFloat(product.price);
+        overallprice = parseFloat(product.qtyMtr) * price;
+      }
+      updatedProducts[index] = { ...product, overall: overallprice };
+      return { ...prevValues, products: updatedProducts };
+    });
+  };
+
 
 
   const onSupplierChange = (value) => {
@@ -291,22 +333,79 @@ const Challan = () => {
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
       const updatedProducts = [...prevValues.products];
-      settotalbill(prev => prev - prevValues.products[index].overall)
       updatedProducts.splice(index, 1);
       return { ...prevValues, products: updatedProducts };
     });
   };
+  const generateToatl = () => {
+
+    // Accessing products from formik values
+    const products = formik.values.products;
+
+    if (products?.length > 0) {
+      // Calculating the total bill
+      const totalBill = products.reduce((acc, product) => {
+        return acc + product.overall;
+      }, 0);
+
+      // Setting the total bill
+      settotalbill(totalBill);
+      formik.setFieldValue('totalBill', totalBill);
+    }
+    else {
+      settotalbill(0);
+      formik.setFieldValue('totalBill', 0);
+    }
+  };
+
+  const handleProductChartImageChange = (e) => {
+    setProductChartImage(e.target.files[0]);
+    console.log(e.target.files[0])
+  };
+
+  const uploadImage = async (e) => {
+    try {
+      const formData = new FormData();
+      let imageFile = productChartImage;
+      console.log("inside productChartImage")
+
+      if (imageFile) {
+        formData.append("color-chart-challan", imageFile);
+        const response = await UploadImageChallan(formData);
+
+        if (response.success) {
+          toast.success(response.message);
+          const newImageLink = response.url;
+          setProductChartImageData((prevImages) => [...prevImages, { src: newImageLink }]);
+          setProductChartImage('');
+        } else {
+          toast.error(response.message);
+        }
+      } else {
+        toast.error('Please select an image file.');
+      }
+
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error.message);
+    }
+  };
 
 
   useEffect(() => {
-    const generateRandomChar = () => {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      return chars.charAt(Math.floor(Math.random() * chars.length));
-    };
+    if (challansData.length === 0) {
+      setchallanNumber('1');
+    } else {
+      // Extract the last element's challanNumber
+      const lastChallanNumber = challansData[challansData.length - 1].challanNo;
+      // console.log(lastChallanNumber, "last")
+      // Increment the last challanNumber and set it
+      const newChallanNumber = (parseInt(lastChallanNumber) + 1).toString();
+      // console.log(newChallanNumber, "challan")
+      setchallanNumber(newChallanNumber);
+    }
+  }, [onOpenChange, challansData]);
 
-    const newChallanNumber = Array.from({ length: 10 }, generateRandomChar).join('');
-    setchallanNumber(newChallanNumber);
-  }, [onOpenChange]);
 
 
   // console.log(formik.values, "values")
@@ -314,6 +413,18 @@ const Challan = () => {
   // console.log("product: ", productsData)
   console.log("data ", challansData)
   // console.log("cut: ", unit)
+  // console.log("productChartImageData: ", productChartImageData)
+  // console.log("challan: ", totalbill)
+  // const datePart = new Date(yourArray.challanDate)
+
+  // const currentDate = new Date().toISOString().split('T')[0];
+  // console.log(formik.values.challanDate.split('T')[0], "date")
+  // console.log(currentDate, "current-date")
+
+  const Units = [
+    { name: "Pcs", _id: 1 },
+    { name: "Meter", _id: 2 },
+  ]
 
   return (
     <>
@@ -321,12 +432,15 @@ const Challan = () => {
         <Modal
           isOpen={isOpen}
           scrollBehavior={"inside"}
-          size={"5xl"}
+          size={"full"}
+          className="!mx-20 !rounded-xl"
           onOpenChange={(newState) => {
             onOpenChange(newState);
             if (!newState) {
               formik.resetForm();
+              setUpdateId("")
               setRemark("");
+              settotalbill("");
             }
           }}
         >
@@ -344,13 +458,9 @@ const Challan = () => {
                           fullWidth
                           size="lg"
                           aria-label="Tabs form"
-                        // selectedKey={selected}
-                        // onSelectionChange={setSelected}
-                        // disabledKeys={(slider?.viewall === "Categories") && ["Products"] || (slider?.viewall === "Products") && ["Categories"]}
                         >
                           <Tab key="Supplier"
                             className="py-6 flex flex-col  gap-10 font-[400] font-font2"
-                            // title={(slider?.viewall === "Products") ? "You Can Only Create One" : "Categories"}4
                             title="Supplier"
                           >
                             <div className='flex  gap-5 mt-5 flex-col'>
@@ -367,6 +477,22 @@ const Challan = () => {
                                 // value={challanNumber}
                                 variant="flat"
                               />
+                              <Input
+                                type="date"
+                                labelPlacement="outside-left"
+                                label="Date"
+                                classNames={{
+                                  label: "font-[600] font-font1",
+                                  input: "font-[500] font-font1",
+                                  // inputWrapper: "max-h-[50px]"
+                                }}
+                                value={formik?.values?.challanDate?.split('T')[0]}
+                                onChange={(e) => formik.setFieldValue('challanDate', e.target.value)}
+                                // Use the date string directly
+                                // {...formik.getFieldProps('challanDate')}
+                                className=" max-w-[15rem] mt-5"
+                              />
+
                               <div className='flex items-center gap-10 mt-5'>
                                 <Autocomplete
                                   labelPlacement="outside"
@@ -543,20 +669,14 @@ const Challan = () => {
                                   )}
                                 </Autocomplete>
                               </div>
-                              <Textarea
-                                variant="underlined"
-                                label="Remarks"
-                                labelPlacement="outside"
-                                placeholder="Enter your remarks"
-                                className="col-span-12 md:col-span-6 mb-6 md:mb-0 mt-5 font-[600] font-font1"
-                                value={remark}
-                                onValueChange={setRemark}
-                              />
                             </div>
-                            <div className="img-form flex flex-col gap-5">
+                            <div className="img-form flex flex-col gap-5 mt-5">
                               <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
-                              <div className='grid grid-cols-2 gap-5 w-full' >
+                              <div className='grid grid-cols-4 gap-5 mt-4 w-full' >
                                 <Autocomplete
+                                  labelPlacement="outside"
+                                  label="Product Name"
+
                                   classNames={{
                                     base: "max-w-full border-[#fff] ",
                                     listboxWrapper: "max-h-[270px]",
@@ -571,7 +691,7 @@ const Challan = () => {
                                     classNames: {
                                       input: "ml-1 text-[#000] font-font1",
                                       inputWrapper: "h-[20px]",
-                                      label: "text-[#000]",
+                                      label: "font-[600] font-font1",
                                     },
                                   }}
                                   listboxProps={{
@@ -645,6 +765,8 @@ const Challan = () => {
                                     listboxWrapper: "max-h-[270px]",
                                     selectorButton: "text-[#000]",
                                   }}
+                                  labelPlacement="outside"
+                                  label="Cut Name"
 
                                   onSelectionChange={setcutref}
                                   value={cutref}
@@ -655,7 +777,7 @@ const Challan = () => {
                                     classNames: {
                                       input: "ml-1 text-[#000] font-font1",
                                       inputWrapper: "h-[20px]",
-                                      label: "text-[#000]",
+                                      label: "font-[600] font-font1",
                                     },
                                   }}
                                   listboxProps={{
@@ -723,8 +845,6 @@ const Challan = () => {
                                     </AutocompleteItem>
                                   )}
                                 </Autocomplete>
-                              </div>
-                              <div className='flex items-end justify-center gap-4 mt-4'>
                                 <Input
                                   label="Product Qty"
                                   classNames={{
@@ -733,16 +853,62 @@ const Challan = () => {
                                   }}
                                   labelPlacement="outside"
                                   type="number"
+                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
                                   placeholder="0"
                                   value={qty}
                                   className='max-w-[18rem]'
                                   onChange={(e) => setqty(e.target.value)}
                                 />
                                 <AutoComplete
+                                  labelPlacement="outside"
+                                  label="Unit"
                                   placeholder={"Unit"}
-                                  users={units}
+                                  users={Units}
+                                  selectedKey={unit}
                                   selectionChange={(value) => setUnit(value)}
                                 />
+                              </div>
+                              <div className='flex items-center justify-between w-full gap-10 mt-3 '>
+                                <Textarea
+                                  variant="flat"
+                                  placeholder="Enter your remarks"
+                                  className="font-[600] flex-grow   font-font1 max-w-[20rem]"
+                                  value={remark}
+                                  onValueChange={setRemark}
+                                />
+                                <div className='flex gap-10  max-w-max items-center flex-grow'>
+                                  <input
+                                    type="file"
+                                    onChange={(e) => handleProductChartImageChange(e)}
+                                    className="hidden"
+                                    id="bannerImageInput"
+                                    name="banner_image"
+                                  />
+                                  <div className='flex gap-2  col-span-5 max-w-[15rem]'>
+                                    <label htmlFor="bannerImageInput" className="font-[600] px-5 py-2 font-font1 text-[0.8rem] max-w-fit flex items-center justify-center text-center rounded-lg border border-black cursor-pointer">
+                                      Select chart Image ({productChartImage?.name})
+                                    </label>
+                                  </div>
+                                  <div className='flex gap-2'>
+                                    <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
+                                      Upload
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className='text-[0.8rem] font-font1 font-[600]'>All Images</p>
+                                <div className="grid border  grid-cols-4 overflow-y-auto p-2 flex-grow  max-w-[35rem]">
+                                  {
+                                    productChartImageData?.length > 0 ? (
+                                      productChartImageData?.map(productChartImage =>
+                                        <a href='#' key={productChartImage?.src}>
+                                          <img className='h-20 w-20 object-cover' src={productChartImage?.src} alt={productChartImage} />
+                                        </a>
+                                      )
+                                    ) : (
+                                      <div>No Images</div>
+                                    )
+                                  }
+                                </div>
                               </div>
                               <Button
                                 // isLoading={loading}
@@ -754,8 +920,8 @@ const Challan = () => {
                             </div>
                             <Table
                               classNames={{
-                                base: 'max-h-[200px] max-w-[1400px] border rounded-[14px] overflow-scroll',
-                                table: 'min-h-[100px]  ',
+                                base: 'max-h-[300px]  max-w-[1400px] border rounded-[14px] overflow-scroll',
+                                table: 'min-h-[150px]  ',
                                 th: 'text-center',
                                 tr: 'text-center ',
                                 td: 'font-font1 font-[600]',
@@ -765,11 +931,12 @@ const Challan = () => {
                               <TableHeader>
                                 <TableColumn>PRODUCT</TableColumn>
                                 <TableColumn>CUT</TableColumn>
-                                <TableColumn>QTY</TableColumn>
-                                <TableColumn>TOTAL</TableColumn>
-                                <TableColumn>UNIT</TableColumn>
+                                <TableColumn>QTY(Pcs)</TableColumn>
+                                <TableColumn>QTY(Mtr)</TableColumn>
                                 <TableColumn>PRICE</TableColumn>
+                                <TableColumn>UNIT</TableColumn>
                                 <TableColumn>OVERALL</TableColumn>
+                                <TableColumn>REMARK</TableColumn>
                                 <TableColumn>ACTIONS</TableColumn>
                               </TableHeader>
                               <TableBody>
@@ -783,23 +950,48 @@ const Challan = () => {
                                         {cutData.find(product => product._id === object.cut)?.name}
                                       </TableCell>
                                       <TableCell>
-                                        {object.qty}
+                                        {object.qtyPcs}
                                       </TableCell>
                                       <TableCell>
-                                        {object.total}
+                                        <Input
+                                          type="number"
+                                          placeholder={object.qtyMtr}
+                                          value={object.qtyMtr}
+                                          className="min-w-[5rem] w-fit m-auto"
+                                          classNames={{
+                                            input: "ml-1 text-[#000] font-font1",
+                                            inputWrapper: "h-[5px] min-w-[5rem] w-[1rem]",
+                                            label: "font-[600] font-font1",
+                                          }}
+                                          onChange={(e) => handleQtyMeterChange(index, e.target.value)}
+                                        />
                                       </TableCell>
                                       <TableCell>
-                                        {units.find(product => product._id === object.unit)?.name}
+                                        <Input
+                                          type="number"
+                                          placeholder={object.price}
+                                          value={object.price}
+                                          className="min-w-[5rem] w-fit m-auto"
+                                          classNames={{
+                                            input: "ml-1 text-[#000] font-font1",
+                                            inputWrapper: "h-[5px] min-w-[5rem] w-[1rem]",
+                                            label: "font-[600] font-font1",
+                                          }}
+                                          onChange={(e) => handleQtyChange(index, e.target.value)}
+                                        />
                                       </TableCell>
                                       <TableCell>
-                                        {object.price}
+                                        {Units[object.unit - 1].name}
                                       </TableCell>
                                       <TableCell>
                                         {object.overall}
                                       </TableCell>
-                                      <TableCell className='flex items-center justify-center  h-full '>
+                                      <TableCell className='overflow-hidden'>
+                                        {object?.remarkDesc || "nothing"}
+                                      </TableCell>
+                                      <TableCell >
                                         <span
-                                          className="mt-2 text-lg text-danger cursor-pointer active:opacity-50 "
+                                          className=" text-lg  text-danger cursor-pointer active:opacity-50"
                                           onClick={() => removeAttributeFromTable(index)}
                                         >
                                           <svg
@@ -847,7 +1039,6 @@ const Challan = () => {
                                               strokeWidth={1.5}
                                             />
                                           </svg>
-
                                         </span>
                                       </TableCell>
                                     </TableRow>
@@ -858,8 +1049,11 @@ const Challan = () => {
                             <Card>
                               <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
                                 <div className='flex items-center gap-2'>
-                                  <ReceiptText size={20} />
-                                  <p className='font-font1 font-[500] text-[1rem]'>Total Amount.</p>
+                                  <Button
+                                    onClick={generateToatl}
+                                    className='bg-[#000] text-[#fff] max-w-max '>
+                                    Generate  Total
+                                  </Button>
                                 </div>
                                 <div className='flex items-center '>
                                   <IndianRupee size={20} />
@@ -871,7 +1065,6 @@ const Challan = () => {
                           <Tab
                             className="py-6 flex flex-col gap-10 font-[400] font-font2"
                             key="Products"
-                            // title={(slider?.viewall === "Categories") ? "You Can Only Create One" : "Products"}
                             title="Product"
                           >
                           </Tab>
@@ -895,7 +1088,7 @@ const Challan = () => {
           </ModalContent>
         </Modal>
       </div>
-      <DataTableModel visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={challansData} onOpen={onOpen} section={'supplier'} />
+      <DataTableModel filltername={"challanNo"} visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={challansData} onOpen={onOpen} section={'supplier'} />
     </>
   )
 }

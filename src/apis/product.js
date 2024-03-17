@@ -29,6 +29,15 @@ export const UploadImage = async (payload) => {
         return error.message;
     }
 }
+export const UploadImageChallan = async (payload) => {
+    try {
+        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/products//upload-challan-chart`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message;
+    }
+}
 
 export const GetProductById = async (id) => {
     try {

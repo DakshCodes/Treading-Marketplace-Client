@@ -88,6 +88,7 @@ const Suppliers = () => {
             toast.error(error.message)
         }
     }
+    
     const updateFormWithsupplierData = (supplierId, updatedsupplierData) => {
         const supplierDataexist = updatedsupplierData.find((element) => element._id === supplierId);
         console.log(supplierDataexist, updatedsupplierData, 'existssssssssssssssssssssss');
@@ -186,12 +187,10 @@ const handleUpdateError = (error) => {
     const setUpdate = () => {
         setUpdateId(false)
         formik.resetForm(); 
-      
-
     }
 
 
-    // console.log(formik.values, "values")
+    console.log(formik.values, "values")
     // console.log("supplier data outside: ", suppliersData)
 
     return (
@@ -240,7 +239,7 @@ const handleUpdateError = (error) => {
                                                 Experienced
                                                 <div className="relative inline-block">
                                                     <input
-                                                        onChange={formik.handleChange}
+                                                        // onChange={formik.handleChange}
                                                         name="experienced" // Associate the input with the form field 'experienced'
                                                         checked={formik.values.experienced} // Set the checked state from formik values
                                                         className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"

@@ -2,13 +2,15 @@ import React from 'react'
 import { Input, Autocomplete, AutocompleteItem, Avatar, Button } from "@nextui-org/react";
 import { UilPlus } from '@iconscout/react-unicons'
 
-const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
+const AutoComplete = ({ users, placeholder, selectionChange, values, selectedKey, labelPlacement, label }) => {
     // const updatedUsers = [...users];  // Create a copy of the array
     // updatedUsers.unshift({ "name": "N/A", "_id": null });
     return (
         <div className='flex items-center'>
             <Autocomplete
-                selectedKey={values}
+                labelPlacement={labelPlacement}
+                label={label}
+                selectedKey={selectedKey}
                 onSelectionChange={selectionChange}
                 classNames={{
                     base: " border border- bg-transparent",
@@ -18,8 +20,9 @@ const AutoComplete = ({ users, placeholder, selectionChange, values }) => {
                 defaultItems={users}
                 inputProps={{
                     classNames: {
-                        input: "text-[0.9rem] ",
-                        inputWrapper: " bg-[#fff] font-font1 h-[40px] max-w-full ",
+                        input: "ml-1 text-[#000] font-font1",
+                        inputWrapper: "h-[20px]",
+                        label: "font-[600] font-font1",
                     },
                 }}
                 listboxProps={{

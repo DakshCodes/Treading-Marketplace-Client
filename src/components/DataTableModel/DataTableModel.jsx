@@ -31,7 +31,9 @@ const statusColorMap = {
 };
 
 
-export default function DataTableModel({ columns, update, deleteItem, users, statusOptions, visible_columns, section, onOpen }) {
+export default function DataTableModel({ columns, update, deleteItem, users, statusOptions, visible_columns, section, onOpen, filltername }) {
+
+    // console.log(users, "TableData");
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
@@ -58,9 +60,15 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
         let filteredUsers = [...users];
 
         if (hasSearchFilter) {
-            filteredUsers = filteredUsers.filter((user) =>
-                user.name.toLowerCase().includes(filterValue.toLowerCase()),
-            );
+            filteredUsers = filteredUsers.filter((user) => {
+                if (filltername) {
+                    console.log(user[filltername], "search");
+                    // Accessing property dynamically using square brackets
+                    return user[filltername]?.toLowerCase().includes(filterValue.toLowerCase());
+                } else {
+                    return user?.name?.toLowerCase().includes(filterValue.toLowerCase())
+                }
+            });
         }
         if (statusFilter !== "all" && Array.from(statusFilter)?.length !== statusOptions?.length) {
             filteredUsers = filteredUsers.filter((user) =>
@@ -95,9 +103,8 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
         navigate(`/${section}/${id}`);
     }
 
-    const renderCell = React.useCallback((user, columnKey) => {
+    const renderCell = (user, columnKey) => {
         const cellValue = user[columnKey];
-
 
         switch (columnKey) {
             case "name":
@@ -185,7 +192,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                     <p className="text-bold text-tiny capitalize text-default-800">{cellValue}</p>
                 </div>
         }
-    }, []);
+    }
 
     const onNextPage = React.useCallback(() => {
         if (page < pages) {
