@@ -101,30 +101,14 @@ const Attribute = () => {
         }
     }
 
-    const updateFormWithattributeData = (attributeId, updatedattributeData) => {
-        const attributeDataexist = updatedattributeData.find((element) => element._id === attributeId);
-        console.log(attributeDataexist, updatedattributeData, 'existssssssssssssssssssssss');
+    const handleUpdate = (attributeId) => {
+        try {
+            const attributeDataexist = attributeData.find((element) => element._id === attributeId);
+        console.log(attributeDataexist, 'existssssssssssssssssssssss');
 
         formik.setValues({
             name: attributeDataexist?.name,
         });
-    };
-    // ...
-
-    // Use updateFormWithattributeData in the useEffect
-    useEffect(() => {
-        updateFormWithattributeData(updateId, attributeData);
-        setUpdated(false);
-    }, [updated]);
-
-    // ...
-
-    // Call updateFormWithattributeData wherever needed
-    const handleUpdate = (attributeId) => {
-        try {
-            setUpdated(true)
-            updateFormWithattributeData(attributeId, attributeData);
-
             setUpdateId(attributeId)
             onOpen();
 

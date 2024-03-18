@@ -24,7 +24,7 @@ import { categoryDataState } from '../../store/category/category';
 // import { feeltypeDataState } from '../../store/feeltype/feeltypeAtom';
 // import { weaveDataState } from '../../store/weave/weaveAtom';
 // import { widthDataState } from '../../store/width/widthAtom';
-// import { unitDataState } from '../../store/unit/unitAtom';
+import { unitDataState } from '../../store/unit/unitAtom';
 // import { cutDataState } from '../../store/cut/cutAtom';
 import { attributeDataState } from '../../store/attributevalues/attributeAtom';
 import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
@@ -41,6 +41,7 @@ const Inventory = () => {
     const categoryData = useRecoilValue(categoryDataState);
     const attributeData = useRecoilValue(attributeDataState);
     const attributeValueData = useRecoilValue(attributeValueDataState);
+    const unitData = useRecoilValue(unitDataState);
 
 
 
@@ -123,6 +124,19 @@ const Inventory = () => {
                     >
                         <AttributeValue/>
                     </Tab>
+                    <Tab
+                        key="Unit"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                              <UilRuler/>
+                                <span>Unit</span>
+                                <Chip size="sm" variant="light">{unitData?.length}</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <Unit />
+                    </Tab>
                     {/* <Tab
                         key="Quality"
                         title={
@@ -201,19 +215,7 @@ const Inventory = () => {
                     >
                         <Width />
                     </Tab>
-                    <Tab
-                        key="Unit"
-                        title={
-                            <div className="flex items-center space-x-2 ">
-                              <UilRuler/>
-                                <span>Unit</span>
-                                <Chip size="sm" variant="light">{unitData?.length}</Chip>
-                            </div>
-                        }
-                        className="max-h-max px-5 "
-                    >
-                        <Unit />
-                    </Tab>
+                   
                     <Tab
                         key="Cut"
                         title={
