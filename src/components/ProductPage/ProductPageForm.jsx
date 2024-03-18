@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { PureComponent, useEffect, useMemo, useState } from 'react'
 import './ProductForm.css'
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Input } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, Input } from "@nextui-org/react";
 import { toast } from 'react-hot-toast';
 import AutoComplete from '../Autocomplete/AutoComplete';
 import { useFormik } from 'formik';
@@ -42,7 +42,7 @@ const ProductPageForm = () => {
     console.table(widthData)
 
     const [productChartImage, setProductChartImage] = useState('');
-    const [productChartImageData, setProductChartImageData] = useState([{}]);
+    const [productChartImageData, setProductChartImageData] = useState([]);
 
 
     const setProductsData = useSetRecoilState(productsDataState);
@@ -83,7 +83,7 @@ const ProductPageForm = () => {
 
     // Function to filter items based on selected category and reference field
     const getFilteredItems = (items, selectedCategory) => {
-        return items.filter(item => item.ref === selectedCategory);
+        return items.filter(item => item?.category === selectedCategory);
     };
     const handleUpdate = async (productId) => {
         try {
@@ -92,21 +92,21 @@ const ProductPageForm = () => {
             const singleProductData = productsData.find((element) => element._id == productId);
             console.log(singleProductData)
 
-            formik.setValues({
-                supplierName: singleProductData?.supplierName?._id || null,
-                productName: singleProductData?.productName || "",
-                category: singleProductData?.category?._id || null,
-                quality: singleProductData?.quality?._id || null,
-                design: singleProductData?.design?._id || null,
-                weave: singleProductData?.weave?._id || null,
-                width: singleProductData?.width?._id || null,
-                finishtype: singleProductData?.finishtype?._id || null, // Assuming finishtype is an object with a name property
-                feeltype: singleProductData?.feeltype?._id || null,
-                pricePerUnit: {
-                    magnitude: singleProductData?.pricePerUnit?.magnitude || null,
-                    unit: singleProductData?.pricePerUnit?.unit || null,
-                },
-            });
+            // formik.setValues({
+            //     supplierName: singleProductData?.supplierName?._id || null,
+            //     productName: singleProductData?.productName || "",
+            //     category: singleProductData?.category?._id || null,
+            //     quality: singleProductData?.quality?._id || null,
+            //     design: singleProductData?.design?._id || null,
+            //     weave: singleProductData?.weave?._id || null,
+            //     width: singleProductData?.width?._id || null,
+            //     finishtype: singleProductData?.finishtype?._id || null, // Assuming finishtype is an object with a name property
+            //     feeltype: singleProductData?.feeltype?._id || null,
+            //     pricePerUnit: {
+            //         magnitude: singleProductData?.pricePerUnit?.magnitude || null,
+            //         unit: singleProductData?.pricePerUnit?.unit || null,
+            //     },
+            // });
 
 
             setUpdateId(productId);
@@ -140,28 +140,160 @@ const ProductPageForm = () => {
 
     }, [productChartImageData])
 
-    const users = [
+    const productAttributes = [
         {
-            id: 1,
-            name: "Tony Reichert",
-            role: "CEO",
-            team: "Management",
-            status: "active",
-            age: "29",
-            avatar: "https://d2u8k2ocievbld.cloudfront.net/memojis/male/1.png",
-            email: "tony.reichert@example.com",
+            _id: "1",
+            name: "quality",
         },
         {
-            id: 2,
-            name: "Zoey Lang",
-            role: "Tech Lead",
-            team: "Development",
-            status: "paused",
-            age: "25",
-            avatar: "https://d2u8k2ocievbld.cloudfront.net/memojis/female/1.png",
-            email: "zoey.lang@example.com",
+            _id: "2",
+            name: "design",
         },
+        {
+            _id: "3",
+            name: "weave",
+        },
+        {
+            _id: "4",
+            name: "width",
+        },
+        {
+            _id: "5",
+            name: "finishtype",
+        },
+        {
+            "_id": "6",
+            name: "feeltype",
+        },
+        {
+            "_id": "7",
+            name: "weight",
+        },
+
     ];
+    const productAttributesValue = [
+        {
+            _id: "101",
+            attributeType: {
+                _id: "1",
+                name: "quality",
+            },
+            attributesValues: [
+                {
+                    value: "good",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "better",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+
+        {
+            _id: "102",
+            attributeType: {
+                _id: "2",
+                name: "design",
+            },
+            attributesValues: [
+                {
+                    value: "des 1",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "des2",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+        {
+            _id: "103",
+            attributeType: {
+                _id: "3",
+                name: "weave",
+            },
+            attributesValues: [
+                {
+                    value: "weave 1",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "weave 2",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+        {
+            _id: "104",
+            attributeType: {
+                _id: "4",
+                name: "width",
+            },
+            attributesValues: [
+                {
+                    value: "wide",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "narrow",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+        {
+            _id: "105",
+            attributeType: {
+                _id: "5",
+                name: "finishtype",
+            },
+            attributesValues: [
+                {
+                    value: "matte",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "glossy",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+        {
+            _id: "106",
+            attributeType: {
+                "_id": "6",
+                name: "feeltype",
+            },
+            attributesValues: [
+                {
+                    value: "soft",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "rough",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+        {
+            _id: "106",
+            attributeType: {
+                "_id": "7",
+                name: "weight",
+            },
+            attributesValues: [
+                {
+                    value: "10",
+                    category: "65d4e127b8a8343255867647"
+                },
+                {
+                    value: "20",
+                    category: "65d4e1a9b8a834325586765e"
+                }
+            ]
+        },
+
+    ]
 
     // Zod validation schema
     // const productSchema = z.object({
@@ -177,23 +309,29 @@ const ProductPageForm = () => {
 
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
+    const initialProductAttributes = useMemo(() => {
+        return productAttributesValue.map(attr => ({
+            attrType: attr.attributeType?.name,
+            attrValue: null
+        }));
+    }, []);
+
     // Formik configuration
     const formik = useFormik({
         initialValues: {
             supplierName: "",
             productName: "",
             category: null,
-            quality: null,
-            design: null,
-            weave: null,
-            width: null,
-            finishtype: null,
-            feeltype: null,
+            productAttributes: initialProductAttributes,
             pricePerUnit: {
                 magnitude: null,
                 unit: null
             },
-            productColorChartData: []
+            productColorChartData: [
+                {
+                    src: null,
+                }
+            ]
         },
         validate: (values) => {
             const errors = {};
@@ -246,7 +384,7 @@ const ProductPageForm = () => {
             // Handle form submission logic here
             console.log(productChartImageData)
 
-            console.log(values,"+++++++++++++++");
+            console.log(values, "+++++++++++++++");
             // return;
             try {
                 // dispatch(SetLoader(true));
@@ -284,6 +422,16 @@ const ProductPageForm = () => {
 
 
     console.log(formik.values);
+
+
+    // useEffect(()=>{
+    //     productAttributesValue.map((attr,attrIndex)=>{
+    //         formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, null);
+    //         formik.setFieldValue(`productAttributes[${attrIndex}].attrType`, attr?.attributeType?.name);
+    //     })
+    // },[])
+
+
 
     return (
         <>
@@ -351,101 +499,92 @@ const ProductPageForm = () => {
                                     </div>
 
 
-                                    {/* AutoComplete for quality */}
-                                    <div className='flex flex-col items-start gap-2'>
+                                    {
+                                        productAttributesValue && productAttributesValue.map((attr, attrIndex) => {
+                                            // const attributeValues = productAttributesValue.find(value => value.attributeType.name === attr.name)?.attributesValues;
+                                            console.log(attr?.attributeType?.name)
 
-                                        <AutoComplete
-                                            placeholder={"Enter quality"}
-                                            users={getFilteredItems(qualityData, formik.values.category)}
-                                            values={formik.values.quality}
-                                            selectionChange={(value) => formik.setFieldValue('quality', value)}
-                                        />
-                                        {formik.touched.quality && formik.errors.quality ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.quality}</div>
-                                        ) : null}
-                                    </div>
+                                            return (
+                                                <>
+                                                    <div className='flex flex-col items-start gap-2'>
 
-                                    {/* AutoComplete for design */}
-                                    <div className='flex flex-col items-start gap-2'>
+                                                        <Autocomplete
+                                                            selectedKey={formik.values.productAttributes[attrIndex]?.attrValue}
+                                                            onSelectionChange={(value) => {
+                                                                formik.setFieldValue(`productAttributes[${attrIndex}].attrType`, attr.attributeType?.name)
+                                                                // Find the matching attributesValue object based on the selected value
+                                                                const selectedAttributesValue = attr.attributesValues.find(item => item.value === value);
 
-                                        <AutoComplete
-                                            placeholder={"Enter design"}
-                                            users={getFilteredItems(designData, formik.values.category)}
-                                            values={formik.values.design}
-                                            selectionChange={(value) => formik.setFieldValue('design', value)}
-                                        />
-                                        {formik.touched.design && formik.errors.design ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.design}</div>
-                                        ) : null}
-                                    </div>
+                                                                // Set the attrValue to the value of the selected attributesValue object
+                                                                if (selectedAttributesValue) {
+                                                                    formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, selectedAttributesValue.value);
+                                                                } else {
+                                                                    // Handle the case where the selected value is not found in attributesValues
+                                                                    formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, null);
+                                                                    console.error('Selected value not found in attributesValues:', value);
+                                                                }
+                                                            }}
+                                                            classNames={{
+                                                                base: " border border- bg-transparent",
+                                                                listboxWrapper: "max-h-[70px]",
+                                                                selectorButton: "text-default-500",
+                                                            }}
+                                                            defaultItems={getFilteredItems(attr?.attributesValues, formik.values.category)}
+                                                            inputProps={{
+                                                                classNames: {
+                                                                    input: "text-[0.9rem] ",
+                                                                    inputWrapper: " bg-[#fff] font-font1 h-[40px] max-w-full ",
+                                                                },
+                                                            }}
+                                                            // listboxProps={{
+                                                            //     hideSelectedIcon: true,
+                                                            //     itemClasses: {
+                                                            //         base: [
 
-                                    {/* AutoComplete for weave */}
-                                    <div className='flex flex-col items-start gap-2'>
+                                                            //         ],
+                                                            //     },
+                                                            // }}
+                                                            aria-label="Select an employee"
+                                                            placeholder={attr?.attributeType?.name.toUpperCase()}
+                                                            popoverProps={{
+                                                                offset: 10,
+                                                                classNames: {
+                                                                    base: "",
+                                                                    content: "p-1  border-default-100 ",
+                                                                },
+                                                            }}
+                                                            variant="flat"
+                                                        >
+                                                            {(item) => (
+                                                                <AutocompleteItem key={item.value} textValue={item.value}>
+                                                                    <div className="flex justify-between items-center">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <div className="flex flex-col">
+                                                                                <span className="text-small">{item.value}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </AutocompleteItem>
+                                                            )}
+                                                        </Autocomplete>
 
-                                        <AutoComplete
-                                            placeholder={"Enter weave"}
-                                            users={weaveData}
-                                            values={formik.values.weave}
-                                            selectionChange={(value) => formik.setFieldValue('weave', value)}
-                                        />
-                                        {formik.touched.weave && formik.errors.weave ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.weave}</div>
-                                        ) : null}
+                                                        {/* <AutoComplete
+                                                            placeholder={"Enter quality"}
+                                                            // users={getFilteredItems(qualityData, formik.values.category)}
+                                                            users={attr.attributeType}
+                                                            values={formik.values.quality}
+                                                            selectionChange={(value) => formik.setFieldValue('quality', value)}
+                                                        />
+                                                        {formik.touched.quality && formik.errors.quality ? (
+                                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.quality}</div>
+                                                        ) : null} */}
+                                                    </div>
+                                                </>
+                                            )
 
-                                    </div>
-                                    {/* AutoComplete for remarks
-                                    <AutoComplete
-                                        placeholder={"Enter remarks"}
-                                        users={users}
-                                        values={formik.values.remarks}
-                                        selectionChange={(value) => formik.setFieldValue('remarks', value)}
-                                    />
-                                    {formik.touched.remarks && formik.errors.remarks ? (
-                                        <div className="text-red-500">{formik.errors.remarks}</div>
-                                    ) : null} */}
+                                        })
+                                    }
 
-                                    {/* AutoComplete for width */}
-                                    <div className='flex flex-col items-start gap-2'>
-
-                                        <AutoComplete
-                                            placeholder={"Enter width"}
-                                            users={getFilteredItems(widthData, formik.values.category)}
-                                            values={formik.values.width}
-                                            selectionChange={(value) => formik.setFieldValue('width', value)}
-                                        />
-                                        {formik.touched.width && formik.errors.width ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.width}</div>
-                                        ) : null}
-                                    </div>
-
-                                    {/* AutoComplete for finish Type */}
-                                    <div className='flex flex-col items-start gap-2'>
-
-                                        <AutoComplete
-                                            placeholder={"Enter finish Type"}
-                                            users={getFilteredItems(finishTypeData, formik.values.category)}
-                                            values={formik.values.finishtype}
-                                            selectionChange={(value) => formik.setFieldValue('finishtype', value)}
-                                        />
-                                        {formik.touched.finishtype && formik.errors.finishtype ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.finishtype}</div>
-                                        ) : null}
-
-                                    </div>
-                                    {/* AutoComplete for feel Type */}
-                                    <div className='flex flex-col items-start gap-2'>
-
-                                        <AutoComplete
-                                            placeholder={"Enter feel Type"}
-                                            users={getFilteredItems(feelTypeData, formik.values.category)}
-                                            values={formik.values.feeltype}
-                                            selectionChange={(value) => formik.setFieldValue('feeltype', value)}
-                                        />
-                                        {formik.touched.feeltype && formik.errors.feeltype ? (
-                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.feeltype}</div>
-                                        ) : null}
-
-                                    </div>
                                     {/* Input for Prce Per piece */}
                                     <div className='flex flex-col items-start gap-2'>
                                         <div className='flex gap-2 h-full items-center'>
@@ -494,13 +633,14 @@ const ProductPageForm = () => {
                                             </div>
                                         ) : null}
                                     </div>
+
                                 </div>
-                                <div className='mt-12 hidden mb-4 gap-2 font-bold border-b border-black pb-2 border-dashed  text-base font-sans'>
+                                <div className='mt-12 mb-4 flex gap-2 font-bold border-b border-black pb-2 border-dashed  text-base font-sans'>
                                     Product Color Chart
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="M17 15.586 6.707 5.293 5.293 6.707 15.586 17H7v2h12V7h-2v8.586z" /></svg>
                                 </div>
 
-                                <div className=' hidden'>
+                                <div className=''>
                                     <div className='grid grid-cols-6 gap-8'>
                                         <input
                                             type="file"
@@ -517,6 +657,8 @@ const ProductPageForm = () => {
 
                                             {/* {mainImage?.name} */}
                                         </div>
+
+                                       
 
                                         <div className='flex gap-2'>
 
@@ -538,9 +680,24 @@ const ProductPageForm = () => {
                                             <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
                                                 Upload
                                             </Button>
+
                                         </div>
+
                                     </div>
                                 </div>
+
+                                 {/* Image Showing if it is there  */}
+                                 <div className="grid grid-cols-3 p-2 gap-4 h-full w-full mt-4">
+                                            {
+                                                productChartImageData && productChartImageData.length > 0 && productChartImageData.map((item, index) => (
+                                                    <>
+                                                        <div className='h-full rounded-xl  w-full'>
+                                                            <img className='w-full rounded-xl h-full object-cover' src={item.src} alt="" />
+                                                        </div>
+                                                    </>
+                                                ))
+                                            }
+                                        </div>
                             </div>
                             <button type="submit" className="bg-neutral-950 font-font2  max-w-max text-neutral-400 border border-neutral-400 border-b-4 font-[600] overflow-hidden relative px-8 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                                 <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]" />
