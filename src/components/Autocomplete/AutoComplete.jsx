@@ -2,15 +2,18 @@ import React from 'react'
 import { Input, Autocomplete, AutocompleteItem, Avatar, Button } from "@nextui-org/react";
 import { UilPlus } from '@iconscout/react-unicons'
 
-const AutoComplete = ({ users, placeholder, selectionChange, values, selectedKey, labelPlacement, label }) => {
+const AutoComplete = (props) => {
     // const updatedUsers = [...users];  // Create a copy of the array
     // updatedUsers.unshift({ "name": "N/A", "_id": null });
+    const { users, placeholder, selectionChange, values, selectedKey, labelPlacement, label } = props;
+    // console.log(props)
+    console.log(selectedKey);
     return (
         <div className='flex items-center'>
             <Autocomplete
                 labelPlacement={labelPlacement}
                 label={label}
-                selectedKey={selectedKey}
+                selectedKey={selectedKey || values}
                 onSelectionChange={selectionChange}
                 classNames={{
                     base: " border border- bg-transparent",
