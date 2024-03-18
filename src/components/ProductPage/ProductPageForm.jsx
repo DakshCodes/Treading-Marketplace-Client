@@ -20,6 +20,7 @@ import { widthDataState } from "../../store/width/widthAtom"
 import { productsDataState } from '../../store/product/productAtom';
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { unitDataState } from '../../store/unit/unitAtom';
+import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
 
 const ProductPageForm = () => {
     const params = useParams();
@@ -31,15 +32,18 @@ const ProductPageForm = () => {
 
     const categoryData = useRecoilValue(categoryDataState);
     const supplierData = useRecoilValue(suppliersDataState);
-    const weaveData = useRecoilValue(weaveDataState);
+    // const weaveData = useRecoilValue(weaveDataState);
 
-    const qualityData = useRecoilValue(qualityDataState);   // depend on category
-    const designData = useRecoilValue(designDataState);     // depend on category
-    const feelTypeData = useRecoilValue(feeltypeDataState); // depend on category
-    const finishTypeData = useRecoilValue(finishtypeDataState);// depend on category
-    const widthData = useRecoilValue(widthDataState);       // depend on category
+    // const qualityData = useRecoilValue(qualityDataState);   // depend on category
+    // const designData = useRecoilValue(designDataState);     // depend on category
+    // const feelTypeData = useRecoilValue(feeltypeDataState); // depend on category
+    // const finishTypeData = useRecoilValue(finishtypeDataState);// depend on category
+    // const widthData = useRecoilValue(widthDataState);       // depend on category
 
-    console.table(widthData)
+    // console.table(widthData)
+
+    const productAttributeValueFirst = useRecoilValue(attributeValueDataState);// depend on category
+    console.log(productAttributeValueFirst);
 
     const [productChartImage, setProductChartImage] = useState('');
     const [productChartImageData, setProductChartImageData] = useState([]);
@@ -91,22 +95,21 @@ const ProductPageForm = () => {
             // changed from todoListState to filteredTodoListState
             const singleProductData = productsData.find((element) => element._id == productId);
             console.log(singleProductData)
-
-            // formik.setValues({
-            //     supplierName: singleProductData?.supplierName?._id || null,
-            //     productName: singleProductData?.productName || "",
-            //     category: singleProductData?.category?._id || null,
-            //     quality: singleProductData?.quality?._id || null,
-            //     design: singleProductData?.design?._id || null,
-            //     weave: singleProductData?.weave?._id || null,
-            //     width: singleProductData?.width?._id || null,
-            //     finishtype: singleProductData?.finishtype?._id || null, // Assuming finishtype is an object with a name property
-            //     feeltype: singleProductData?.feeltype?._id || null,
-            //     pricePerUnit: {
-            //         magnitude: singleProductData?.pricePerUnit?.magnitude || null,
-            //         unit: singleProductData?.pricePerUnit?.unit || null,
-            //     },
-            // });
+            setProductChartImageData(singleProductData?.productColorChartData);
+            formik.setValues({
+                supplierName: singleProductData?.supplierName && singleProductData?.supplierName?._id ,
+                productName: singleProductData?.productName || "",
+                category: singleProductData?.category && singleProductData?.category?._id ,
+                productAttributes: singleProductData?.productAttributes?.map(attr => ({
+                    attrType: attr.attrType,
+                    attrValue: attr.attrValue
+                })),
+                pricePerUnit: {
+                    magnitude: singleProductData?.pricePerUnit?.magnitude || null,
+                    unit: singleProductData?.pricePerUnit?.unit || null,
+                },
+                productColorChartData : singleProductData?.productColorChartData
+            });
 
 
             setUpdateId(productId);
@@ -310,11 +313,16 @@ const ProductPageForm = () => {
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     const initialProductAttributes = useMemo(() => {
-        return productAttributesValue.map(attr => ({
-            attrType: attr.attributeType?.name,
-            attrValue: null
-        }));
+        if (!updateId) {
+            return productAttributeValueFirst.map(attr => ({
+                attrType: attr.attributeRef?.name,
+                attrValue: null
+            }));
+        }
     }, []);
+
+
+    console.log(initialProductAttributes);
 
     // Formik configuration
     const formik = useFormik({
@@ -500,9 +508,9 @@ const ProductPageForm = () => {
 
 
                                     {
-                                        productAttributesValue && productAttributesValue.map((attr, attrIndex) => {
+                                        productAttributeValueFirst && productAttributeValueFirst.map((attr, attrIndex) => {
                                             // const attributeValues = productAttributesValue.find(value => value.attributeType.name === attr.name)?.attributesValues;
-                                            console.log(attr?.attributeType?.name)
+                                            console.log(attr?.attributeRef?.name)
 
                                             return (
                                                 <>
@@ -511,13 +519,13 @@ const ProductPageForm = () => {
                                                         <Autocomplete
                                                             selectedKey={formik.values.productAttributes[attrIndex]?.attrValue}
                                                             onSelectionChange={(value) => {
-                                                                formik.setFieldValue(`productAttributes[${attrIndex}].attrType`, attr.attributeType?.name)
+                                                                formik.setFieldValue(`productAttributes[${attrIndex}].attrType`, attr.attributeRef?.name)
                                                                 // Find the matching attributesValue object based on the selected value
-                                                                const selectedAttributesValue = attr.attributesValues.find(item => item.value === value);
+                                                                const selectedAttributesValue = attr.valuesCombo.find(item => item.attributeValue === value);
 
                                                                 // Set the attrValue to the value of the selected attributesValue object
                                                                 if (selectedAttributesValue) {
-                                                                    formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, selectedAttributesValue.value);
+                                                                    formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, selectedAttributesValue.attributeValue);
                                                                 } else {
                                                                     // Handle the case where the selected value is not found in attributesValues
                                                                     formik.setFieldValue(`productAttributes[${attrIndex}].attrValue`, null);
@@ -529,7 +537,7 @@ const ProductPageForm = () => {
                                                                 listboxWrapper: "max-h-[70px]",
                                                                 selectorButton: "text-default-500",
                                                             }}
-                                                            defaultItems={getFilteredItems(attr?.attributesValues, formik.values.category)}
+                                                            defaultItems={getFilteredItems(attr?.valuesCombo, formik.values.category)}
                                                             inputProps={{
                                                                 classNames: {
                                                                     input: "text-[0.9rem] ",
@@ -545,7 +553,7 @@ const ProductPageForm = () => {
                                                             //     },
                                                             // }}
                                                             aria-label="Select an employee"
-                                                            placeholder={attr?.attributeType?.name.toUpperCase()}
+                                                            placeholder={attr?.attributeRef?.name}
                                                             popoverProps={{
                                                                 offset: 10,
                                                                 classNames: {
@@ -556,11 +564,11 @@ const ProductPageForm = () => {
                                                             variant="flat"
                                                         >
                                                             {(item) => (
-                                                                <AutocompleteItem key={item.value} textValue={item.value}>
+                                                                <AutocompleteItem key={item.attributeValue} textValue={item.attributeValue}>
                                                                     <div className="flex justify-between items-center">
                                                                         <div className="flex gap-2 items-center">
                                                                             <div className="flex flex-col">
-                                                                                <span className="text-small">{item.value}</span>
+                                                                                <span className="text-small">{item.attributeValue}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -569,21 +577,22 @@ const ProductPageForm = () => {
                                                         </Autocomplete>
 
                                                         {/* <AutoComplete
-                                                            placeholder={"Enter quality"}
-                                                            // users={getFilteredItems(qualityData, formik.values.category)}
-                                                            users={attr.attributeType}
-                                                            values={formik.values.quality}
-                                                            selectionChange={(value) => formik.setFieldValue('quality', value)}
-                                                        />
-                                                        {formik.touched.quality && formik.errors.quality ? (
-                                                            <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.quality}</div>
-                                                        ) : null} */}
+                                                                placeholder={"Enter quality"}
+                                                                // users={getFilteredItems(qualityData, formik.values.category)}
+                                                                users={attr.attributeType}
+                                                                values={formik.values.quality}
+                                                                selectionChange={(value) => formik.setFieldValue('quality', value)}
+                                                            />
+                                                            {formik.touched.quality && formik.errors.quality ? (
+                                                                <div className="text-red-500 text-[0.8rem] font-semibold italic">*{formik.errors.quality}</div>
+                                                            ) : null} */}
                                                     </div>
                                                 </>
                                             )
 
                                         })
                                     }
+
 
                                     {/* Input for Prce Per piece */}
                                     <div className='flex flex-col items-start gap-2'>
@@ -658,7 +667,7 @@ const ProductPageForm = () => {
                                             {/* {mainImage?.name} */}
                                         </div>
 
-                                       
+
 
                                         <div className='flex gap-2'>
 
@@ -670,13 +679,13 @@ const ProductPageForm = () => {
                                                     </svg>
                                                 </div>
                                             }
-                                             <Button
-                                        color="danger" variant="light"
-                                        // onPress={onClose}
-                                        // onClick={setUpdate}
-                                    >
-                                        Close
-                                    </Button>
+                                            <Button
+                                                color="danger" variant="light"
+                                            // onPress={onClose}
+                                            // onClick={setUpdate}
+                                            >
+                                                Close
+                                            </Button>
                                             <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
                                                 Upload
                                             </Button>
@@ -686,18 +695,18 @@ const ProductPageForm = () => {
                                     </div>
                                 </div>
 
-                                 {/* Image Showing if it is there  */}
-                                 <div className="grid grid-cols-3 p-2 gap-4 h-full w-full mt-4">
-                                            {
-                                                productChartImageData && productChartImageData.length > 0 && productChartImageData.map((item, index) => (
-                                                    <>
-                                                        <div className='h-full rounded-xl  w-full'>
-                                                            <img className='w-full rounded-xl h-full object-cover' src={item.src} alt="" />
-                                                        </div>
-                                                    </>
-                                                ))
-                                            }
-                                        </div>
+                                {/* Image Showing if it is there  */}
+                                <div className="grid grid-cols-3 p-2 gap-4 h-full w-full mt-4">
+                                    {
+                                        productChartImageData && productChartImageData.length > 0 && productChartImageData.map((item, index) => (
+                                            <>
+                                                <div className='h-full rounded-xl  w-full'>
+                                                    <img className='w-full rounded-xl h-full object-cover' src={item.src} alt="" />
+                                                </div>
+                                            </>
+                                        ))
+                                    }
+                                </div>
                             </div>
                             <button type="submit" className="bg-neutral-950 font-font2  max-w-max text-neutral-400 border border-neutral-400 border-b-4 font-[600] overflow-hidden relative px-8 py-2 rounded-md hover:brightness-150 hover:border-t-4 hover:border-b active:opacity-75 outline-none duration-300 group">
                                 <span className="bg-neutral-400 shadow-neutral-400 absolute -top-[150%] left-0 inline-flex w-80 h-[5px] rounded-md opacity-50 group-hover:top-[150%] duration-500 shadow-[0_0_10px_10px_rgba(0,0,0,0.3)]" />
