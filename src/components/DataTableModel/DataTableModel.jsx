@@ -22,6 +22,7 @@ import { capitalize } from "../../utils/capitalize";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { useRecoilState } from "recoil";
 import { customerDataState } from "../../store/customer/customerAtom";
+import { attributeDataState } from "../../store/attributevalues/attributeAtom";
 
 
 
@@ -47,6 +48,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
     const [page, setPage] = React.useState(1);
     const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
     const [customerData, setcustomerData] = useRecoilState(customerDataState)
+    const [attributeData, setattributeData] = useRecoilState(attributeDataState)
 
     const hasSearchFilter = Boolean(filterValue);
 
@@ -115,6 +117,12 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                     >
                         {user?.name}
                     </User>
+                );
+            case "attributeref":
+                return (
+                    <div className="flex flex-col">
+                    <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p>
+                </div>
                 );
             case "customer":
                 return (

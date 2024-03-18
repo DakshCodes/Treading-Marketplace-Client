@@ -12,7 +12,7 @@ import Categories from '../../components/Categories/Categories';
 // import FeelType from '../../components/Feel-Type/Feel-Type';
 // import Weave from '../../components/Weave/Weave';
 // import Width from '../../components/Width/Width';
-// import Unit from '../../components/unit/Unit';
+import Unit from '../../components/unit/Unit';
 // import Cut from '../../components/cut/Cut';
 import { productsDataState } from '../../store/product/productAtom';
 import { useRecoilValue } from 'recoil';
@@ -31,8 +31,8 @@ import { attributeValueDataState } from '../../store/attributes/attributevalueAt
 import { PiTreeStructureBold } from "react-icons/pi";
 import { TbListTree } from "react-icons/tb";
 
-import Attribute from '../../components/Attributes/Attribute';
-import AttributeValue from '../../components/AttributeValues/AttributeValue';
+import Attribute from '../../components/Attribute/Attribute';
+import AttributeValue from '../../components/AttributeValue/AttributeValue';
 
 const Inventory = () => {
 

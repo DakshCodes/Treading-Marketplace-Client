@@ -46,8 +46,8 @@ const AttributeValue = () => {
 
   // Data Format
   const columns = [
-    { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "name", sortable: true },
+    { name: "ID", uid: "_id", sortable: true },
+    { name: "NAME", uid: "attributeref", sortable: true },
     { name: "Linked Category", uid: "ref", sortable: true },
     { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
     { name: "ACTIONS", uid: "actions" },
@@ -58,7 +58,7 @@ const AttributeValue = () => {
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["_id","attributeref", "actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   // Function to add new category input
