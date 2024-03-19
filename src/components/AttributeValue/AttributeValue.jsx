@@ -24,8 +24,9 @@ import {
   UpdateattributeValue,
 } from "../../apis/attributevalue";
 import { categoryDataState } from "../../store/category/category";
-import { attributeValueDataState } from "../../store/attributes/attributevalueAtom";
-import { attributeDataState } from "../../store/attributevalues/attributeAtom";
+import { attributeDataState } from "../../store/attribute/attributeAtom";
+import { attributeValueDataState } from "../../store/attributevalue/attributevalueAtom";
+
 
 const AttributeValue = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,17 +38,19 @@ const AttributeValue = () => {
   const [categoriesData, setCategoriesData] = useRecoilState(categoryDataState);
   const [attributeData, setattributeData] = useRecoilState(attributeDataState);
   const [refatt, setrefatt] = useState("");
+  const [refattName, setrefattName] = useState("");
   const [categoryAndValueInputs, setcategoryAndValueInputs] = useState([
     {
       category: "",
       attributeValue: "",
+      isNameNumerical : false
     },
   ]);
 
   // Data Format
   const columns = [
-    { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "name", sortable: true },
+    { name: "ID", uid: "_id", sortable: true },
+    { name: "NAME", uid: "attributeref", sortable: true },
     { name: "Linked Category", uid: "ref", sortable: true },
     { name: "isNameNumercal", uid: "isNameNumerical", sortable: true },
     { name: "ACTIONS", uid: "actions" },
@@ -58,7 +61,7 @@ const AttributeValue = () => {
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["name", "isNameNumerical", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["_id","attributeref", "actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   // Function to add new category input
@@ -86,14 +89,23 @@ const AttributeValue = () => {
   // Create The attributeValue
   const createattributeValue = async (values) => {
     try {
-      values.attributeRef = refatt;
+      
+    //   const attributeRefData = attributeData.find((attr) => attr._id === refatt);
+    // if (!attributeRefData) {
+    //   throw new Error("Attribute reference data not found.");
+    // }
+    // console.log(attributeRefData,"refffffffffffffffffffffffffffff")
+    values.attributeRef = refatt;
       // Initialize an array to store category and value data
+
+
       const categoryAndValueArray = [];
       categoryAndValueInputs.forEach((input) => {
-        const { category, attributeValue } = input; // Assuming category and attribute value are separated by '-'
+        const { category, attributeValue,isNameNumerical } = input; // Assuming category and attribute value are separated by '-'
 
         // Add category and value to the array
-        categoryAndValueArray.push({ category, attributeValue });
+
+        categoryAndValueArray.push({ category, attributeValue,isNameNumerical });
       });
 
       // Assign all form values including category and value data
@@ -107,14 +119,16 @@ const AttributeValue = () => {
       setIsLoading(false);
 
       if (response.success) {
+       
         toast.success(response.message);
         navigate("/inventory");
         console.log(response.attributeValueDoc);
-
+       
         setattributeValueData([
           ...attributeValueData,
           response.attributeValueDoc,
         ]);
+
 
         onOpenChange(false);
         setUpdateId(null); // Reset update ID when modal is closed
@@ -157,23 +171,28 @@ const AttributeValue = () => {
 
   const handleUpdate = (attributeValueId) => {
     try {
+      console.log(attributeValueData,'valuessssssssssssssssssssssssss')
       const attributeValueDataexist = attributeValueData.find(
         (element) => element._id === attributeValueId
       );
-  
+
       setrefatt(() => attributeValueDataexist?.attributeRef);
+     
       const valuesCombo = attributeValueDataexist?.valuesCombo; // Access the first element directly
        setcategoryAndValueInputs(()=>(valuesCombo))
-  
-      //  Check if valuesCombo is defined
-      // const updatedValuesCombo = valuesCombo?.map((item) => item);
-      // console.log(updatedValuesCombo, "updatedddddddddddddd");
-      // // Set values in formik
-      // formik.setValues((prevValues) => ({
-      //   ...prevValues,
-      //   valuesCombo: updatedValuesCombo,
-      // }));
-      // console.log(formik.values, "valuesssssssssssssssssssssss");
+            const attributeRefData = attributeData.find((attr) => attr._id === attributeValueDataexist?.attributeRef);
+    if (!attributeRefData) {
+      throw new Error("Attribute reference data not found.");
+    }
+    // console.log(attributeRefData,"refffffffffffffffffffffffffffff")
+
+       if(attributeRefData?.name==="cut"){
+        setrefattName(()=>("cut"));
+      }
+      else{
+        setrefattName("")
+      }
+
       setUpdateId(attributeValueId);
       onOpen();
     } catch (error) {
@@ -185,7 +204,7 @@ const AttributeValue = () => {
   const handleUpdateSubmit = async (values) => {
     try {
       values.attributeRef = refatt;
-      values.valuesCombo = categoryAndValueInputs;
+      values.valuesCombo = categoryAndValueInputs
       setIsLoading(true);
     //   console.log(values, "fffffffffffffffffffffff");
       const response = await UpdateattributeValue(updateId, values);
@@ -203,11 +222,19 @@ const AttributeValue = () => {
               : attributeValue
         );
 
-        setattributeValueData(updatedattributeValues);
-        formik.resetForm();
-
+        setattributeValueData(()=>(updatedattributeValues));
+         console.log(attributeValueData,"attribute value data")
         // Close the modal and reset update ID
         onOpenChange(false);
+        setrefatt(()=>(''))
+        setcategoryAndValueInputs([
+          {
+            category: "",
+            attributeValue: "",
+            isNameNumerical : false
+          },
+        ]);
+
         setUpdateId(null);
       } else {
         throw new Error(response.message);
@@ -226,7 +253,8 @@ const AttributeValue = () => {
   const formik = useFormik({
     initialValues: {
       attributeRef: "",
-      valuesCombo: [{ category: "", attributeValue: "" }],
+      valuesCombo: [{ category: "", attributeValue: "", isNameNumerical : false }],
+     
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -242,7 +270,14 @@ const AttributeValue = () => {
   });
   const setUpdate = () => {
     setUpdateId(false);
-    formik.resetForm();
+    setrefatt(()=>(''))
+    setcategoryAndValueInputs([
+      {
+        category: "",
+        attributeValue: "",
+        isNameNumerical : false
+      },
+    ]);
   };
   return (
     <>
@@ -270,7 +305,21 @@ const AttributeValue = () => {
                           listboxWrapper: "max-h-[320px]",
                           selectorButton: "text-[#fff]",
                         }}
-                        onSelectionChange={setrefatt}
+                        onSelectionChange={(selectedId) => {
+                          // Find the item in attributeData with the matching ID
+                          const selectedItem = attributeData.find(item => (item._id === selectedId));
+                          if (selectedItem) {
+                            // If the item is found, set refatt to an object containing both ID and name
+                            // setrefatt({ id: selectedId, name: selectedItem.name });
+                            console.log(selectedItem,'vvvvvvvvvvvvvv')
+                            setrefatt(selectedItem._id)
+                            setrefattName(selectedItem.name)
+                          } else {
+                            // Handle the case where the item is not found (optional)
+                            console.error("Item not found in attributeData:", selectedItem);
+                            
+                          }
+                        }}
                         value={refatt}
                         defaultItems={attributeData}
                         selectedKey={refatt}
@@ -353,7 +402,8 @@ const AttributeValue = () => {
                         )}
                       </Autocomplete>
                       {categoryAndValueInputs?.map((input, index) => (
-                        <div key={index} className="flex gap-2">
+                        <div key={index} className="flex flex-col  gap-2">
+                          <div className="flex gap-2">
                           <Autocomplete
                             classNames={{
                               base: "max-w-full border-[#fff] ",
@@ -450,29 +500,55 @@ const AttributeValue = () => {
                           <input
                             autoFocus
                             onChange={(event) => {
-                              formik.setFieldValue(
-                                "attributeValue",
-                                event.target.value
-                              );
+                             
                               const updatedInputs = [...categoryAndValueInputs];
-                              updatedInputs[index].attributeValue =
-                                event.target.value;
+                                                        updatedInputs[index] = {
+                                                          ...updatedInputs[index],
+                                                          attributeValue: event.target.value
+                                                        };
                                 setcategoryAndValueInputs(()=>(updatedInputs))
+                                // formik.setFieldValue(
+                                //   "attributeValue",
+                                //   event.target.value
+                                // );
                             }}
                             value={categoryAndValueInputs[index]?.attributeValue}
                             className="bg-slate-900 font-font2 font-[400] w-full rounded-lg border border-gray-300 px-4 py-3  text-[#fff]"
                             placeholder="attributeValue"
                           />
-
-                          {/* Button to remove category input */}
-
-                          <Button
+                           <Button
                             color="danger"
                             variant="light"
                             onClick={() => removecategoryAndValueInput(index)}
                           >
                             Remove
                           </Button>
+                          </div>
+                          {/* Button to remove category input */}
+                        {refattName==="cut" && (
+                         <div className="flex">
+                         <label className="flex cursor-pointer items-center justify-between p-1 text-[#fff]">
+                                                isNameNumerical
+                                                <div className="relative inline-block">
+                                                    <input
+                                                       onChange={(e) => {
+                                                        const updatedInputs = [...categoryAndValueInputs];
+                                                        updatedInputs[index] = {
+                                                          ...updatedInputs[index],
+                                                          isNameNumerical: e.target.checked
+                                                        };
+                                                        setcategoryAndValueInputs(updatedInputs);
+                                                      }}
+                                                        name="isNameNumercal" // Associate the input with the form field 'verified'
+                                                        checked={input?.isNameNumerical} // Set the checked state from formik values
+                                                        className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+                                                        type="checkbox"
+                                                    />
+                                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300" />
+                                                </div>
+                                            </label>
+                         
+                          </div>)}
                         </div>
                       ))}
                       {/* Button to add new categoryAndValue input */}
