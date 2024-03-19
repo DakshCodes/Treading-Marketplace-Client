@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { Createattribute, Deleteattribute, Updateattribute } from '../../apis/attribute';
-import { attributeDataState } from '../../store/attributevalues/attributeAtom';
+import { attributeDataState } from '../../store/attribute/attributeAtom';
 
 const Attribute = () => {
 

@@ -26,13 +26,14 @@ import { categoryDataState } from '../../store/category/category';
 // import { widthDataState } from '../../store/width/widthAtom';
 import { unitDataState } from '../../store/unit/unitAtom';
 // import { cutDataState } from '../../store/cut/cutAtom';
-import { attributeDataState } from '../../store/attributevalues/attributeAtom';
-import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
+
 import { PiTreeStructureBold } from "react-icons/pi";
 import { TbListTree } from "react-icons/tb";
 
-import Attribute from '../../components/Attributes/Attribute';
-import AttributeValue from '../../components/AttributeValues/AttributeValue';
+import Attribute from '../../components/Attribute/Attribute';
+import AttributeValue from '../../components/AttributeValue/AttributeValue';
+import { attributeDataState } from '../../store/attribute/attributeAtom';
+import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 
 const Inventory = () => {
 
@@ -102,7 +103,7 @@ const Inventory = () => {
                         key="Attributes"
                         title={
                             <div className="flex items-center space-x-2 ">
-                                <PiTreeStructureBold />
+                                <PiTreeStructureBold style={{ fontSize: '23px' }}/>
                                 <span>Attributes</span>
                                 <Chip size="sm" variant="light">{attributeData?.length}</Chip>
                             </div>
@@ -115,7 +116,7 @@ const Inventory = () => {
                         key="AttributeValues"
                         title={
                             <div className="flex items-center space-x-2 ">
-                                <TbListTree />
+                                <TbListTree style={{ fontSize: '23px' }}/>
                                 <span>AttributeValues</span>
                                 <Chip size="sm" variant="light">{attributeValueData?.length}</Chip>
                             </div>

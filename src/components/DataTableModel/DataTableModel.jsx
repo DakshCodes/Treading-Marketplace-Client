@@ -23,8 +23,12 @@ import { capitalize } from "../../utils/capitalize";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { useRecoilState } from "recoil";
 import { customerDataState } from "../../store/customer/customerAtom";
+
 import ViewAreaToggle from "../View Area/ViewAreaToggle";
 import { attributeDataState } from "../../store/attribute/attributeAtom";
+
+
+
 
 
 const statusColorMap = {
@@ -134,6 +138,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                         <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p>
                     </div>
                 );
+
 
             case "customer":
                 return (
