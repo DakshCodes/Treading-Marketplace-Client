@@ -26,6 +26,9 @@
   box-sizing: border-box;
 }
 
+.remove-scrolbar::-webkit-scrollbar{
+  display: none;
+}
 body {
   min-height: 100vh;
   background-color: var(--text-color);

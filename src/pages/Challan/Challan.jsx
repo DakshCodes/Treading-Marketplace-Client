@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../../components/DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip } from "@nextui-org/react";
 import { useFormik } from 'formik'
 import { Createchallan, Deletechallan, Updatechallan } from '../../apis/challan';
 import { toast } from 'react-hot-toast';
@@ -15,6 +15,9 @@ import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
 import { UploadImageChallan } from '../../apis/product';
+import { attributeDataState } from '../../store/attributevalues/attributeAtom';
+import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
+import FillterTableData from '../../components/FillterDataTable/FillterTableData';
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -25,8 +28,11 @@ const Challan = () => {
   const [supplierRef, setsupplierRef] = useState(null)
   const [customerRef, setcustomerRef] = useState(null)
   const [qty, setqty] = useState("")
+  const [qtymeter, setqtymeter] = useState("")
+  const [price, setprice] = useState("")
   const [remark, setRemark] = useState("")
   const [unit, setUnit] = useState("")
+  const [prodcutkey, setprodcutkey] = useState("")
   const [totalbill, settotalbill] = useState(null)
   const [cutref, setcutref] = useState(null)
 
@@ -37,17 +43,18 @@ const Challan = () => {
 
   const [updated, setUpdated] = useState(false)
 
+  const [attributeData, setattributeData] = useRecoilState(attributeDataState)
+  const [attributeValueData, setattributeValueData] = useRecoilState(
+    attributeValueDataState
+  );
   // const products = useRecoilValue(getProductById(supplierRef));
-
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
-
   const [customerData, setcustomerData] = useRecoilState(customerDataState)
-
-
-  const [cutData, setcutData] = useRecoilState(cutDataState)
-
+  // const [cutData, setcutData] = useRecoilState(cutDataState)
   const [productChartImage, setProductChartImage] = useState('');
   const [productChartImageData, setProductChartImageData] = useState([]);
+
+  const [attributesvaluesData, setattributesvaluesData] = useState([]);
 
 
   // Data Format
@@ -186,7 +193,6 @@ const Challan = () => {
       } else {
         values.challanNo = challanNumber;
         console.log(values, "going")
-        generateToatl()
         setIsLoading(true)
         await creatsupplier(values);
         setIsLoading(false)
@@ -242,80 +248,55 @@ const Challan = () => {
   // console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable = () => {
-    if (productref && cutref && unit) {
-      let qtyMeter;
-      const pricePerPiece = productsData?.filter(item => item?._id === productref)[0]?.pricePerUnit?.magnitude;
-      const cutvalue = cutData.find(cut => cut._id === cutref)
-      if (cutvalue?.isNameNumerical) {
-        qtyMeter = Math.floor(qty * parseFloat(cutvalue?.name));
-      }
+    if (productref && cutref && unit && qty && qtymeter && price) {
+
       let overall = 0;
-      const price = parseFloat(pricePerPiece);
-      console.log(unit)
       if (unit === '1') {
-        console.log("in")
-        overall = isNaN(price) ? 0 : Math.floor(qty * price);
+        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
       }
       if (unit === '2') {
-        console.log("in")
-        overall = isNaN(price) ? 0 : Math.floor(qtyMeter * price);
+        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
       }
-
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtyMeter, challanChartImages: productChartImageData, price: pricePerPiece || 0, unit: unit, overall: overall, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: pricePerPiece || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
+
+      generateToatl();
       setproductref("")
       setProductChartImageData([])
       setProductChartImage("")
       setcutref("")
       setUnit("")
       setqty("")
+      setqtymeter("")
       setRemark("")
     } else {
-      // toast.error("Please select all fields");
+      toast.error("Please select all fields");
     }
   };
 
-  const handleQtyChange = (index, value) => {
-    formik.setValues((prevValues) => {
-      const updatedProducts = [...prevValues.products];
-      const product = { ...updatedProducts[index], price: value };
-      let overallprice = product.overall;
-      if (product.unit === "1") {
-        const price = parseFloat(product.price);
-        console.log(price)
-        console.log(product.qtyPcs)
-        overallprice = parseFloat(product.qtyPcs) * parseFloat(price);
+  const qtypiecesChange = (event) => {
+    event.preventDefault();
+    setqty(event.target.value);
+    if (cut) {
+      let qtyMeter;
+      if (cutvalue?.isNameNumerical) {
+        qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.name));
+        setqtymeter(qtyMeter);
       }
-      if (product.unit === "2") {
-        const price = parseFloat(product.price);
-        overallprice = parseFloat(product.qtyMtr) * price;
-      }
-      updatedProducts[index] = { ...product, overall: overallprice };
-      return { ...prevValues, products: updatedProducts };
-    });
+      setqtymeter(qtyMeter);
+    } else {
+      toast.error("add cut first");
+    }
   };
-  const handleQtyMeterChange = (index, value) => {
-    console.log(value, "metervalue...........................")
-    formik.setValues((prevValues) => {
-      const updatedProducts = [...prevValues.products];
-      const product = { ...updatedProducts[index], qtyMtr: value };
-
-      console.log(product)
-
-      let overallprice = product.overall;
-      if (product.unit === "2") {
-        const price = parseFloat(product.price);
-        overallprice = parseFloat(product.qtyMtr) * price;
-      }
-      updatedProducts[index] = { ...product, overall: overallprice };
-      return { ...prevValues, products: updatedProducts };
-    });
+  const setproductchange = (event) => {
+    event.preventDefault();
+    const price = productsData?.filter(item => item?._id === event.target.value)[0]?.pricePerUnit?.magnitude;
+    setproductref(event.target.value)
+    setprice(price)
   };
-
-
 
   const onSupplierChange = (value) => {
     setsupplierRef(value)
@@ -336,9 +317,9 @@ const Challan = () => {
       updatedProducts.splice(index, 1);
       return { ...prevValues, products: updatedProducts };
     });
+    generateToatl();
   };
   const generateToatl = () => {
-
     // Accessing products from formik values
     const products = formik.values.products;
 
@@ -360,10 +341,12 @@ const Challan = () => {
 
   const handleProductChartImageChange = (e) => {
     setProductChartImage(e.target.files[0]);
-    console.log(e.target.files[0])
+    if (productChartImage) {
+      uploadImage()
+    }
   };
 
-  const uploadImage = async (e) => {
+  const uploadImage = async () => {
     try {
       const formData = new FormData();
       let imageFile = productChartImage;
@@ -408,15 +391,16 @@ const Challan = () => {
 
 
 
+
+
   // console.log(formik.values, "values")
   // console.log(supplierRef, "supplier")
   // console.log("product: ", productsData)
-  console.log("data ", challansData)
+  // console.log("data ", attributeValueData)
   // console.log("cut: ", unit)
   // console.log("productChartImageData: ", productChartImageData)
   // console.log("challan: ", totalbill)
   // const datePart = new Date(yourArray.challanDate)
-
   // const currentDate = new Date().toISOString().split('T')[0];
   // console.log(formik.values.challanDate.split('T')[0], "date")
   // console.log(currentDate, "current-date")
@@ -425,6 +409,94 @@ const Challan = () => {
     { name: "Pcs", _id: 1 },
     { name: "Meter", _id: 2 },
   ]
+
+
+  const [filterkeys, setfilterkeys] = React.useState([]);
+
+  const handleClose = (fruitToRemove) => {
+    setfilterkeys(filterkeys?.filter(fruit => fruit !== fruitToRemove));
+    if (filterkeys?.length === 1) {
+      setfilterkeys(initialFruits);
+    }
+  };
+
+
+  const selectionchang = (value) => {
+    setprodcutkey(value)
+    setfilterkeys([...filterkeys, value])
+  }
+
+  const [selectedKeys, setSelectedKeys] = useState(undefined);
+
+  useEffect(() => {
+    console.log(attributeValueData?.filter(attributeValue => attributeValue?.attributeRef?._id === selectedKeys), "fitler")
+    setattributesvaluesData(attributeValueData?.filter(attributeValue => attributeValue?.attributeRef?._id === selectedKeys))
+  }, [selectedKeys])
+
+
+  // Memoization function to cache results
+  function memoize(func) {
+    const cache = {};
+    return function (...args) {
+      const key = JSON.stringify(args);
+      if (cache[key]) {
+        return cache[key];
+      } else {
+        const result = func.apply(this, args);
+        cache[key] = result;
+        return result;
+      }
+    };
+  }
+
+  // Filter function to filter products based on filter keys
+  const filterProducts = memoize((productsData, filterKeys) => {
+    return productsData.filter(product => {
+      // Iterate through each filter key
+      for (const filterKey of filterKeys) {
+        // Check if the product attributes contain the filter key
+        if (!product?.productAttributes.some(attr => attr.attrValue === filterKey)) {
+          return false; // If any filter key is not found, skip this product
+        }
+      }
+      return true; // If all filter keys are found, include this product
+    });
+  });
+
+
+  // Call the filter function with products data and filter keys
+  const filteredProducts = filterProducts(productsData, filterkeys);
+
+  console.log(filterkeys, "fillterkeys")
+  console.log("filteredProducts", filteredProducts)
+
+
+  // const rows = [
+  //   {
+  //     key: "1",
+  //     productName: "Tony Reichert",
+  //     supplierName: "CEO",
+  //     status: "Active",
+  //   },
+  //   {
+  //     key: "2",
+  //     productName: "Tony Reichert",
+  //     supplierName: "Technical Lead",
+  //     status: "Paused",
+  //   },
+  // ];
+
+  const columnsoffillter = [
+    {
+      key: "productName",
+      label: "NAME",
+    },
+    {
+      key: "supplierName",
+      label: "SUPPLIER",
+    },
+  ];
+
 
   return (
     <>
@@ -672,18 +744,18 @@ const Challan = () => {
                             </div>
                             <div className="img-form flex flex-col gap-5 mt-5">
                               <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
-                              <div className='grid grid-cols-4 gap-5 mt-4 w-full' >
+                              <div className='grid grid-cols-2 md:grid-cols-6 gap-5 sm:grid-cols-3  mt-4 w-full' >
                                 <Autocomplete
                                   labelPlacement="outside"
                                   label="Product Name"
-
+                                  className='max-w-[15rem]'
                                   classNames={{
                                     base: "max-w-full border-[#fff] ",
                                     listboxWrapper: "max-h-[270px]",
                                     selectorButton: "text-[#000]",
                                   }}
 
-                                  onSelectionChange={setproductref}
+                                  onSelectionChange={setproductchange}
                                   value={productref}
                                   items={(supplierRef && productsData?.filter(product => product?.supplierName?._id === supplierRef) || [])}
                                   selectedKey={productref}
@@ -770,7 +842,7 @@ const Challan = () => {
 
                                   onSelectionChange={setcutref}
                                   value={cutref}
-                                  defaultItems={cutData}
+                                  defaultItems={Units}
                                   // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                   selectedKey={cutref}
                                   inputProps={{
@@ -845,6 +917,7 @@ const Challan = () => {
                                     </AutocompleteItem>
                                   )}
                                 </Autocomplete>
+
                                 <Input
                                   label="Product Qty"
                                   classNames={{
@@ -856,8 +929,35 @@ const Challan = () => {
                                   endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
                                   placeholder="0"
                                   value={qty}
-                                  className='max-w-[18rem]'
-                                  onChange={(e) => setqty(e.target.value)}
+                                  className='max-w-[15rem]'
+                                  onChange={qtypiecesChange}
+                                />
+                                <Input
+                                  label="Product Qty"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>meter</p>}
+                                  placeholder="0"
+                                  value={qtymeter}
+                                  className='max-w-[15rem]'
+                                  onChange={(e) => setqtymeter(e.target.value)}
+                                />
+                                <Input
+                                  label="Price"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  placeholder="0"
+                                  value={price}
+                                  className='max-w-[15rem]'
+                                  onChange={(e) => setprice(e.target.value)}
                                 />
                                 <AutoComplete
                                   labelPlacement="outside"
@@ -868,11 +968,14 @@ const Challan = () => {
                                   selectionChange={(value) => setUnit(value)}
                                 />
                               </div>
-                              <div className='flex items-center justify-between w-full gap-10 mt-3 '>
+                              <div className='flex items-center  w-full gap-10 mt-3 '>
                                 <Textarea
                                   variant="flat"
                                   placeholder="Enter your remarks"
-                                  className="font-[600] flex-grow   font-font1 max-w-[20rem]"
+                                  className="font-[600] remove-scrolbar flex-grow  font-font1 max-w-[20rem] h-[40px] "
+                                  classNames={{
+                                    inputWrapper: "remove-scrolbar overflow-scroll",
+                                  }}
                                   value={remark}
                                   onValueChange={setRemark}
                                 />
@@ -889,13 +992,7 @@ const Challan = () => {
                                       Select chart Image ({productChartImage?.name})
                                     </label>
                                   </div>
-                                  <div className='flex gap-2'>
-                                    <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
-                                      Upload
-                                    </Button>
-                                  </div>
                                 </div>
-                                <p className='text-[0.8rem] font-font1 font-[600]'>All Images</p>
                                 <div className="grid border  grid-cols-4 overflow-y-auto p-2 flex-grow  max-w-[35rem]">
                                   {
                                     productChartImageData?.length > 0 ? (
@@ -953,32 +1050,10 @@ const Challan = () => {
                                         {object.qtyPcs}
                                       </TableCell>
                                       <TableCell>
-                                        <Input
-                                          type="number"
-                                          placeholder={object.qtyMtr}
-                                          value={object.qtyMtr}
-                                          className="min-w-[5rem] w-fit m-auto"
-                                          classNames={{
-                                            input: "ml-1 text-[#000] font-font1",
-                                            inputWrapper: "h-[5px] min-w-[5rem] w-[1rem]",
-                                            label: "font-[600] font-font1",
-                                          }}
-                                          onChange={(e) => handleQtyMeterChange(index, e.target.value)}
-                                        />
+                                        {object.qtyMtr}
                                       </TableCell>
                                       <TableCell>
-                                        <Input
-                                          type="number"
-                                          placeholder={object.price}
-                                          value={object.price}
-                                          className="min-w-[5rem] w-fit m-auto"
-                                          classNames={{
-                                            input: "ml-1 text-[#000] font-font1",
-                                            inputWrapper: "h-[5px] min-w-[5rem] w-[1rem]",
-                                            label: "font-[600] font-font1",
-                                          }}
-                                          onChange={(e) => handleQtyChange(index, e.target.value)}
-                                        />
+                                        {object.price}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}
@@ -1049,11 +1124,7 @@ const Challan = () => {
                             <Card>
                               <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
                                 <div className='flex items-center gap-2'>
-                                  <Button
-                                    onClick={generateToatl}
-                                    className='bg-[#000] text-[#fff] max-w-max '>
-                                    Generate  Total
-                                  </Button>
+                                  <p className='font-font1 font-[500] text-[1rem]'>Total Bill</p>
                                 </div>
                                 <div className='flex items-center '>
                                   <IndianRupee size={20} />
@@ -1067,6 +1138,232 @@ const Challan = () => {
                             key="Products"
                             title="Product"
                           >
+                            <div className='flex  items-center gap-10'>
+                              <Autocomplete
+                                classNames={{
+                                  base: "max-w-[18rem] border-[#fff] ",
+                                  listboxWrapper: "max-h-[270px]",
+                                  selectorButton: "text-[#000]",
+                                }}
+
+                                onSelectionChange={selectionchang}
+                                value={prodcutkey}
+                                defaultItems={attributesvaluesData[0]?.valuesCombo || []}
+                                selectedKey={prodcutkey}
+                                inputProps={{
+                                  classNames: {
+                                    input: "ml-1 text-[#000] font-font1",
+                                    inputWrapper: "h-[50px]",
+                                    label: "font-[600] font-font1 text-[1rem]",
+                                  },
+                                }}
+                                listboxProps={{
+                                  hideSelectedIcon: true,
+                                  itemClasses: {
+                                    base: [
+                                      "rounded-medium",
+                                      "text-[#000]",
+                                      "transition-opacity",
+                                      "data-[hover=true]:text-foreground",
+                                      "dark:data-[hover=true]:bg-default-50",
+                                      "data-[pressed=true]:opacity-70",
+                                      "data-[hover=true]:bg-default-200",
+                                      "data-[selectable=true]:focus:bg-default-100",
+                                      "data-[focus-visible=true]:ring-default-500",
+                                    ],
+                                  },
+                                }}
+                                aria-label="Select an "
+                                placeholder={`Enter ${attributeData?.find(attribute => attribute._id === selectedKeys)?.name || "Select"}`}
+                                selectorButtonProps={{
+                                  className: "hidden"
+                                }}
+                                popoverProps={{
+                                  offset: 10,
+                                  classNames: {
+                                    base: "rounded-large",
+                                    content: "p-1  border-none bg-background",
+
+                                  },
+                                }}
+                                endContent={
+                                  <Dropdown>
+                                    <DropdownTrigger>
+                                      <Button
+                                        variant="light"
+                                        className="capitalize h-[35px] text-[0.8rem] font-font1 font-[500]"
+                                      >
+                                        {attributeData?.find(attribute => attribute._id === selectedKeys)?.name || "Select"}
+                                      </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                      aria-label="Single selection example"
+                                      disallowEmptySelection
+                                      selectionMode="single"
+                                      variant="light"
+                                      selectedKeys={selectedKeys || 'Select'}
+                                      onSelectionChange={(value) => setSelectedKeys(value.currentKey)}
+                                      classNames={{
+                                        list: "text-[0.8rem] font-font1 font-[600]",
+                                      }}
+                                    >
+                                      {
+                                        attributeData?.map(attribute =>
+                                          <DropdownItem key={attribute?._id}>{attribute?.name}</DropdownItem>)
+                                      }
+                                    </DropdownMenu>
+                                  </Dropdown>
+                                }
+                                startContent={
+                                  <svg
+                                    aria-hidden="true"
+                                    fill="none"
+                                    focusable="false"
+                                    height={20}
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                    width={20}
+                                    color={"#000"}
+                                  >
+                                    <path
+                                      d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                    <path
+                                      d="M22 22L20 20"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                  </svg>}
+
+                                variant="flat"
+                              >
+                                {(item) => (
+                                  <AutocompleteItem key={item?.attributeValue} textValue={item?.attributeValue}>
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex gap-2 items-center">
+                                        <div className="flex flex-col">
+                                          <span>{item?.attributeValue}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </AutocompleteItem>
+                                )}
+                              </Autocomplete>
+                              <div className="flex gap-2 border rounded-xl max-w-max px-3 max-h-[50px] h-full justify-center items-center">
+                                {
+                                  filterkeys.length > 0 ? (
+
+                                    filterkeys.map((fruit, index) => (
+                                      <Chip key={index} onClose={() => handleClose(fruit)} variant="flat" className='font-font1 text-[0.8rem]'>
+                                        {fruit}
+                                      </Chip>
+                                    ))
+                                  ) : (
+                                    <h1 className='font-font1 font-[600] text-[0.8rem] m-auto'>no filter</h1>
+                                  )
+                                }
+                              </div>
+                            </div>
+                            <FillterTableData rows={filteredProducts} columnsoffillter={columnsoffillter} />
+                            {/* <Autocomplete
+                              labelPlacement="outside"
+                              label="Product By Filter"
+                              classNames={{
+                                base: "max-w-full border-[#fff] mt-5",
+
+                                listboxWrapper: "max-h-[270px]",
+                                selectorButton: "text-[#000]",
+                              }}
+
+                              onSelectionChange={(value) => selectionchang(value)}
+                              value={formik?.values?.customer}
+                              defaultItems={filteredProducts}
+                              selectedKey={formik?.values?.customer}
+                              inputProps={{
+                                classNames: {
+                                  input: "ml-1 text-[#000] font-font1",
+                                  inputWrapper: "h-[50px]",
+                                  label: "font-[600] font-font1",
+                                },
+                              }}
+                              listboxProps={{
+                                hideSelectedIcon: true,
+                                itemClasses: {
+                                  base: [
+                                    "rounded-medium",
+                                    "text-[#000]",
+                                    "transition-opacity",
+                                    "data-[hover=true]:text-foreground",
+                                    "dark:data-[hover=true]:bg-default-50",
+                                    "data-[pressed=true]:opacity-70",
+                                    "data-[hover=true]:bg-default-200",
+                                    "data-[selectable=true]:focus:bg-default-100",
+                                    "data-[focus-visible=true]:ring-default-500",
+                                  ],
+                                },
+                              }}
+                              aria-label="Select an Customer "
+                              placeholder="Enter an Customer "
+                              popoverProps={{
+                                offset: 10,
+                                classNames: {
+                                  base: "rounded-large",
+                                  content: "p-1  border-none bg-background",
+
+                                },
+                              }}
+                              startContent={<svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height={20}
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                                width={20}
+                                color={"#000"}
+                              >
+                                <path
+                                  d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                />
+                                <path
+                                  d="M22 22L20 20"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                />
+                              </svg>}
+
+                              variant="flat"
+                            >
+                              {(item) => (
+                                <AutocompleteItem key={item?._id} textValue={item?.productName}>
+                                  <div className="flex justify-between items-center w-full">
+                                    <div className="flex gap-2 items-center justify-between w-full">
+                                      <div className="flex justify-between w-full">
+                                        <span className="text-small">{item?.productName}</span>
+                                      </div>
+                                      <div className="flex justify-between w-full">
+                                        <span className="text-small">{item?.supplierName?.name}</span>
+                                      </div>
+                                      <div className="flex justify-between w-full">
+                                        <span className="text-small">{item?.pricePerUnit?.magnitude}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </AutocompleteItem>
+                              )}
+                            </Autocomplete> */}
                           </Tab>
                         </Tabs>
                       </CardBody>
@@ -1087,7 +1384,7 @@ const Challan = () => {
             )}
           </ModalContent>
         </Modal>
-      </div>
+      </div >
       <DataTableModel filltername={"challanNo"} visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={challansData} onOpen={onOpen} section={'supplier'} />
     </>
   )
