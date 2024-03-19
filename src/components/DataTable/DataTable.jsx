@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Table,
     TableHeader,
@@ -15,10 +15,14 @@ import {
     Chip,
     User,
     Pagination,
+    useDisclosure,
 } from "@nextui-org/react";
 import { UilAngleDown, UilPlus, UilEllipsisV } from '@iconscout/react-unicons'
 import { useNavigate } from "react-router-dom";
 import { capitalize } from "../../utils/capitalize";
+import ViewArea from "../View Area/ViewArea";
+import { productsDataState } from "../../store/product/productAtom";
+import { useRecoilValue } from "recoil";
 
 const statusColorMap = {
     true: "success",
@@ -27,7 +31,7 @@ const statusColorMap = {
 
 
 
-export default function DataTable({ columns, users, deleteItem, statusOptions, visible_columns, section}) {
+export default function DataTable({ columns, users, deleteItem, statusOptions, visible_columns, section }) {
     const [filterValue, setFilterValue] = React.useState("");
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
@@ -47,6 +51,10 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
 
         return columns.filter((column) => Array.from(visibleColumns).includes(column.uid));
     }, [visibleColumns]);
+
+    const productsData = useRecoilValue(productsDataState);
+    const [unitData, setUnitData] = useState([]);
+    const {isOpen, onOpen, onClose} = useDisclosure();
 
     const filteredItems = React.useMemo(() => {
         let filteredUsers = [...users];
@@ -87,6 +95,13 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
 
     const handleEditForSection = async (id) => {
         navigate(`/${section}/${id}`);
+
+    }
+
+    const openViewArea = (productId) => {
+        const singleProductData = productsData.find((element) => element._id == productId);
+        setUnitData(singleProductData);
+        onOpen(true);
     }
 
     const renderCell = React.useCallback((user, columnKey) => {
@@ -130,7 +145,7 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu className='font-2 font-medium text-[#000]'>
-                                <DropdownItem onClick={() => alert(user._id)}>View</DropdownItem>
+                                <DropdownItem onClick={() => openViewArea(user._id)}>View</DropdownItem>
                                 <DropdownItem onClick={() => handleEditForSection(user._id)}>Edit</DropdownItem>
                                 <DropdownItem onClick={() => deleteItem(user._id)}>Delete</DropdownItem>
                             </DropdownMenu>
@@ -288,41 +303,45 @@ export default function DataTable({ columns, users, deleteItem, statusOptions, v
     }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
     return (
-        <Table
-            aria-label="Example table with custom cells, pagination and sorting"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-[382px]",
-                th: ["font-font1 font-[400]"],
-            }}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody emptyContent={"No users found"} items={sortedItems}>
-                {(item) => (
-                    <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+        <>
+            <ViewArea isOpen={isOpen} onOpen={onOpen} onClose={onClose} section={section} data={unitData} />
+            <Table
+                aria-label="Example table with custom cells, pagination and sorting"
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-[382px]",
+                    th: ["font-font1 font-[400]"],
+                }}
+                selectedKeys={selectedKeys}
+                selectionMode="multiple"
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={column.uid === "actions" ? "center" : "start"}
+                            allowsSorting={column.sortable}
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody emptyContent={"No users found"} items={sortedItems}>
+                    {(item) => (
+                        <TableRow key={item._id}>
+                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </>
+
     );
 }
