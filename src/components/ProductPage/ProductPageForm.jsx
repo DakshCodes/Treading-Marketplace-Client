@@ -20,7 +20,7 @@ import { widthDataState } from "../../store/width/widthAtom"
 import { productsDataState } from '../../store/product/productAtom';
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { unitDataState } from '../../store/unit/unitAtom';
-import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
+import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 
 const ProductPageForm = () => {
     const params = useParams();
@@ -553,7 +553,7 @@ const ProductPageForm = () => {
                                                             //     },
                                                             // }}
                                                             aria-label="Select an employee"
-                                                            placeholder={attr?.attributeRef?.name}
+                                                            placeholder={"Enter" + attr?.attributeRef?.name}
                                                             popoverProps={{
                                                                 offset: 10,
                                                                 classNames: {

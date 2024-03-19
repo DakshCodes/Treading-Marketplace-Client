@@ -7,7 +7,7 @@ export const attributeValueDataState = atom({
     default : selector({
         key :  "attributeValueSelector",
         get : async () => {
-            const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/attributeValue/get-all-attributeValue`);
+            const res = await axios.get(`${import.meta.env.VITE_SERVER}/api/attributeValue/get-all-attributeValue/withoutpopulate`);
             return res.data.attributeValues
         }
     })
