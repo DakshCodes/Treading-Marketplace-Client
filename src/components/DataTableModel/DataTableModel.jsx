@@ -15,6 +15,7 @@ import {
     Chip,
     User,
     Pagination,
+    useDisclosure,
 } from "@nextui-org/react";
 import { UilAngleDown, UilPlus, UilEllipsisV } from '@iconscout/react-unicons'
 import { useNavigate } from "react-router-dom";
@@ -22,7 +23,11 @@ import { capitalize } from "../../utils/capitalize";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { useRecoilState } from "recoil";
 import { customerDataState } from "../../store/customer/customerAtom";
-import { attributeDataState } from "../../store/attributevalues/attributeAtom";
+
+import ViewAreaToggle from "../View Area/ViewAreaToggle";
+import { attributeDataState } from "../../store/attribute/attributeAtom";
+
+
 
 
 
@@ -36,6 +41,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
 
     // console.log(users, "TableData");
     const [filterValue, setFilterValue] = React.useState("");
+    const { isOpen, onOpenChange, onClose } = useDisclosure();
     const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
     const [visibleColumns, setVisibleColumns] = React.useState(new Set(visible_columns));
     const [statusFilter, setStatusFilter] = React.useState("all");
@@ -104,6 +110,13 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
     const handleEditForSection = async (id) => {
         navigate(`/${section}/${id}`);
     }
+    const [sectionClickedID, setSectionClickedID] = React.useState(null);
+    const [viewAreaToggle, setViewAreaToggle] = React.useState(null);
+    const openViewAreaToggle = (id) => {
+        setViewAreaToggle(true);
+        setSectionClickedID(id);
+        onOpenChange(true);
+    }
 
     const renderCell = (user, columnKey) => {
         const cellValue = user[columnKey];
@@ -118,12 +131,15 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                         {user?.name}
                     </User>
                 );
+
             case "attributeref":
                 return (
                     <div className="flex flex-col">
-                    <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p>
-                </div>
+                        <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p>
+                    </div>
                 );
+
+
             case "customer":
                 return (
                     <div className="flex flex-col">
@@ -188,7 +204,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                                 </Button>
                             </DropdownTrigger>
                             <DropdownMenu className='font-2 font-medium text-[#000]'>
-                                <DropdownItem onClick={() => alert(user._id)}>View</DropdownItem>
+                                <DropdownItem onClick={() => openViewAreaToggle(user._id)}>View</DropdownItem>
                                 <DropdownItem onClick={() => update(user._id)}>Edit</DropdownItem>
                                 <DropdownItem onClick={() => deleteItem(user._id) || alert(user._id)}>Delete</DropdownItem>
                             </DropdownMenu>
@@ -350,41 +366,45 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
     console.log(headerColumns, "User")
 
     return (
-        <Table
-            aria-label="Example table with custom cells, pagination and sorting"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-[382px]",
-                th: ["font-font1 font-[400]"],
-            }}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-        >
-            <TableHeader columns={headerColumns}>
-                {(column) => (
-                    <TableColumn
-                        key={column.uid}
-                        align={column.uid === "actions" ? "center" : "start"}
-                        allowsSorting={column.sortable}
-                    >
-                        {column.name}
-                    </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody emptyContent={"No users found"} items={sortedItems}>
-                {(item) => (
-                    <TableRow key={item._id}>
-                        {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+        <>
+            <ViewAreaToggle section={section} isOpen={isOpen} onClose={onClose} onOpenChange={onOpenChange} id={sectionClickedID} />
+            <Table
+                aria-label="Example table with custom cells, pagination and sorting"
+                isHeaderSticky
+                bottomContent={bottomContent}
+                bottomContentPlacement="outside"
+                classNames={{
+                    wrapper: "max-h-[382px]",
+                    th: ["font-font1 font-[400]"],
+                }}
+                selectedKeys={selectedKeys}
+                selectionMode="multiple"
+                sortDescriptor={sortDescriptor}
+                topContent={topContent}
+                topContentPlacement="outside"
+                onSelectionChange={setSelectedKeys}
+                onSortChange={setSortDescriptor}
+            >
+                <TableHeader columns={headerColumns}>
+                    {(column) => (
+                        <TableColumn
+                            key={column.uid}
+                            align={column.uid === "actions" ? "center" : "start"}
+                            allowsSorting={column.sortable}
+                        >
+                            {column.name}
+                        </TableColumn>
+                    )}
+                </TableHeader>
+                <TableBody emptyContent={"No users found"} items={sortedItems}>
+                    {(item) => (
+                        <TableRow key={item._id}>
+                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </>
+
     );
 }
