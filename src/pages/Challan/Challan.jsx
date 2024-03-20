@@ -15,8 +15,8 @@ import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
 import { UploadImageChallan } from '../../apis/product';
-import { attributeDataState } from '../../store/attributevalues/attributeAtom';
-import { attributeValueDataState } from '../../store/attributes/attributevalueAtom';
+import { attributeDataState } from '../../store/attribute/attributeAtom';
+import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 import FillterTableData from '../../components/FillterDataTable/FillterTableData';
 
 const Challan = () => {

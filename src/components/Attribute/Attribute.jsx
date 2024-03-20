@@ -104,11 +104,11 @@ const Attribute = () => {
     const handleUpdate = (attributeId) => {
         try {
             const attributeDataexist = attributeData.find((element) => element._id === attributeId);
-        console.log(attributeDataexist, 'existssssssssssssssssssssss');
+            console.log(attributeDataexist, 'existssssssssssssssssssssss');
 
-        formik.setValues({
-            name: attributeDataexist?.name,
-        });
+            formik.setValues({
+                name: attributeDataexist?.name,
+            });
             setUpdateId(attributeId)
             onOpen();
 
@@ -140,7 +140,7 @@ const Attribute = () => {
                 })
                 formik.setValues({
                     name: response.attribute?.name,
-                    
+
                 }
                 )
                 console.log(formik.values, 'ffffffffffffffffffffffffffffffff')
@@ -163,7 +163,7 @@ const Attribute = () => {
     const formik = useFormik({
         initialValues: {
             name: '',
-        
+
         },
         onSubmit: async values => {
             if (updateId) {
@@ -179,7 +179,7 @@ const Attribute = () => {
     });
     const setUpdate = () => {
         setUpdateId(false)
-        formik.resetForm(); 
+        formik.resetForm();
         // setrefcat('')
 
     }
@@ -210,7 +210,7 @@ const Attribute = () => {
                                                 placeholder="attribute name.."
                                             />
 
-                                           
+
                                         </div>
                                     </div>
                                 </ModalBody>

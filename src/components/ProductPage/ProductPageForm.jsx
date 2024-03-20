@@ -97,9 +97,9 @@ const ProductPageForm = () => {
             console.log(singleProductData)
             setProductChartImageData(singleProductData?.productColorChartData);
             formik.setValues({
-                supplierName: singleProductData?.supplierName && singleProductData?.supplierName?._id ,
+                supplierName: singleProductData?.supplierName && singleProductData?.supplierName?._id,
                 productName: singleProductData?.productName || "",
-                category: singleProductData?.category && singleProductData?.category?._id ,
+                category: singleProductData?.category && singleProductData?.category?._id,
                 productAttributes: singleProductData?.productAttributes?.map(attr => ({
                     attrType: attr.attrType,
                     attrValue: attr.attrValue
@@ -108,7 +108,7 @@ const ProductPageForm = () => {
                     magnitude: singleProductData?.pricePerUnit?.magnitude || null,
                     unit: singleProductData?.pricePerUnit?.unit || null,
                 },
-                productColorChartData : singleProductData?.productColorChartData
+                productColorChartData: singleProductData?.productColorChartData
             });
 
 
@@ -127,14 +127,14 @@ const ProductPageForm = () => {
     }, [])
 
     const updateDependentFields = (value) => {
+        const updatedProductAttributes = productAttributeValueFirst.map(attr => ({
+            attrType: attr.attributeRef?._id || attr.attributeRef,
+            attrValue: null
+        }));
         formik.setValues({
             ...formik.values,
             category: value,
-            quality: null,
-            design: null,
-            width: null,
-            finishtype: null,
-            feeltype: null,
+            productAttributes: updatedProductAttributes,
         });
     };
 
@@ -313,12 +313,12 @@ const ProductPageForm = () => {
     const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
     const initialProductAttributes = useMemo(() => {
-        if (!updateId) {
-            return productAttributeValueFirst.map(attr => ({
-                attrType: attr.attributeRef?._id || attr.attributeRef,
-                attrValue: null
-            }));
-        }
+        // if (!updateId) {
+        return productAttributeValueFirst.map(attr => ({
+            attrType: attr.attributeRef?._id || attr.attributeRef,
+            attrValue: null
+        }));
+        // }
     }, []);
 
 
@@ -391,6 +391,11 @@ const ProductPageForm = () => {
         onSubmit: async (values) => {
             // Handle form submission logic here
             console.log(productChartImageData)
+
+            if (!values.productColorChartData.length > 0) {
+                toast.error("Please enter at least one image");
+                return; x
+            }
 
             console.log(values, "+++++++++++++++");
             // return;
@@ -512,6 +517,10 @@ const ProductPageForm = () => {
                                             // const attributeValues = productAttributesValue.find(value => value.attributeType.name === attr.name)?.attributesValues;
                                             console.log(attr?.attributeRef?.name)
 
+                                            if (attr?.attributeRef?.name === "cut") {
+                                                return;
+                                            }
+
                                             return (
                                                 <>
                                                     <div className='flex flex-col items-start gap-2'>
@@ -553,7 +562,7 @@ const ProductPageForm = () => {
                                                             //     },
                                                             // }}
                                                             aria-label="Select an employee"
-                                                            placeholder={"Enter" + attr?.attributeRef?.name}
+                                                            placeholder={"Enter " + attr?.attributeRef?.name}
                                                             popoverProps={{
                                                                 offset: 10,
                                                                 classNames: {
@@ -671,21 +680,15 @@ const ProductPageForm = () => {
 
                                         <div className='flex gap-2'>
 
-                                            {
+                                            {/* {
 
                                                 <div className='col-span-1 flex items-center justify-center'>
                                                     <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0 0 48 48">
                                                         <path fill="#4caf50" d="M44,24c0,11.045-8.955,20-20,20S4,35.045,4,24S12.955,4,24,4S44,12.955,44,24z"></path><path fill="#ccff90" d="M34.602,14.602L21,28.199l-5.602-5.598l-2.797,2.797L21,33.801l16.398-16.402L34.602,14.602z"></path>
                                                     </svg>
                                                 </div>
-                                            }
-                                            <Button
-                                                color="danger" variant="light"
-                                            // onPress={onClose}
-                                            // onClick={setUpdate}
-                                            >
-                                                Close
-                                            </Button>
+                                            } */}
+
                                             <Button onClick={(e) => uploadImage(e)} isLoading={false} className="font-sans ml-auto col-span-1 text-[#fff] bg-[#000] font-medium"  >
                                                 Upload
                                             </Button>
