@@ -18,6 +18,8 @@ import { UploadImageChallan } from '../../apis/product';
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 import FillterTableData from '../../components/FillterDataTable/FillterTableData';
+import { attributeDataState } from '../../store/attribute/attributeAtom';
+import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
