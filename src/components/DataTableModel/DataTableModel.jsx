@@ -135,7 +135,10 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
             case "attributeref":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p>
+                        {/* <p className="text-bold text-tiny capitalize text-default-900">{attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}</p> */}
+                        <p className="text-bold text-tiny capitalize text-default-900">
+                            {user?.attributeRef._id ? user.attributeRef?.name : attributeData.find(supplier => supplier?._id === user?.attributeRef)?.name}
+                        </p>
                     </div>
                 );
 
