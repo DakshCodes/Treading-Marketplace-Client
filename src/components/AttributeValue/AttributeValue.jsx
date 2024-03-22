@@ -198,7 +198,7 @@ const AttributeValue = () => {
         throw new Error("Attribute reference data not found.");
       }
       // console.log(attributeRefData,"refffffffffffffffffffffffffffff")
-
+      setrefattName("")
       if (attributeRefData?.name === "cut") {
         setrefattName(() => ("cut"));
       }
@@ -291,6 +291,7 @@ const AttributeValue = () => {
         isNameNumerical: false
       },
     ]);
+    setrefattName('');
   };
   return (
     <>
@@ -329,6 +330,8 @@ const AttributeValue = () => {
                             setrefattName(selectedItem.name)
                           } else {
                             // Handle the case where the item is not found (optional)
+                            setrefattName("")
+
                             console.error("Item not found in attributeData:", selectedItem);
 
                           }

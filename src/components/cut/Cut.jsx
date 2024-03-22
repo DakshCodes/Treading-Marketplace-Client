@@ -43,7 +43,7 @@ const Cut = () => {
 
 
 
-    // Create The width
+    // Create The cut
     const createcut = async (values) => {
         try {
 
@@ -100,33 +100,17 @@ const Cut = () => {
             toast.error(error.message)
         }
     }
-
-    const updateFormWithCutData = (cutId, updatedCutData) => {
-        const cutDataexist = updatedCutData.find((element) => element._id === cutId);
-        console.log(cutDataexist, updatedCutData, 'existssssssssssssssssssssss');
-        setrefcat(() => (cutDataexist?.ref?._id))
-
-        formik.setValues({
-            name: cutDataexist?.name,
-            isNameNumerical: cutDataexist?.isNameNumerical,
-        });
-    };
-    // ...
-
-    // Use updateFormWithCutData in the useEffect
-    useEffect(() => {
-        updateFormWithCutData(updateId, cutData);
-        setUpdated(false);
-    }, [updated]);
-
-    // ...
-
     // Call updateFormWithCutData wherever needed
     const handleUpdate = (cutId) => {
         try {
-            setUpdated(true)
-            updateFormWithCutData(cutId, cutData);
-
+            const cutDataexist = cutData.find((element) => element._id === cutId);
+            console.log(cutDataexist, 'existssssssssssssssssssssss');
+            setrefcat(() => (cutDataexist?.ref))
+    
+            formik.setValues({
+                name: cutDataexist?.name,
+                isNameNumerical: cutDataexist?.isNameNumerical,
+            });
             setUpdateId(cutId)
             onOpen();
 

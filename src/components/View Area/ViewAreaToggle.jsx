@@ -23,14 +23,14 @@ const ViewAreaToggle = ({ section, id ,isOpen, onOpenChange, onClose }) => {
 
     React.useEffect(() => {
         setCurrentData(recoilStates[section] || []);
-    }, [section, recoilStates]);
+    }, [section]);
 
     React.useEffect(()=>{
         const singleProductData = currentData.find((element) => element._id == id);
         setUnitData(singleProductData);
     },[currentData,id])
 
-    console.log(unitData)
+    // console.log(unitData)
     // console.log(isOpen)
     // console.log(onOpenChange)
     // console.log(isOpen)

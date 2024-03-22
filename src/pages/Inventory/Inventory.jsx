@@ -1,7 +1,7 @@
 import React from 'react'
 import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
-// import { FaCut } from "react-icons/fa";
+import { FaCut } from "react-icons/fa";
 import { UilRuler,UilCube,UilArrowsHAlt , UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
@@ -13,7 +13,7 @@ import Categories from '../../components/Categories/Categories';
 // import Weave from '../../components/Weave/Weave';
 // import Width from '../../components/Width/Width';
 import Unit from '../../components/unit/Unit';
-// import Cut from '../../components/cut/Cut';
+import Cut from '../../components/cut/Cut';
 import { productsDataState } from '../../store/product/productAtom';
 import { useRecoilValue } from 'recoil';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
@@ -25,7 +25,7 @@ import { categoryDataState } from '../../store/category/category';
 // import { weaveDataState } from '../../store/weave/weaveAtom';
 // import { widthDataState } from '../../store/width/widthAtom';
 import { unitDataState } from '../../store/unit/unitAtom';
-// import { cutDataState } from '../../store/cut/cutAtom';
+import { cutDataState } from '../../store/cut/cutAtom';
 
 import { PiTreeStructureBold } from "react-icons/pi";
 import { TbListTree } from "react-icons/tb";
@@ -43,6 +43,7 @@ const Inventory = () => {
     const attributeData = useRecoilValue(attributeDataState);
     const attributeValueData = useRecoilValue(attributeValueDataState);
     const unitData = useRecoilValue(unitDataState);
+    const cutData = useRecoilValue(unitDataState);
 
 
 
@@ -216,7 +217,7 @@ const Inventory = () => {
                     >
                         <Width />
                     </Tab>
-                   
+                    */}
                     <Tab
                         key="Cut"
                         title={
@@ -229,7 +230,7 @@ const Inventory = () => {
                         className="max-h-max px-5 "
                     >
                         <Cut />
-                    </Tab> */}
+                    </Tab>
                 </Tabs>
             </div>
         </div>

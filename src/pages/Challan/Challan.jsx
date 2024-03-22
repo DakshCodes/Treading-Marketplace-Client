@@ -15,14 +15,11 @@ import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
 import { UploadImageChallan } from '../../apis/product';
-<<<<<<< HEAD
-=======
+
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
->>>>>>> 8074158f0a12687e00ad7ee86811f067c348dbd6
+
 import FillterTableData from '../../components/FillterDataTable/FillterTableData';
-import { attributeDataState } from '../../store/attribute/attributeAtom';
-import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 
 const Challan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
