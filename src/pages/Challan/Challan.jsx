@@ -42,9 +42,9 @@ const Challan = () => {
   const [challanNumber, setchallanNumber] = useState("")
 
   const [productsData, setProductsData] = useRecoilState(productsDataState)
-
   const [updated, setUpdated] = useState(false)
 
+  const [cutData, setcutData] = useRecoilState(cutDataState)
   const [attributeData, setattributeData] = useRecoilState(attributeDataState)
   const [attributeValueData, setattributeValueData] = useRecoilState(
     attributeValueDataState
@@ -52,7 +52,6 @@ const Challan = () => {
   // const products = useRecoilValue(getProductById(supplierRef));
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
   const [customerData, setcustomerData] = useRecoilState(customerDataState)
-  const [cutData, setcutData] = useState([]);
   const [productChartImage, setProductChartImage] = useState('');
   const [productChartImageData, setProductChartImageData] = useState([]);
 
@@ -341,40 +340,38 @@ const Challan = () => {
     }
   };
 
-  const handleProductChartImageChange = (e) => {
+  const handleProductChartImageChange = async (e) => {
     setProductChartImage(e.target.files[0]);
     if (e.target.files[0]) {
-      uploadImage()
-    }
-  };
+      try {
+        const formData = new FormData();
+        let imageFile = e.target.files[0];
+        if (imageFile) {
+          formData.append("color-chart-challan", imageFile);
+          setIsLoading(true)
+          const response = await UploadImageChallan(formData);
+          setIsLoading(false)
 
-  const uploadImage = async () => {
-    try {
-      const formData = new FormData();
-      let imageFile = productChartImage;
-      if (imageFile) {
-        formData.append("color-chart-challan", imageFile);
-        setIsLoading(true)
-        const response = await UploadImageChallan(formData);
-        setIsLoading(false)
-
-        if (response.success) {
-          toast.success(response.message);
-          const newImageLink = response.url;
-          setProductChartImageData((prevImages) => [...prevImages, { src: newImageLink }]);
-          setProductChartImage('');
+          if (response.success) {
+            toast.success(response.message);
+            const newImageLink = response.url;
+            setProductChartImageData((prevImages) => [...prevImages, { src: newImageLink }]);
+            setProductChartImage('');
+          } else {
+            toast.error(response.message);
+          }
         } else {
-          toast.error(response.message);
+          toast.error('Please select an image file.');
         }
-      } else {
-        toast.error('Please select an image file.');
-      }
 
-    } catch (error) {
-      toast.error(error.message);
-      console.log(error.message);
+      } catch (error) {
+        toast.error(error.message);
+        console.log(error.message);
+      }
     }
   };
+
+
 
 
   useEffect(() => {
@@ -389,18 +386,19 @@ const Challan = () => {
       // console.log(newChallanNumber, "challan")
       setchallanNumber(newChallanNumber);
     }
-    setcutData(attributeValueData.filter(attribute => attribute?.attributeRef?._id === (attributeData.find(attributename => attributename?.name === "cut")?._id))[0].valuesCombo)
+    // setcutData(attributeValueData.filter(attribute => attribute?.attributeRef?._id === (attributeData.find(attributename => attributename?.name === "cut")?._id))[0].valuesCombo)
   }, [onOpenChange, challansData]);
 
 
 
 
 
-  console.log(formik.values, "values")
+  // console.log(formik.values, "values")
   // console.log(supplierRef, "supplier")
   // console.log("product: ", productsData)
   // console.log("attribute ", attributeData)
   // console.log("data ", attributeValueData)
+  console.log("data ", challansData)
   // console.log("cut: ", cutData)
   // console.log("productChartImageData: ", productChartImageData)
   // console.log("challan: ", totalbill)
@@ -917,11 +915,11 @@ const Challan = () => {
                                   variant="flat"
                                 >
                                   {(item) => (
-                                    <AutocompleteItem key={item?._id} textValue={item?.attributeValue}>
+                                    <AutocompleteItem key={item?._id} textValue={item?.name}>
                                       <div className="flex justify-between items-center">
                                         <div className="flex gap-2 items-center">
                                           <div className="flex flex-col">
-                                            <span className="text-small">{item?.attributeValue}</span>
+                                            <span className="text-small">{item?.name}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -977,7 +975,7 @@ const Challan = () => {
                                     selectorButton: "text-[#000]",
                                   }}
                                   labelPlacement="outside"
-                                  label="Cut Name"
+                                  label="Unit"
 
                                   onSelectionChange={setUnit}
                                   value={unit}
@@ -1008,7 +1006,7 @@ const Challan = () => {
                                     },
                                   }}
                                   aria-label="Select an Cut"
-                                  placeholder="Enter an Cut"
+                                  placeholder="Enter Unit"
                                   popoverProps={{
                                     offset: 10,
                                     classNames: {
@@ -1133,7 +1131,7 @@ const Challan = () => {
                                         {productsData.find(product => product._id === object.product)?.productName}
                                       </TableCell>
                                       <TableCell>
-                                        {cutData.find(product => product._id === object.cut)?.attributeValue}
+                                        {cutData.find(product => product._id === object.cut)?.name}
                                       </TableCell>
                                       <TableCell>
                                         {object.qtyPcs}
