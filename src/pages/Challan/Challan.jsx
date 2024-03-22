@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../../components/DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip, Spinner } from "@nextui-org/react";
 import { useFormik } from 'formik'
 import { Createchallan, Deletechallan, Updatechallan } from '../../apis/challan';
 import { toast } from 'react-hot-toast';
@@ -15,10 +15,11 @@ import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
 import { UploadImageChallan } from '../../apis/product';
-
+<<<<<<< HEAD
+=======
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
-
+>>>>>>> 8074158f0a12687e00ad7ee86811f067c348dbd6
 import FillterTableData from '../../components/FillterDataTable/FillterTableData';
 
 const Challan = () => {
@@ -52,7 +53,7 @@ const Challan = () => {
   // const products = useRecoilValue(getProductById(supplierRef));
   const [suppliersData, setSuppliersData] = useRecoilState(suppliersDataState)
   const [customerData, setcustomerData] = useRecoilState(customerDataState)
-  // const [cutData, setcutData] = useRecoilState(cutDataState)
+  const [cutData, setcutData] = useState([]);
   const [productChartImage, setProductChartImage] = useState('');
   const [productChartImageData, setProductChartImageData] = useState([]);
 
@@ -186,10 +187,10 @@ const Challan = () => {
       verified: true,
     },
     onSubmit: async values => {
+      generateToatl()
       if (updateId) {
         setIsLoading(true)
         console.log(values, "update")
-        generateToatl()
         await handleUpdateSubmit(values);
         setIsLoading(false)
       } else {
@@ -259,19 +260,19 @@ const Challan = () => {
       if (unit === '2') {
         overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
       }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: pricePerPiece || 0, unit: unit, overall: overall, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: price || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
 
-      generateToatl();
+      setUnit("")
       setproductref("")
       setProductChartImageData([])
       setProductChartImage("")
       setcutref("")
-      setUnit("")
       setqty("")
+      setprice("")
       setqtymeter("")
       setRemark("")
     } else {
@@ -282,10 +283,11 @@ const Challan = () => {
   const qtypiecesChange = (event) => {
     event.preventDefault();
     setqty(event.target.value);
-    if (cut) {
+    if (cutref) {
       let qtyMeter;
+      const cutvalue = cutData.find(cut => cut._id === cutref)
       if (cutvalue?.isNameNumerical) {
-        qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.name));
+        qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.attributeValue));
         setqtymeter(qtyMeter);
       }
       setqtymeter(qtyMeter);
@@ -293,10 +295,9 @@ const Challan = () => {
       toast.error("add cut first");
     }
   };
-  const setproductchange = (event) => {
-    event.preventDefault();
-    const price = productsData?.filter(item => item?._id === event.target.value)[0]?.pricePerUnit?.magnitude;
-    setproductref(event.target.value)
+  const setproductchange = (value) => {
+    const price = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
+    setproductref(value)
     setprice(price)
   };
 
@@ -343,7 +344,7 @@ const Challan = () => {
 
   const handleProductChartImageChange = (e) => {
     setProductChartImage(e.target.files[0]);
-    if (productChartImage) {
+    if (e.target.files[0]) {
       uploadImage()
     }
   };
@@ -352,11 +353,11 @@ const Challan = () => {
     try {
       const formData = new FormData();
       let imageFile = productChartImage;
-      console.log("inside productChartImage")
-
       if (imageFile) {
         formData.append("color-chart-challan", imageFile);
+        setIsLoading(true)
         const response = await UploadImageChallan(formData);
+        setIsLoading(false)
 
         if (response.success) {
           toast.success(response.message);
@@ -389,17 +390,19 @@ const Challan = () => {
       // console.log(newChallanNumber, "challan")
       setchallanNumber(newChallanNumber);
     }
+    setcutData(attributeValueData.filter(attribute => attribute?.attributeRef?._id === (attributeData.find(attributename => attributename?.name === "cut")?._id))[0].valuesCombo)
   }, [onOpenChange, challansData]);
 
 
 
 
 
-  // console.log(formik.values, "values")
+  console.log(formik.values, "values")
   // console.log(supplierRef, "supplier")
   // console.log("product: ", productsData)
+  // console.log("attribute ", attributeData)
   // console.log("data ", attributeValueData)
-  // console.log("cut: ", unit)
+  // console.log("cut: ", cutData)
   // console.log("productChartImageData: ", productChartImageData)
   // console.log("challan: ", totalbill)
   // const datePart = new Date(yourArray.challanDate)
@@ -469,8 +472,8 @@ const Challan = () => {
   // Call the filter function with products data and filter keys
   const filteredProducts = filterProducts(productsData, filterkeys);
 
-  console.log(filterkeys, "fillterkeys")
-  console.log("filteredProducts", filteredProducts)
+  // console.log(filterkeys, "fillterkeys")
+  // console.log("filteredProducts", filteredProducts)
 
 
   // const rows = [
@@ -502,7 +505,14 @@ const Challan = () => {
 
   return (
     <>
+      {
+        isLoading && (<div className="absolute h-full left-0 top-0 w-full bg-black/30 z-[99] flex justify-center items-center">
+          <Spinner size='lg' color='secondary' />
+        </div>)
+      }
+
       <div className="flex flex-col gap-2 py-4">
+
         <Modal
           isOpen={isOpen}
           scrollBehavior={"inside"}
@@ -757,7 +767,7 @@ const Challan = () => {
                                     selectorButton: "text-[#000]",
                                   }}
 
-                                  onSelectionChange={setproductchange}
+                                  onSelectionChange={(value) => setproductchange(value)}
                                   value={productref}
                                   items={(supplierRef && productsData?.filter(product => product?.supplierName?._id === supplierRef) || [])}
                                   selectedKey={productref}
@@ -844,9 +854,137 @@ const Challan = () => {
 
                                   onSelectionChange={setcutref}
                                   value={cutref}
-                                  defaultItems={Units}
+                                  defaultItems={cutData}
                                   // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                   selectedKey={cutref}
+                                  inputProps={{
+                                    classNames: {
+                                      input: "ml-1 text-[#000] font-font1",
+                                      inputWrapper: "h-[20px]",
+                                      label: "font-[600] font-font1",
+                                    },
+                                  }}
+                                  listboxProps={{
+                                    hideSelectedIcon: true,
+                                    itemClasses: {
+                                      base: [
+                                        "rounded-medium",
+                                        "text-[#000]",
+                                        "transition-opacity",
+                                        "data-[hover=true]:text-foreground",
+                                        "dark:data-[hover=true]:bg-default-50",
+                                        "data-[pressed=true]:opacity-70",
+                                        "data-[hover=true]:bg-default-200",
+                                        "data-[selectable=true]:focus:bg-default-100",
+                                        "data-[focus-visible=true]:ring-default-500",
+                                      ],
+                                    },
+                                  }}
+                                  aria-label="Select an Cut"
+                                  placeholder="Enter an Cut"
+                                  popoverProps={{
+                                    offset: 10,
+                                    classNames: {
+                                      base: "rounded-large",
+                                      content: "p-1  border-none bg-background",
+
+                                    },
+                                  }}
+                                  startContent={<svg
+                                    aria-hidden="true"
+                                    fill="none"
+                                    focusable="false"
+                                    height={20}
+                                    role="presentation"
+                                    viewBox="0 0 24 24"
+                                    width={20}
+                                    color={"#000"}
+                                  >
+                                    <path
+                                      d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                    <path
+                                      d="M22 22L20 20"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                    />
+                                  </svg>}
+                                  variant="flat"
+                                >
+                                  {(item) => (
+                                    <AutocompleteItem key={item?._id} textValue={item?.attributeValue}>
+                                      <div className="flex justify-between items-center">
+                                        <div className="flex gap-2 items-center">
+                                          <div className="flex flex-col">
+                                            <span className="text-small">{item?.attributeValue}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </AutocompleteItem>
+                                  )}
+                                </Autocomplete>
+
+                                <Input
+                                  label="Product Qty"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
+                                  placeholder="0"
+                                  value={qty}
+                                  className='max-w-[15rem]'
+                                  onChange={qtypiecesChange}
+                                />
+                                <Input
+                                  label="Product Qty"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>meter</p>}
+                                  placeholder="0"
+                                  value={qtymeter}
+                                  className='max-w-[15rem]'
+                                  onChange={(e) => setqtymeter(e.target.value)}
+                                />
+                                <Input
+                                  label="Price"
+                                  classNames={{
+                                    label: "font-[600] font-font1",
+                                    input: "font-[500] font-font1",
+                                  }}
+                                  labelPlacement="outside"
+                                  type="number"
+                                  placeholder="0"
+                                  value={price}
+                                  className='max-w-[15rem]'
+                                  onChange={(e) => setprice(e.target.value)}
+                                />
+                                <Autocomplete
+                                  classNames={{
+                                    base: "max-w-full border-[#fff] ",
+                                    listboxWrapper: "max-h-[270px]",
+                                    selectorButton: "text-[#000]",
+                                  }}
+                                  labelPlacement="outside"
+                                  label="Cut Name"
+
+                                  onSelectionChange={setUnit}
+                                  value={unit}
+                                  defaultItems={Units}
+                                  // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
+                                  selectedKey={unit}
                                   inputProps={{
                                     classNames: {
                                       input: "ml-1 text-[#000] font-font1",
@@ -919,62 +1057,12 @@ const Challan = () => {
                                     </AutocompleteItem>
                                   )}
                                 </Autocomplete>
-
-                                <Input
-                                  label="Product Qty"
-                                  classNames={{
-                                    label: "font-[600] font-font1",
-                                    input: "font-[500] font-font1",
-                                  }}
-                                  labelPlacement="outside"
-                                  type="number"
-                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
-                                  placeholder="0"
-                                  value={qty}
-                                  className='max-w-[15rem]'
-                                  onChange={qtypiecesChange}
-                                />
-                                <Input
-                                  label="Product Qty"
-                                  classNames={{
-                                    label: "font-[600] font-font1",
-                                    input: "font-[500] font-font1",
-                                  }}
-                                  labelPlacement="outside"
-                                  type="number"
-                                  endContent={<p className='font-[500] font-font1 text-[0.9rem]'>meter</p>}
-                                  placeholder="0"
-                                  value={qtymeter}
-                                  className='max-w-[15rem]'
-                                  onChange={(e) => setqtymeter(e.target.value)}
-                                />
-                                <Input
-                                  label="Price"
-                                  classNames={{
-                                    label: "font-[600] font-font1",
-                                    input: "font-[500] font-font1",
-                                  }}
-                                  labelPlacement="outside"
-                                  type="number"
-                                  placeholder="0"
-                                  value={price}
-                                  className='max-w-[15rem]'
-                                  onChange={(e) => setprice(e.target.value)}
-                                />
-                                <AutoComplete
-                                  labelPlacement="outside"
-                                  label="Unit"
-                                  placeholder={"Unit"}
-                                  users={Units}
-                                  selectedKey={unit}
-                                  selectionChange={(value) => setUnit(value)}
-                                />
                               </div>
                               <div className='flex items-center  w-full gap-10 mt-3 '>
                                 <Textarea
                                   variant="flat"
                                   placeholder="Enter your remarks"
-                                  className="font-[600] remove-scrolbar flex-grow  font-font1 max-w-[20rem] h-[40px] "
+                                  className="font-[600] remove-scrolbar flex-grow  font-font1 max-w-[20rem] h-[100px] "
                                   classNames={{
                                     inputWrapper: "remove-scrolbar overflow-scroll",
                                   }}
@@ -1046,7 +1134,7 @@ const Challan = () => {
                                         {productsData.find(product => product._id === object.product)?.productName}
                                       </TableCell>
                                       <TableCell>
-                                        {cutData.find(product => product._id === object.cut)?.name}
+                                        {cutData.find(product => product._id === object.cut)?.attributeValue}
                                       </TableCell>
                                       <TableCell>
                                         {object.qtyPcs}
@@ -1125,9 +1213,11 @@ const Challan = () => {
                             </Table>
                             <Card>
                               <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
-                                <div className='flex items-center gap-2'>
-                                  <p className='font-font1 font-[500] text-[1rem]'>Total Bill</p>
-                                </div>
+                                <Button
+                                  onClick={generateToatl}
+                                  className='bg-[#000] text-[#fff]'>
+                                  Generate Total
+                                </Button>
                                 <div className='flex items-center '>
                                   <IndianRupee size={20} />
                                   <p className='font-font1 font-[500] text-[1rem]'>{totalbill || 0}.00</p>
