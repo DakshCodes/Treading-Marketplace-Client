@@ -285,7 +285,7 @@ const Challan = () => {
       let qtyMeter;
       const cutvalue = cutData.find(cut => cut._id === cutref)
       if (cutvalue?.isNameNumerical) {
-        qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.attributeValue));
+        qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.name));
         setqtymeter(qtyMeter);
       }
       setqtymeter(qtyMeter);
