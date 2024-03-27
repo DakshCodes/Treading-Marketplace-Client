@@ -56,6 +56,7 @@ const Challan = () => {
   const [productChartImageData, setProductChartImageData] = useState([]);
 
   const [attributesvaluesData, setattributesvaluesData] = useState([]);
+  const [productCategory, setProductCategory] = useState(null);
 
 
   // Data Format
@@ -170,22 +171,22 @@ const Challan = () => {
     }
   };
 
-
-
-
   const formik = useFormik({
     initialValues: {
       challanNo: '',
-      challanDate: null,
+      challanDate: new Date().toISOString().slice(0, 10),
       totalBill: '',
       customer: '',
       type: 'supplier',
       supplier: '',
+      overallremarks: '',
       products: [],
       verified: true,
     },
     onSubmit: async values => {
       generateToatl()
+      console.log(values);
+      // return;
       if (updateId) {
         setIsLoading(true)
         console.log(values, "update")
@@ -223,6 +224,7 @@ const Challan = () => {
         total: product.total,
       })),
       supplier: mySupplierData?.supplier,
+      overallremarks : mySupplierData?.overallremarks,
       type: mySupplierData?.type,
       verified: mySupplierData?.verified,
     });
@@ -295,9 +297,15 @@ const Challan = () => {
   };
   const setproductchange = (value) => {
     const price = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
-    setproductref(value)
+    const selectedProductCategory = productsData?.filter(item => item?._id === value)[0]?.category._id;
+    console.log(selectedProductCategory)
+    setproductref(value);
+    setProductCategory(selectedProductCategory);
     setprice(price)
   };
+
+  console.log(productCategory)
+  console.log(cutData?.filter(item => item?.ref?._id === productCategory))
 
   const onSupplierChange = (value) => {
     setsupplierRef(value)
@@ -851,7 +859,7 @@ const Challan = () => {
 
                                   onSelectionChange={setcutref}
                                   value={cutref}
-                                  defaultItems={cutData}
+                                  defaultItems={cutData?.filter(item => item?.ref?._id === productCategory)}
                                   // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                   selectedKey={cutref}
                                   inputProps={{
@@ -1221,6 +1229,20 @@ const Challan = () => {
                                 </div>
                               </CardBody>
                             </Card>
+
+                            <div>
+                              <Textarea
+                                variant="flat"
+                                placeholder="Enter your overall remarks"
+                                className="font-[600] remove-scrolbar flex-grow  font-font1 max-w-full h-[100px] "
+                                classNames={{
+                                  inputWrapper: "remove-scrolbar overflow-scroll",
+                                }}
+                                value={formik?.values?.overallremarks} // Use directly from formik values
+                                onChange={formik.handleChange} // Use formik's handleChange function for input change
+                                name="overallremarks"
+                              />
+                            </div>
                           </Tab>
                           <Tab
                             className="py-6 flex flex-col gap-10 font-[400] font-font2"
