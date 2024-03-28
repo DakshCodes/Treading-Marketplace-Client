@@ -224,7 +224,7 @@ const Challan = () => {
         total: product.total,
       })),
       supplier: mySupplierData?.supplier,
-      overallremarks : mySupplierData?.overallremarks,
+      overallremarks: mySupplierData?.overallremarks,
       type: mySupplierData?.type,
       verified: mySupplierData?.verified,
     });
@@ -330,7 +330,7 @@ const Challan = () => {
   const setproductchange = (value) => {
     console.log(value)
     const price = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
-    const selectedProductCategory = productsData?.filter(item => item?._id === value)[0]?.category._id;
+    const selectedProductCategory = productsData?.filter(item => item?._id === value)[0]?.category?._id || "";
     console.log(selectedProductCategory)
     setproductref(value);
     setProductCategory(selectedProductCategory);
@@ -346,10 +346,10 @@ const Challan = () => {
       return { ...prevValues, supplier: value };
     });
   };
-  const onCustomerChange = (value) => {
+  const onCustomerChange = (value, typeofchallan) => {
     setcustomerRef(value)
     formik.setValues((prevValues) => {
-      return { ...prevValues, customer: value };
+      return { ...prevValues, customer: value, type: typeofchallan };
     });
   };
 
@@ -636,7 +636,7 @@ const Challan = () => {
                                     selectorButton: "text-[#000]",
                                   }}
 
-                                  onSelectionChange={onCustomerChange}
+                                  onSelectionChange={(value) => onCustomerChange(value, "supplier")}
                                   value={formik?.values?.customer}
                                   defaultItems={customerData}
                                   selectedKey={formik?.values?.customer}
@@ -902,7 +902,7 @@ const Challan = () => {
 
                                   onSelectionChange={setcutref}
                                   value={cutref}
-                                  defaultItems={cutData?.filter(item => item?.ref?._id === productCategory)}
+                                  defaultItems={cutData?.filter(item => item?.ref?._id === productCategory) || cutData}
                                   // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                   selectedKey={cutref}
                                   inputProps={{
@@ -1292,6 +1292,93 @@ const Challan = () => {
                             key="Products"
                             title="Product"
                           >
+                            <Autocomplete
+                              labelPlacement="outside"
+                              label="Customer Name"
+                              classNames={{
+                                base: "max-w-[18rem] border-[#fff] ",
+
+                                listboxWrapper: "max-h-[270px]",
+                                selectorButton: "text-[#000]",
+                              }}
+
+                              onSelectionChange={(value) => onCustomerChange(value, "product")}
+                              value={formik?.values?.customer}
+                              defaultItems={customerData}
+                              selectedKey={formik?.values?.customer}
+                              inputProps={{
+                                classNames: {
+                                  input: "ml-1 text-[#000] font-font1",
+                                  inputWrapper: "h-[20px]",
+                                  label: "font-[600] font-font1",
+                                },
+                              }}
+                              listboxProps={{
+                                hideSelectedIcon: true,
+                                itemClasses: {
+                                  base: [
+                                    "rounded-medium",
+                                    "text-[#000]",
+                                    "transition-opacity",
+                                    "data-[hover=true]:text-foreground",
+                                    "dark:data-[hover=true]:bg-default-50",
+                                    "data-[pressed=true]:opacity-70",
+                                    "data-[hover=true]:bg-default-200",
+                                    "data-[selectable=true]:focus:bg-default-100",
+                                    "data-[focus-visible=true]:ring-default-500",
+                                  ],
+                                },
+                              }}
+                              aria-label="Select an Customer "
+                              placeholder="Enter an Customer "
+                              popoverProps={{
+                                offset: 10,
+                                classNames: {
+                                  base: "rounded-large",
+                                  content: "p-1  border-none bg-background",
+
+                                },
+                              }}
+                              startContent={<svg
+                                aria-hidden="true"
+                                fill="none"
+                                focusable="false"
+                                height={20}
+                                role="presentation"
+                                viewBox="0 0 24 24"
+                                width={20}
+                                color={"#000"}
+                              >
+                                <path
+                                  d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                />
+                                <path
+                                  d="M22 22L20 20"
+                                  stroke="currentColor"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                />
+                              </svg>}
+
+                              variant="flat"
+                            >
+                              {(item) => (
+                                <AutocompleteItem key={item?._id} textValue={item?.name}>
+                                  <div className="flex justify-between items-center">
+                                    <div className="flex gap-2 items-center">
+                                      <div className="flex flex-col">
+                                        <span className="text-small">{item?.name}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </AutocompleteItem>
+                              )}
+                            </Autocomplete>
                             <div className='flex  items-center gap-10'>
                               <Autocomplete
                                 classNames={{
@@ -1424,7 +1511,7 @@ const Challan = () => {
                                 }
                               </div>
                             </div>
-                            <FillterTableData productref={productref} setproductchange={setproductchange} rows={filteredProducts} columnsoffillter={columnsoffillter} />
+                            <FillterTableData  productref={productref} setproductchange={setproductchange} rows={filteredProducts} columnsoffillter={columnsoffillter} />
                             <Input size={'md'}
                               classNames={{
                                 label: "font-[600] font-font1",
@@ -1451,7 +1538,6 @@ const Challan = () => {
                               onChange={(e) => formik.setValues(prevValues => ({
                                 ...prevValues,
                                 challanDate: e.target.value,
-                                type: "product"
                               }))}
                               // Use the date string directly
                               // {...formik.getFieldProps('challanDate')}
@@ -1557,7 +1643,7 @@ const Challan = () => {
 
                                 onSelectionChange={setcutref}
                                 value={cutref}
-                                defaultItems={cutData}
+                                defaultItems={cutData?.filter(item => item?.ref?._id === productCategory) || cutData}
                                 // items={(productref && cutData?.filter(cut => cut?.ref === productref) || [] )}
                                 selectedKey={cutref}
                                 inputProps={{
@@ -1939,6 +2025,19 @@ const Challan = () => {
                                 </div>
                               </CardBody>
                             </Card>
+                            <div>
+                              <Textarea
+                                variant="flat"
+                                placeholder="Enter your overall remarks"
+                                className="font-[600] remove-scrolbar flex-grow  font-font1 max-w-full h-[100px] "
+                                classNames={{
+                                  inputWrapper: "remove-scrolbar overflow-scroll",
+                                }}
+                                value={formik?.values?.overallremarks} // Use directly from formik values
+                                onChange={formik.handleChange} // Use formik's handleChange function for input change
+                                name="overallremarks"
+                              />
+                            </div>
                           </Tab>
                         </Tabs>
                       </CardBody>
