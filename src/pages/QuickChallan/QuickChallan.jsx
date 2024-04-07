@@ -2,26 +2,26 @@ import React, { useEffect, useState } from 'react'
 import DataTableModel from '../../components/DataTableModel/DataTableModel';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip, Spinner } from "@nextui-org/react";
 import { useFormik } from 'formik'
-import { Createchallan, Deletechallan, Updatechallan } from '../../apis/challan';
+import { Createquickchallan, Deletequickchallan, Updatequickchallan } from '../../apis/quickChallan';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
-import { challanDataState } from '../../store/challan/challan';
+import { quickchallanDataState } from '../../store/quickchallan/quickChallanAtom';
 import { productsDataState } from '../../store/product/productAtom';
 import { cutDataState } from '../../store/cut/cutAtom';
 import { suppliersDataState } from '../../store/supplier/supplierAtom';
 import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
-import { UploadImageChallan } from '../../apis/product';
+// import { UploadImagequickchallan } from '../../apis/product';
 
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
 
 import FillterTableData from '../../components/FillterDataTable/FillterTableData';
 
-const Challan = () => {
+const quickchallan = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const navigate = useNavigate();
 
@@ -29,6 +29,7 @@ const Challan = () => {
   const [productref, setproductref] = useState(null)
   const [supplierRef, setsupplierRef] = useState(null)
   const [customerRef, setcustomerRef] = useState(null)
+  const [bale, setbale] = useState("")
   const [qty, setqty] = useState("")
   const [qtymeter, setqtymeter] = useState("")
   const [price, setprice] = useState("")
@@ -38,11 +39,11 @@ const Challan = () => {
   const [totalbill, settotalbill] = useState(null)
   const [cutref, setcutref] = useState(null)
 
-  const [challansData, setChallansData] = useRecoilState(challanDataState)
-  const [challanNumber, setchallanNumber] = useState("")
+  const [quickchallansData, setquickchallansData] = useRecoilState(quickchallanDataState)
+  const [quickchallanNumber, setquickchallanNumber] = useState("")
 
   const [productsData, setProductsData] = useRecoilState(productsDataState)
-  const [updated, setUpdated] = useState(false)
+  // const [updated, setUpdated] = useState(false)
 
   const [cutData, setcutData] = useRecoilState(cutDataState)
   const [attributeData, setattributeData] = useRecoilState(attributeDataState)
@@ -77,7 +78,7 @@ const Challan = () => {
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["challanNo", "customer", "type", "supplier", "products", "totalBill", "verified", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["quickchallanNo", "customer", "type", "supplier", "products", "totalBill", "verified", "actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
 
@@ -85,13 +86,13 @@ const Challan = () => {
   const creatsupplier = async (values) => {
     try {
       setIsLoading(true)
-      const response = await Createchallan(values);
+      const response = await Createquickchallan(values);
       setIsLoading(false)
       // dispatch(SetLoader(false));
       if (response.success) {
         toast.success(response.message);
-        console.log(response.challanDoc)
-        setChallansData([...challansData, response.challanDoc]);
+        console.log(response.quickchallanDoc)
+        setquickchallansData([...quickchallansData, response.quickchallanDoc]);
         setUpdateId(null); // Reset update ID when modal is closed
         onOpenChange(false)
       } else {
@@ -113,13 +114,13 @@ const Challan = () => {
   const deleteItem = async (id) => {
     try {
       setIsLoading(true)
-      const response = await Deletechallan(id);
+      const response = await Deletequickchallan(id);
       setIsLoading(false)
       if (response.success) {
         toast.success(response.message);
 
         // Update local state based on the correct identifier (use _id instead of id)
-        setChallansData((prevData) => prevData.filter((supplier) => supplier._id !== id));
+        setquickchallansData((prevData) => prevData.filter((supplier) => supplier._id !== id));
 
       } else {
         throw new Error(response.message);
@@ -136,25 +137,25 @@ const Challan = () => {
   const handleUpdateSubmit = async (values) => {
     try {
       setIsLoading(true)
-      const response = await Updatechallan(updateId, values);
+      const response = await Updatequickchallan(updateId, values);
       setIsLoading(false)
       if (response.success) {
         toast.success(response.message);
 
-        // setChallansData((prevData) => {
+        // setquickchallansData((prevData) => {
         //   const updatedSuppliers = prevData.map((supplier) => {
         //     // console.log(supplier._id === updateId ? response.supplier : supplier)
-        //     return supplier._id === updateId ? response.challan : supplier
+        //     return supplier._id === updateId ? response.quickchallan : supplier
         //   }
         //   );
         //   return updatedSuppliers;
         // });
         // Optimistically update UI
-        const updatedsuppliers = challansData.map((supplier) =>
-          supplier._id === updateId ? response.challan : supplier
+        const updatedsuppliers = quickchallansData.map((supplier) =>
+          supplier._id === updateId ? response.quickchallan : supplier
         );
 
-        setChallansData(updatedsuppliers);
+        setquickchallansData(updatedsuppliers);
 
         formik.resetForm();
 
@@ -173,8 +174,8 @@ const Challan = () => {
 
   const formik = useFormik({
     initialValues: {
-      challanNo: '',
-      challanDate: new Date().toISOString().slice(0, 10),
+      quickchallanNo: '',
+      quickchallanDate: new Date().toISOString().slice(0, 10),
       totalBill: '',
       customer: '',
       type: '',
@@ -193,7 +194,7 @@ const Challan = () => {
         await handleUpdateSubmit(values);
         setIsLoading(false)
       } else {
-        values.challanNo = challanNumber;
+        values.quickchallanNo = quickchallanNumber;
         console.log(values, "going")
         setIsLoading(true)
         await creatsupplier(values);
@@ -207,8 +208,8 @@ const Challan = () => {
     console.log(mySupplierData, updatedsupplierData, 'existssssssssssssssssssssss');
 
     formik.setValues({
-      challanNo: mySupplierData?.challanNo,
-      challanDate: mySupplierData?.challanDate,
+      quickchallanNo: mySupplierData?.quickchallanNo,
+      quickchallanDate: mySupplierData?.quickchallanDate,
       totalBill: mySupplierData?.totalBill,
       customer: mySupplierData?.customer,
       products: mySupplierData?.products.map((product) => ({
@@ -217,7 +218,7 @@ const Challan = () => {
         price: product.price,
         product: product.product,
         unit: product.unit,
-        challanChartImages: product.challanChartImages,
+        quickchallanChartImages: product.quickchallanChartImages,
         qtyMtr: product.qtyMtr,
         qtyPcs: product.qtyPcs,
         remarkDesc: product.remarkDesc,
@@ -238,7 +239,7 @@ const Challan = () => {
   const handleUpdate = async (supplierId) => {
     try {
       console.log(supplierId, "id")
-      updateFormWithsupplierData(supplierId, challansData);
+      updateFormWithsupplierData(supplierId, quickchallansData);
 
       setUpdateId(supplierId)
       onOpen();
@@ -251,31 +252,31 @@ const Challan = () => {
   // console.log(formik?.values?.supplier, "Supplir -----------------------------------------------------------------------")
 
   const addProductToTable2 = () => {
-    if (productref && cutref && unit && qty && qtymeter && price) {
-      let overall = 0;
-      if (unit === '1') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
-      }
-      if (unit === '2') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
-      }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: price || 0, unit: unit, overall: overall, remarkDesc: remark };
+    if (productref && cutref && unit && bale && price) {
+      // let overall = 0;
+      // if (unit === '1') {
+      //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
+      // }
+      // if (unit === '2') {
+      //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
+      // }
+      const newProduct = { product: productref, cut: cutref, bales: bale,  price: price || 0, unit: unit, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         supplier: productsData.find(product => product?._id === productref)?.supplierName?._id,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
 
-      settotalbill(overall)
-      formik.setFieldValue('totalBill', overall);
+      settotalbill(price)
+      formik.setFieldValue('totalBill', price);
       setUnit("")
       setproductref("")
       setProductChartImageData([])
       setProductChartImage("")
       setcutref("")
-      setqty("")
+      setbale("")
       setprice("")
-      setqtymeter("")
+      // setqtymeter("")
       setRemark("")
       setfilterkeys([])
     } else {
@@ -283,16 +284,16 @@ const Challan = () => {
     }
   };
   const addProductToTable = () => {
-    if (productref && cutref && unit && qty && qtymeter && price) {
+    if (productref && cutref && unit && bale && price) {
 
-      let overall = 0;
-      if (unit === '1') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
-      }
-      if (unit === '2') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
-      }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: price || 0, unit: unit, overall: overall, remarkDesc: remark };
+      // let overall = 0;
+      // if (unit === '1') {
+      //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
+      // }
+      // if (unit === '2') {
+      //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
+      // }
+      const newProduct = { product: productref, cut: cutref, bales: bale, price: price || 0, unit: unit, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -303,18 +304,23 @@ const Challan = () => {
       setProductChartImageData([])
       setProductChartImage("")
       setcutref("")
-      setqty("")
+      setbale("")
       setprice("")
-      setqtymeter("")
+      // setqtymeter("")
       setRemark("")
     } else {
       toast.error("Please select all fields");
     }
   };
 
+  const balepiecesChange = (event) => {
+    event.preventDefault();
+    setbale(event.target.value);
+  };
+
   const qtypiecesChange = (event) => {
     event.preventDefault();
-    setqty(event.target.value);
+    setbale(event.target.value);
     if (cutref) {
       let qtyMeter;
       const cutvalue = cutData.find(cut => cut._id === cutref)
@@ -327,6 +333,7 @@ const Challan = () => {
       toast.error("add cut first");
     }
   };
+
   const setproductchange = (value) => {
     console.log(value)
     const price = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
@@ -346,10 +353,10 @@ const Challan = () => {
       return { ...prevValues, supplier: value };
     });
   };
-  const onCustomerChange = (value, typeofchallan) => {
+  const onCustomerChange = (value, typeofquickchallan) => {
     setcustomerRef(value)
     formik.setValues((prevValues) => {
-      return { ...prevValues, customer: value, type: typeofchallan };
+      return { ...prevValues, customer: value, type: typeofquickchallan };
     });
   };
 
@@ -368,8 +375,10 @@ const Challan = () => {
     if (products?.length > 0) {
       // Calculating the total bill
       const totalBill = products.reduce((acc, product) => {
-        return acc + product.overall;
+        return acc + product.price;
       }, 0);
+
+      console.log(totalBill)
 
       // Setting the total bill
       settotalbill(totalBill);
@@ -388,9 +397,9 @@ const Challan = () => {
         const formData = new FormData();
         let imageFile = e.target.files[0];
         if (imageFile) {
-          formData.append("color-chart-challan", imageFile);
+          formData.append("color-chart-quickchallan", imageFile);
           setIsLoading(true)
-          const response = await UploadImageChallan(formData);
+          const response = await UploadImagequickchallan(formData);
           setIsLoading(false)
 
           if (response.success) {
@@ -416,36 +425,36 @@ const Challan = () => {
 
 
   useEffect(() => {
-    if (challansData.length === 0) {
-      setchallanNumber('1');
+    if (quickchallansData.length === 0) {
+      setquickchallanNumber('1');
     } else {
-      // Extract the last element's challanNumber
-      const lastChallanNumber = challansData[challansData.length - 1].challanNo;
-      // console.log(lastChallanNumber, "last")
-      // Increment the last challanNumber and set it
-      const newChallanNumber = (parseInt(lastChallanNumber) + 1).toString();
-      // console.log(newChallanNumber, "challan")
-      setchallanNumber(newChallanNumber);
+      // Extract the last element's quickchallanNumber
+      const lastquickchallanNumber = quickchallansData[quickchallansData.length - 1].quickchallanNo;
+      // console.log(lastquickchallanNumber, "last")
+      // Increment the last quickchallanNumber and set it
+      const newquickchallanNumber = (parseInt(lastquickchallanNumber) + 1).toString();
+      // console.log(newquickchallanNumber, "quickchallan")
+      setquickchallanNumber(newquickchallanNumber);
     }
     // setcutData(attributeValueData.filter(attribute => attribute?.attributeRef?._id === (attributeData.find(attributename => attributename?.name === "cut")?._id))[0].valuesCombo)
-  }, [onOpenChange, challansData]);
+  }, [onOpenChange, quickchallansData]);
 
 
 
 
 
-  console.log(formik.values, "values")
+  // console.log(formik.values, "values")
   // console.log(productref, "supplier")
   // console.log("product: ", productsData)
   // console.log("attribute ", attributeData)
   // console.log("data ", attributeValueData)
-  // console.log("data ", challansData)
+  // console.log("data ", quickchallansData)
   // console.log("cut: ", cutData)
   // console.log("productChartImageData: ", productChartImageData)
-  // console.log("challan: ", totalbill)
-  // const datePart = new Date(yourArray.challanDate)
+  // console.log("quickchallan: ", totalbill)
+  // const datePart = new Date(yourArray.quickchallanDate)
   // const currentDate = new Date().toISOString().split('T')[0];
-  // console.log(formik.values.challanDate.split('T')[0], "date")
+  // console.log(formik.values.quickchallanDate.split('T')[0], "date")
   // console.log(currentDate, "current-date")
 
   const Units = [
@@ -575,11 +584,11 @@ const Challan = () => {
           <ModalContent>
             {(onClose) => (
               <>
-                <ModalHeader className="flex flex-col gap-1 text-2xl font-bold font-font2  mb-3">{updateId ? "Update Challan" : "Create Challan"}</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1 text-2xl font-bold font-font2  mb-3">{updateId ? "Update quickchallan" : "Create quickchallan"}</ModalHeader>
 
                 <ModalBody className='flex flex-col gap-6'>
                   <div className="flex flex-col w-full">
-                    <h1 className='font-[600] font-font1 m-auto text-[1rem] mb-5'>Select The Type Of Challan !</h1>
+                    <h1 className='font-[600] font-font1 m-auto text-[1rem] mb-5'>Select The Type Of quickchallan !</h1>
                     <Card className="max-w-full max-h-full">
                       <CardBody className="overflow-hidden">
                         <Tabs
@@ -600,8 +609,8 @@ const Challan = () => {
                                 }}
                                 className="flex-grow max-w-[18rem] bg-[#000]"
                                 labelPlacement="outside"
-                                type="text" label="Challan No."
-                                placeholder={formik.values.challanNo && formik.values.challanNo || "Generate after Creation "}
+                                type="text" label="quickchallan No."
+                                placeholder={formik.values.quickchallanNo && formik.values.quickchallanNo || "Generate after Creation "}
                                 disabled={true}
                                 variant="flat"
                               />
@@ -614,14 +623,14 @@ const Challan = () => {
                                   input: "font-[500] font-font1",
                                   // inputWrapper: "max-h-[50px]"
                                 }}
-                                value={formik?.values?.challanDate?.split('T')[0]}
+                                value={formik?.values?.quickchallanDate?.split('T')[0]}
                                 onChange={(e) => formik.setValues(prevValues => ({
                                   ...prevValues,
-                                  challanDate: e.target.value,
+                                  quickchallanDate: e.target.value,
                                   type: "supplier"
                                 }))}
                                 // Use the date string directly
-                                // {...formik.getFieldProps('challanDate')}
+                                // {...formik.getFieldProps('quickchallanDate')}
                                 className=" max-w-[15rem] mt-5"
                               />
 
@@ -803,7 +812,7 @@ const Challan = () => {
                               </div>
                             </div>
                             <div className="img-form flex flex-col gap-5 mt-5">
-                              <h1 className='font-font1 font-[600] mx-auto'>Add Challan Products.</h1>
+                              <h1 className='font-font1 font-[600] mx-auto'>Add quickchallan Products.</h1>
                               <div className='grid grid-cols-2 md:grid-cols-6 gap-5 sm:grid-cols-3  mt-4 w-full' >
                                 <Autocomplete
                                   labelPlacement="outside"
@@ -979,7 +988,7 @@ const Challan = () => {
                                 </Autocomplete>
 
                                 <Input
-                                  label="Product Qty"
+                                  label="Bale(s)"
                                   classNames={{
                                     label: "font-[600] font-font1",
                                     input: "font-[500] font-font1",
@@ -988,11 +997,11 @@ const Challan = () => {
                                   type="number"
                                   endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
                                   placeholder="0"
-                                  value={qty}
+                                  value={bale}
                                   className='max-w-[15rem]'
-                                  onChange={qtypiecesChange}
+                                  onChange={(e)=> setbale(e.target.value)}
                                 />
-                                <Input
+                                {/* <Input
                                   label="Product Qty"
                                   classNames={{
                                     label: "font-[600] font-font1",
@@ -1005,7 +1014,7 @@ const Challan = () => {
                                   value={qtymeter}
                                   className='max-w-[15rem]'
                                   onChange={(e) => setqtymeter(e.target.value)}
-                                />
+                                /> */}
                                 <Input
                                   label="Price"
                                   classNames={{
@@ -1117,7 +1126,7 @@ const Challan = () => {
                                   value={remark}
                                   onValueChange={setRemark}
                                 />
-                                <div className='flex gap-10  max-w-max items-center flex-grow'>
+                                {/* <div className='flex gap-10  max-w-max items-center flex-grow'>
                                   <input
                                     type="file"
                                     onChange={(e) => handleProductChartImageChange(e)}
@@ -1143,7 +1152,7 @@ const Challan = () => {
                                       <div>No Images</div>
                                     )
                                   }
-                                </div>
+                                </div> */}
                               </div>
                               <Button
                                 // isLoading={loading}
@@ -1166,11 +1175,11 @@ const Challan = () => {
                               <TableHeader>
                                 <TableColumn>PRODUCT</TableColumn>
                                 <TableColumn>CUT</TableColumn>
-                                <TableColumn>QTY(Pcs)</TableColumn>
-                                <TableColumn>QTY(Mtr)</TableColumn>
+                                <TableColumn>BALE(s)</TableColumn>
+                                {/* <TableColumn>QTY(Mtr)</TableColumn> */}
                                 <TableColumn>PRICE</TableColumn>
                                 <TableColumn>UNIT</TableColumn>
-                                <TableColumn>OVERALL</TableColumn>
+                                {/* <TableColumn>OVERALL</TableColumn> */}
                                 <TableColumn>REMARK</TableColumn>
                                 <TableColumn>ACTIONS</TableColumn>
                               </TableHeader>
@@ -1185,20 +1194,20 @@ const Challan = () => {
                                         {cutData.find(product => product._id === object.cut)?.name}
                                       </TableCell>
                                       <TableCell>
-                                        {object.qtyPcs}
+                                        {object.bales}
                                       </TableCell>
-                                      <TableCell>
+                                      {/* <TableCell>
                                         {object.qtyMtr}
-                                      </TableCell>
+                                      </TableCell> */}
                                       <TableCell>
                                         {object.price}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}
                                       </TableCell>
-                                      <TableCell>
+                                      {/* <TableCell>
                                         {object.overall}
-                                      </TableCell>
+                                      </TableCell> */}
                                       <TableCell className='overflow-hidden'>
                                         {object?.remarkDesc || "nothing"}
                                       </TableCell>
@@ -1287,6 +1296,10 @@ const Challan = () => {
                               />
                             </div>
                           </Tab>
+
+                        {/* products tab */}
+
+
                           <Tab
                             className="py-6 flex flex-col gap-10 font-[400] font-font2"
                             key="Products"
@@ -1519,10 +1532,10 @@ const Challan = () => {
                               }}
                               className="flex-grow max-w-[18rem] bg-[#000]"
                               labelPlacement="outside"
-                              type="text" label="Challan No."
-                              placeholder={formik.values.challanNo && formik.values.challanNo || "Generate after Creation "}
+                              type="text" label="quickchallan No."
+                              placeholder={formik.values.quickchallanNo && formik.values.quickchallanNo || "Generate after Creation "}
                               disabled={true}
-                              // value={challanNumber}
+                              // value={quickchallanNumber}
                               variant="flat"
                             />
                             <Input
@@ -1534,13 +1547,13 @@ const Challan = () => {
                                 input: "font-[500] font-font1",
                                 // inputWrapper: "max-h-[50px]"
                               }}
-                              value={formik?.values?.challanDate?.split('T')[0]}
+                              value={formik?.values?.quickchallanDate?.split('T')[0]}
                               onChange={(e) => formik.setValues(prevValues => ({
                                 ...prevValues,
-                                challanDate: e.target.value,
+                                quickchallanDate: e.target.value,
                               }))}
                               // Use the date string directly
-                              // {...formik.getFieldProps('challanDate')}
+                              // {...formik.getFieldProps('quickchallanDate')}
                               className=" max-w-[15rem] mt-5"
                             />
                             <Autocomplete
@@ -1631,7 +1644,7 @@ const Challan = () => {
                               )}
                             </Autocomplete>
 
-                            <div className='grid grid-cols-2 md:grid-cols-5 gap-5 sm:grid-cols-3  mt-4 w-full' >
+                            <div className='grid grid-cols-2 md:grid-cols-4 gap-5 sm:grid-cols-3  mt-4 w-full' >
                               <Autocomplete
                                 classNames={{
                                   base: "max-w-full border-[#fff] ",
@@ -1722,7 +1735,7 @@ const Challan = () => {
 
                               <Input
                                 disabled={formik.values.products.length === 1}
-                                label="Product Qty"
+                                label="Bale"
                                 classNames={{
                                   label: "font-[600] font-font1",
                                   input: "font-[500] font-font1",
@@ -1731,11 +1744,11 @@ const Challan = () => {
                                 type="number"
                                 endContent={<p className='font-[500] font-font1 text-[0.9rem]'>pieces</p>}
                                 placeholder="0"
-                                value={qty}
+                                value={bale}
                                 className='max-w-[15rem]'
-                                onChange={qtypiecesChange}
+                                onChange={balepiecesChange}
                               />
-                              <Input
+                              {/* <Input
                                 disabled={formik.values.products.length === 1}
                                 label="Product Qty"
                                 classNames={{
@@ -1749,7 +1762,7 @@ const Challan = () => {
                                 value={qtymeter}
                                 className='max-w-[15rem]'
                                 onChange={(e) => setqtymeter(e.target.value)}
-                              />
+                              /> */}
                               <Input
                                 disabled={formik.values.products.length === 1}
                                 label="Price"
@@ -1864,7 +1877,7 @@ const Challan = () => {
                                 value={remark}
                                 onValueChange={setRemark}
                               />
-                              <div className='flex gap-10  max-w-max items-center flex-grow'>
+                           { /*      <div className='flex gap-10  max-w-max items-center flex-grow'>
                                 <input
                                   type="file"
                                   onChange={(e) => handleProductChartImageChange(e)}
@@ -1873,7 +1886,7 @@ const Challan = () => {
                                   id="bannerImageInput"
                                   name="banner_image"
                                 />
-                                <div className='flex gap-2  col-span-5 max-w-[15rem]'>
+                            <div className='flex gap-2  col-span-5 max-w-[15rem]'>
                                   <label htmlFor="bannerImageInput" className="font-[600] px-5 py-2 font-font1 text-[0.8rem] max-w-fit flex items-center justify-center text-center rounded-lg border border-black cursor-pointer">
                                     Select chart Image ({productChartImage?.name})
                                   </label>
@@ -1891,8 +1904,8 @@ const Challan = () => {
                                     <div>No Images</div>
                                   )
                                 }
-                              </div>
-                            </div>
+                              </div> */}
+                              </div> 
                             <Button
                               // isLoading={loading}
                               className="font-font1 max-w-[13rem] w-full m-auto text-[#fff] bg-[#000] font-medium "
@@ -1914,13 +1927,13 @@ const Challan = () => {
                               <TableHeader>
                                 <TableColumn>PRODUCT</TableColumn>
                                 <TableColumn>CUT</TableColumn>
-                                <TableColumn>QTY(Pcs)</TableColumn>
-                                <TableColumn>QTY(Mtr)</TableColumn>
+                                <TableColumn>BALE(Pcs)</TableColumn>
+                                {/* <TableColumn>QTY(Mtr)</TableColumn> */}
                                 <TableColumn>PRICE</TableColumn>
                                 <TableColumn>UNIT</TableColumn>
-                                <TableColumn>OVERALL</TableColumn>
+                                {/* <TableColumn>OVERALL</TableColumn> */}
                                 <TableColumn>REMARK</TableColumn>
-                                <TableColumn>Charts</TableColumn>
+                                {/* <TableColumn>CHARTS</TableColumn> */}
                                 <TableColumn>ACTIONS</TableColumn>
                               </TableHeader>
                               <TableBody>
@@ -1934,28 +1947,28 @@ const Challan = () => {
                                         {cutData.find(product => product._id === object.cut)?.name}
                                       </TableCell>
                                       <TableCell>
-                                        {object.qtyPcs}
+                                        {object.bales}
                                       </TableCell>
-                                      <TableCell>
+                                      {/* <TableCell>
                                         {object.qtyMtr}
-                                      </TableCell>
+                                      </TableCell> */}
                                       <TableCell>
                                         {object.price}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}
                                       </TableCell>
-                                      <TableCell>
+                                      {/* <TableCell>
                                         {object.overall}
-                                      </TableCell>
+                                      </TableCell> */}
                                       <TableCell className='overflow-hidden'>
                                         {object?.remarkDesc || "nothing"}
                                       </TableCell>
-                                      <TableCell className='overflow-hidden'>
+                                      {/* <TableCell className='overflow-hidden'>
                                         <div className='flex items-center justify-center gap-3 overflow-auto w-40'>
-                                          {object?.challanChartImages?.map(img => <img className='h-20 w-20 object-contain' src={img.src} alt="img" />) || "No Chart"}
+                                          {object?.quickchallanChartImages?.map(img => <img className='h-20 w-20 object-contain' src={img.src} alt="img" />) || "No Chart"}
                                         </div>
-                                      </TableCell>
+                                      </TableCell> */}
                                       <TableCell >
                                         <span
                                           className=" text-lg  text-danger cursor-pointer active:opacity-50"
@@ -2021,7 +2034,7 @@ const Challan = () => {
                                 </div>
                                 <div className='flex items-center '>
                                   <IndianRupee size={20} />
-                                  <p className='font-font1 font-[500] text-[1rem]'>{totalbill || 0}.00</p>
+                                  <p className='font-font1 font-[500] text-[1rem]'>{price || 0}.00</p>
                                 </div>
                               </CardBody>
                             </Card>
@@ -2059,9 +2072,9 @@ const Challan = () => {
           </ModalContent>
         </Modal>
       </div >
-      <DataTableModel filltername={"challanNo"} visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={challansData} onOpen={onOpen} section={'supplier'} />
+      <DataTableModel filltername={"quickchallanNo"} visible_columns={INITIAL_VISIBLE_COLUMNS} deleteItem={deleteItem} update={handleUpdate} columns={columns} statusOptions={statusOptions} users={quickchallansData} onOpen={onOpen} section={'supplier'} />
     </>
   )
 }
 
-export default Challan
+export default quickchallan
