@@ -214,21 +214,19 @@ const quickchallan = () => {
       customer: mySupplierData?.customer,
       products: mySupplierData?.products.map((product) => ({
         cut: product.cut,
-        overall: product.overall,
+        bales : product.bales,
         price: product.price,
         product: product.product,
         unit: product.unit,
-        quickchallanChartImages: product.quickchallanChartImages,
-        qtyMtr: product.qtyMtr,
-        qtyPcs: product.qtyPcs,
         remarkDesc: product.remarkDesc,
-        total: product.total,
+        total: product.totalBill,
       })),
       supplier: mySupplierData?.supplier,
       overallremarks: mySupplierData?.overallremarks,
       type: mySupplierData?.type,
       verified: mySupplierData?.verified,
     });
+
 
     setsupplierRef(mySupplierData?.supplier)
     settotalbill(mySupplierData?.totalBill)
