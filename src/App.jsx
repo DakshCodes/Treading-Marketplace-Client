@@ -14,11 +14,15 @@ import { globalLoaderAtom } from './store/GlobalLoader/globalLoaderAtom';
 import Loader from "./components/Loader/Loader"
 import Challan from './pages/Challan/Challan';
 import Customer from './pages/Customer/Customer';
+import QuickChallan from './pages/QuickChallan/QuickChallan';
+import Invoice from './pages/Invoice/Invoice';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
   { path: '/challan', element: <div className='px-5'><Challan /></div> },
   { path: '/customers', element: <Customer /> },
+  { path: '/quick-challan', element: <QuickChallan /> },
+  { path: '/invoice', element: <Invoice /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
