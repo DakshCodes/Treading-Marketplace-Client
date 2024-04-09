@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DataTableModel from '../DataTableModel/DataTableModel';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio } from "@nextui-org/react";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, RadioGroup, Radio, Tab, Tabs, CardBody, Card, Input, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Autocomplete, AutocompleteItem, Textarea, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Chip, Spinner } from "@nextui-org/react";
 import { useFormik } from 'formik'
 import { snapshot_UNSTABLE, RecoilRoot } from 'recoil';
 import { toast } from 'react-hot-toast';
@@ -9,16 +9,11 @@ import { useRecoilState, useRecoilValue } from "recoil"
 import { globalLoaderAtom } from '../../store/GlobalLoader/globalLoaderAtom';
 import { Createinvoice, Deleteinvoice, Updateinvoice } from '../../apis/invoice';
 import { invoiceDataState } from '../../store/invoice/invoiceAtom';
-import {
-  Autocomplete,
-  AutocompleteSection,
-  AutocompleteItem
-} from "@nextui-org/react";
 import { challanDataState } from '../../store/challan/challan';
 import { quickchallanDataState } from '../../store/quickchallan/quickChallanAtom';
 
 const GenerateInvoice = () => {
-
+ 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const navigate = useNavigate();
 
@@ -28,8 +23,13 @@ const GenerateInvoice = () => {
   const quickchallanData = useRecoilValue(quickchallanDataState)
 
   const [challanType, setChallanType] = useState(null);
+  const [tableColumndata, setTableColumndata] = useState(null);
+  
 
 
+// console.log(mainchallanData,"mainchalannnnnnnnnnnnnnnnn")
+// console.log(quickchallanData,"quickchalannnnnnnnnnnnnnnnn")
+// console.log(challanType,"chalannnnnnnnnnnnnnnnn")
 
 
   console.log(invoiceData, "invoice DataState")
@@ -54,6 +54,9 @@ const GenerateInvoice = () => {
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false)
+
+
+
 
   // Create The width
   const createinvoice = async (values) => {
@@ -210,6 +213,15 @@ const GenerateInvoice = () => {
     // setrefcat('')
 
   }
+
+  const removeAttributeFromTable = (index) => {
+    formik.setValues((prevValues) => {
+      const updatedProducts = [...prevValues.products];
+      updatedProducts.splice(index, 1);
+      return { ...prevValues, products: updatedProducts };
+    })};
+
+  
   return (
     <>
       <div className="flex flex-col gap-2">
@@ -229,7 +241,7 @@ const GenerateInvoice = () => {
                 </ModalHeader>
                 <ModalBody>
                   <div className="max-w-full rounded-2xl">
-                    <div className="flex flex-col gap-2 p-8">
+                    <div className="flex  gap-2 p-8">
                       <Autocomplete
                         labelPlacement="outside"
                         label="Challan Type"
@@ -240,9 +252,7 @@ const GenerateInvoice = () => {
                           selectorButton: "text-[#000]",
                         }}
 
-                        onSelectionChange={(value) => setChallanType(value)}
-                        // value={formik?.values?.customer}
-                        // selectedKey={formik?.values?.customer}
+                        onSelectionChange={(value) => setChallanType(()=>(value))}
                         inputProps={{
                           classNames: {
                             input: "ml-1 text-[#000] font-font1",
@@ -327,7 +337,7 @@ const GenerateInvoice = () => {
                       
                       <Autocomplete
                         labelPlacement="outside"
-                        label="Customer Name"
+                        label="Select Challan"
                         classNames={{
                           base: "max-w-full border-[#fff] ",
 
@@ -335,9 +345,22 @@ const GenerateInvoice = () => {
                           selectorButton: "text-[#000]",
                         }}
 
-                        // onSelectionChange={(value) => onCustomerChange(value, "supplier")}
+                        onSelectionChange={(selectedId) => {
+                         if(challanType === "1"){
+                          const selectedMainChallanData = mainchallanData.find((item)=>(item._id === selectedId))
+                            setTableColumndata(()=>(selectedMainChallanData))
+                            console.log(tableColumndata,selectedMainChallanData,"table column data")
+                         }
+                         else{
+                          const selectedQuickChallanData = quickchallanData.find((item)=>(item._id === selectedId))
+                          setTableColumndata(()=>(selectedQuickChallanData))
+                           
+                         }
+
+                        }}
                         // value={formik?.values?.customer}
-                        defaultItems={[]}
+                        defaultItems={challanType === "1" ? mainchallanData : quickchallanData}
+                      
                         // selectedKey={formik?.values?.customer}
                         inputProps={{
                           classNames: {
@@ -362,8 +385,8 @@ const GenerateInvoice = () => {
                             ],
                           },
                         }}
-                        aria-label="Select an Customer "
-                        placeholder="Enter an Customer "
+                        aria-label="Select challan "
+                        placeholder="Enter challan "
                         popoverProps={{
                           offset: 10,
                           classNames: {
@@ -401,12 +424,12 @@ const GenerateInvoice = () => {
                         variant="flat"
                       >
                         {(item) => (
-                          <AutocompleteItem key={item?._id} textValue={item?.name}>
+                          <AutocompleteItem key={item?._id} textValue={item?.supplier?.name}>
                             <div className="flex justify-between items-center">
                               <div className="flex gap-2 items-center">
                                 <div className="flex flex-col">
                                   {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
-                                  <span className="text-small">{item?.quickchallanNo + "-" + item?.customer?.name + "-" + item.supplier.name}</span>
+                                  <span className="text-small">{item?.supplier?.name}</span>
                                 </div>
                               </div>
                             </div>
@@ -415,6 +438,125 @@ const GenerateInvoice = () => {
                       </Autocomplete>
                     </div>
                   </div>
+
+                  
+
+                  {tableColumndata && 
+                      <Table
+    classNames={{
+      base: 'max-h-[300px]  max-w-[1400px] border rounded-[14px] overflow-scroll',
+      table: 'min-h-[150px]  ',
+      th: 'text-center',
+      tr: 'text-center ',
+      td: 'font-font1 font-[600]',
+    }}
+    aria-label="Attribute Values Table"
+  >
+    <TableHeader>
+      {Object.keys(tableColumndata).map((key, index) => {
+        // if (
+        //   key === "overallremarks" ||
+        //   key === "verified" ||
+        //   key === "__v" ||
+        //   key === "quickchallanDate" ||
+        //   key === "type"
+        // ) {
+        //   return null;
+        // }
+        return <TableColumn key={index}>{key}</TableColumn>;
+      })}
+      <TableColumn>RECEIVED</TableColumn>
+      <TableColumn>DUE</TableColumn>
+      <TableColumn>ACTIONS</TableColumn>
+    </TableHeader>
+    <TableBody>
+      <TableRow>
+        {Object.entries(tableColumndata).map(([key, value], index) => {
+          const isValueArray = Array.isArray(value);
+          if (typeof value === "object" && key.toLowerCase() === "supplier") {
+            return <TableCell>{value?.name}</TableCell>;
+          }
+          if (typeof value === "object" && key.toLowerCase() === "customer") {
+            return <TableCell>{value?.name}</TableCell>;
+          }
+          if (isValueArray && typeof value === "object" && key.toLowerCase() === "products") {
+            return (
+                
+              <TableCell key={index}>
+                 { value.map((item, index) => (
+                        
+                            Object.values(item).map((val, idx) => (
+                                Object.values(val).map((value)=>(
+                                  value.src
+                                ))
+                            ))
+                        
+                    ))} </TableCell>
+                
+            );
+        }
+        
+          return <TableCell>{value}</TableCell>;
+        })}
+        <TableCell>received</TableCell>
+        <TableCell>due</TableCell>
+        <TableCell>
+                                                        <span
+                                                          className=" text-lg  text-danger cursor-pointer active:opacity-50"
+                                                          onClick={() => removeAttributeFromTable(index)}
+                                                        >
+                                                          <svg
+                                                            aria-hidden="true"
+                                                            fill="none"
+                                                            focusable="false"
+                                                            height="1em"
+                                                            role="presentation"
+                                                            viewBox="0 0 20 20"
+                                                            width="1em"
+                                                          >
+                                                            <path
+                                                              d="M17.5 4.98332C14.725 4.70832 11.9333 4.56665 9.15 4.56665C7.5 4.56665 5.85 4.64998 4.2 4.81665L2.5 4.98332"
+                                                              stroke="currentColor"
+                                                              strokeLinecap="round"
+                                                              strokeLinejoin="round"
+                                                              strokeWidth={1.5}
+                                                            />
+                                                            <path
+                                                              d="M7.08331 4.14169L7.26665 3.05002C7.39998 2.25835 7.49998 1.66669 8.90831 1.66669H11.0916C12.5 1.66669 12.6083 2.29169 12.7333 3.05835L12.9166 4.14169"
+                                                              stroke="currentColor"
+                                                              strokeLinecap="round"
+                                                              strokeLinejoin="round"
+                                                              strokeWidth={1.5}
+                                                            />
+                                                            <path
+                                                              d="M15.7084 7.61664L15.1667 16.0083C15.075 17.3166 15 18.3333 12.675 18.3333H7.32502C5.00002 18.3333 4.92502 17.3166 4.83335 16.0083L4.29169 7.61664"
+                                                              stroke="currentColor"
+                                                              strokeLinecap="round"
+                                                              strokeLinejoin="round"
+                                                              strokeWidth={1.5}
+                                                            />
+                                                            <path
+                                                              d="M8.60834 13.75H11.3833"
+                                                              stroke="currentColor"
+                                                              strokeLinecap="round"
+                                                              strokeLinejoin="round"
+                                                              strokeWidth={1.5}
+                                                            />
+                                                            <path
+                                                              d="M7.91669 10.4167H12.0834"
+                                                              stroke="currentColor"
+                                                              strokeLinecap="round"
+                                                              strokeLinejoin="round"
+                                                              strokeWidth={1.5}
+                                                            />
+                                                          </svg>
+                                                        </span>
+                                                      </TableCell>
+                                                    </TableRow>
+                                               
+                                              </TableBody>
+                                            </Table>}
+                  
                 </ModalBody>
                 <ModalFooter>
                   <Button
