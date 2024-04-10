@@ -213,8 +213,8 @@ const GenerateInvoice = () => {
 
   const formik = useFormik({
     initialValues: {
-      challanRef: "",
       products: [],
+
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -235,16 +235,34 @@ const GenerateInvoice = () => {
   };
 
   // handleChange function for input fields
+
   const handleChange = (e, rowIndex) => {
     const { name, value } = e.target;
-    const updatedProducts = [...formik.values.products];
-    const originalQty = challanType === "1" ? tableColumndata?.products[rowIndex].qtyPcs : tableColumndata?.products[rowIndex].bales;
-    updatedProducts[rowIndex].received = parseInt(value);
-    updatedProducts[rowIndex].due = originalQty - parseInt(value);
-    formik.setFieldValue(`products`, updatedProducts);
-  };
+    const updatedProducts = [...tableColumndata.products];
+    console.log(updatedProducts[rowIndex],'sdfsfsf')
+    const product = {...updatedProducts[rowIndex]};
+     const originalQty =
+      challanType === "1"
+        ? product.qtyPcs
+        : product.bales;
+      const received = parseInt(value);
+    const due = originalQty - received;
+    Object.assign(product, { received, due });
 
-  console.log(formik.values)
+    updatedProducts[rowIndex] = product;
+  
+    console.log(updatedProducts, "updated product");
+    formik.setValues({
+      ...formik.values,
+      products: updatedProducts
+    });
+    
+ 
+  };
+  
+
+  console.log(formik?.values?.products?.[0]?.due, "valuessssssssssssssss");
+
 
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
@@ -540,7 +558,7 @@ const GenerateInvoice = () => {
                                   onChange={(e) => handleChange(e, rowIndex)}
                                 />
                               </td>
-                              <td>Due</td> {/* intentionnally left blank  */}
+                              <td>{formik?.values?.products?.[rowIndex]?.due}</td> {/* intentionnally left blank  */}
                             </tr>
                           ))}
                       </tbody>
