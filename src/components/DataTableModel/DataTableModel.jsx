@@ -146,13 +146,13 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
             case "customer":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-900">{customerData.find(supplier => supplier?._id === user?.customer)?.name}</p>
+                        <p className="text-bold text-tiny capitalize text-default-900">{user?.customer?.name}</p>
                     </div>
                 );
             case "supplier":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-900">{suppliersData.find(supplier => supplier?._id === user?.supplier)?.name}</p>
+                        <p className="text-bold text-tiny capitalize text-default-900">{user?.supplier?.name}</p>
                     </div>
                 );
             case "products":

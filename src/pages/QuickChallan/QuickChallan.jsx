@@ -211,7 +211,7 @@ const quickchallan = () => {
       quickchallanNo: mySupplierData?.quickchallanNo,
       quickchallanDate: mySupplierData?.quickchallanDate,
       totalBill: mySupplierData?.totalBill,
-      customer: mySupplierData?.customer,
+      customer: mySupplierData?.customer._id,
       products: mySupplierData?.products.map((product) => ({
         cut: product.cut,
         bales : product.bales,
@@ -221,7 +221,7 @@ const quickchallan = () => {
         remarkDesc: product.remarkDesc,
         total: product.totalBill,
       })),
-      supplier: mySupplierData?.supplier,
+      supplier: mySupplierData?.supplier._id,
       overallremarks: mySupplierData?.overallremarks,
       type: mySupplierData?.type,
       verified: mySupplierData?.verified,
