@@ -16,6 +16,7 @@ import Challan from './pages/Challan/Challan';
 import Customer from './pages/Customer/Customer';
 import QuickChallan from './pages/QuickChallan/QuickChallan';
 import Invoice from './pages/Invoice/Invoice';
+import InvoicePreview from './pages/Invoice/InvoicePreview';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
@@ -23,6 +24,7 @@ const routesConfig = [
   { path: '/customers', element: <Customer /> },
   { path: '/quick-challan', element: <QuickChallan /> },
   { path: '/invoice', element: <Invoice /> },
+  { path: '/invoice/:id', element: <InvoicePreview /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
@@ -64,6 +66,10 @@ function App() {
           <Route
             path='/login'
             element={<LoginPage />}
+          />
+          <Route
+            path='/invoice-preview/:id'
+            element={<InvoicePreview />}
           />
         </Routes>
       </div>
