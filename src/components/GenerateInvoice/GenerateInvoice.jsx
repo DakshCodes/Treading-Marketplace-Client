@@ -213,7 +213,8 @@ const GenerateInvoice = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: "",
+      challanRef: "",
+      products: [],
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -232,6 +233,18 @@ const GenerateInvoice = () => {
     formik.resetForm();
     // setrefcat('')
   };
+
+  // handleChange function for input fields
+  const handleChange = (e, rowIndex) => {
+    const { name, value } = e.target;
+    const updatedProducts = [...formik.values.products];
+    const originalQty = challanType === "1" ? tableColumndata?.products[rowIndex].qtyPcs : tableColumndata?.products[rowIndex].bales;
+    updatedProducts[rowIndex].received = parseInt(value);
+    updatedProducts[rowIndex].due = originalQty - parseInt(value);
+    formik.setFieldValue(`products`, updatedProducts);
+  };
+
+  console.log(formik.values)
 
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
@@ -491,10 +504,10 @@ const GenerateInvoice = () => {
                                 );
                               }
                             )}
-                            <th>RECIEVED</th>
-                        <th>DUE</th>
+                          <th>RECIEVED</th>
+                          <th>DUE</th>
                         </tr>
-                        
+
                       </thead>
                       <tbody>
                         {tableColumndata?.products &&
@@ -512,15 +525,22 @@ const GenerateInvoice = () => {
                                   return (
                                     <td className="p-4 " key={cellIndex}>
                                       {key.toLowerCase() ===
-                                      "challanChartImages"
+                                        "challanChartImages"
                                         ? null
                                         : value}
                                     </td>
                                   );
                                 }
                               )}
-                              <td><input className="outline-none w-20 border border-zinc-600 rounded-sm px-1 mx-2" type="number" placeholder="rcvd qty"/></td>
-                              <td className="mx-5" >due</td>
+                              <td>
+                                <input
+                                  type="number"
+                                  placeholder="Received Qty"
+                                  // value={formik?.values?.products[rowIndex]?.received}
+                                  onChange={(e) => handleChange(e, rowIndex)}
+                                />
+                              </td>
+                              <td>Due</td> {/* intentionnally left blank  */}
                             </tr>
                           ))}
                       </tbody>
