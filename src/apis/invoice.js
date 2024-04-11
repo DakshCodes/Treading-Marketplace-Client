@@ -19,6 +19,16 @@ export const GetinvoiceData = async () => {
         return error.message
     }
 }
+
+export const GetinvoiceDataByID = async () => {
+    try {
+        const response = await axios.get(`${import.meta.env.VITE_SERVER}/api/invoice/get-all-invoice`);
+        return response.data;
+
+    } catch (error) {
+        return error.message
+    }
+}
 export const Deleteinvoice = async (id) => {
     try {
 

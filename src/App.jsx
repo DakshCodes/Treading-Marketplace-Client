@@ -24,7 +24,6 @@ const routesConfig = [
   { path: '/customers', element: <Customer /> },
   { path: '/quick-challan', element: <QuickChallan /> },
   { path: '/invoice', element: <Invoice /> },
-  { path: '/invoice/:id', element: <InvoicePreview /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
