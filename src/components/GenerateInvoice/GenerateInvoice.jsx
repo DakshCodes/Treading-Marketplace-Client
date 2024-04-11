@@ -51,10 +51,11 @@ const GenerateInvoice = () => {
   const navigate = useNavigate();
 
   const [updateId, setUpdateId] = useState(null);
+  const [challanRef, setChallanRef] = useState(null);
   const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
   const mainchallanData = useRecoilValue(challanDataState);
   const quickchallanData = useRecoilValue(quickchallanDataState);
-
+  const [updatedProducts, setUpdatedProducts] = useState([]);
   const [challanType, setChallanType] = useState(null);
   const [tableColumndata, setTableColumndata] = useState(null);
 
@@ -85,15 +86,21 @@ const GenerateInvoice = () => {
   // Create The width
   const createinvoice = async (values) => {
     try {
-      formik.resetForm();
 
-      // values.ref = refcat;
+      values.challanRef = challanRef;
+      const filteredProducts = values.products.map((product) => ({
+        product : product.product,
+        received: product.received,
+        due: product.due,
+      }));
+  
+      values.products = filteredProducts;
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
       if (response.success) {
         toast.success(response.message);
-        navigate("/inventory");
+        navigate("/invoice");
         console.log(response.invoiceDoc);
         setInvoiceData([...invoiceData, response.invoiceDoc]);
         onOpenChange(false);
@@ -213,6 +220,7 @@ const GenerateInvoice = () => {
 
   const formik = useFormik({
     initialValues: {
+      challanRef : "",
       products: [],
 
     },
@@ -235,12 +243,11 @@ const GenerateInvoice = () => {
   };
 
   // handleChange function for input fields
-
   const handleChange = (e, rowIndex) => {
-    const { name, value } = e.target;
-    const updatedProducts = [...tableColumndata.products];
-    console.log(updatedProducts[rowIndex],'sdfsfsf')
-    const product = {...updatedProducts[rowIndex]};
+    const {name , value} = e.target
+    const updatedProductsCopy = [...updatedProducts];
+    const product = { ...updatedProductsCopy[rowIndex] };
+
      const originalQty =
       challanType === "1"
         ? product.qtyPcs
@@ -249,19 +256,25 @@ const GenerateInvoice = () => {
     const due = originalQty - received;
     Object.assign(product, { received, due });
 
-    updatedProducts[rowIndex] = product;
-  
-    console.log(updatedProducts, "updated product");
-    formik.setValues({
-      ...formik.values,
-      products: updatedProducts
+    updatedProductsCopy[rowIndex] = product;
+    setUpdatedProducts(() => {
+      console.log(updatedProductsCopy, 'updated products');
+      return updatedProductsCopy;
     });
-    
+  
+    // Update formik values
+    formik.setValues((prevValues) => {
+      console.log(updatedProductsCopy, 'formik products');
+      return {
+        ...prevValues,
+        products: updatedProductsCopy,
+      };
+    });
  
   };
   
 
-  console.log(formik?.values?.products?.[0]?.due, "valuessssssssssssssss");
+  
 
 
   const removeAttributeFromTable = (index) => {
@@ -403,6 +416,8 @@ const GenerateInvoice = () => {
                                 (item) => item._id === selectedId
                               );
                             setTableColumndata(() => selectedMainChallanData);
+                            setUpdatedProducts(() => selectedMainChallanData?.products);
+                            setChallanRef(() => selectedId);
                             console.log(
                               tableColumndata,
                               selectedMainChallanData,
@@ -414,6 +429,9 @@ const GenerateInvoice = () => {
                                 (item) => item._id === selectedId
                               );
                             setTableColumndata(() => selectedQuickChallanData);
+                            setUpdatedProducts(() => selectedQuickChallanData?.products);
+                            setChallanRef(() => selectedId);
+
                           }
                         }}
                         // value={formik?.values?.customer}
@@ -558,7 +576,7 @@ const GenerateInvoice = () => {
                                   onChange={(e) => handleChange(e, rowIndex)}
                                 />
                               </td>
-                              <td>{formik?.values?.products?.[rowIndex]?.due}</td> {/* intentionnally left blank  */}
+                             <td>{formik?.values?.products?.[rowIndex]?.due}</td> {/* intentionnally left blank  */}
                             </tr>
                           ))}
                       </tbody>
