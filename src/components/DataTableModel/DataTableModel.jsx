@@ -173,6 +173,24 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                         <p className="text-bold text-tiny capitalize text-default-400">{user?.brand}</p>
                     </div>
                 );
+            case "challanRef":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.challanRef?.customer.name}</p>
+                    </div>
+                );
+            case "products.due":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products.reduce((acc, currVal) =>  acc + currVal.due , 0)}</p>
+                    </div>
+                );
+            case "products.received":
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products.reduce((acc, currVal) =>  acc + currVal.received , 0)}</p>
+                    </div>
+                );
             case "verified":
                 return (
                     <Chip className="capitalize" color={statusColorMap[user?.verified]} size="sm" variant="flat">
@@ -208,6 +226,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                             </DropdownTrigger>
                             <DropdownMenu className='font-2 font-medium text-[#000]'>
                                 <DropdownItem onClick={() => openViewAreaToggle(user._id)}>View</DropdownItem>
+                                {section === "invoice" &&<DropdownItem onClick={() => navigate(`/invoice-preview/${user._id}`)}>Preview</DropdownItem>}
                                 <DropdownItem onClick={() => update(user._id)}>Edit</DropdownItem>
                                 <DropdownItem onClick={() => deleteItem(user._id) || alert(user._id)}>Delete</DropdownItem>
                             </DropdownMenu>
