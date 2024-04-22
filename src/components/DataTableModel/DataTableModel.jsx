@@ -176,7 +176,7 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
             case "challanRef":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.challanRef?.customer.name}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.challanRef?.customer?.name}</p>
                     </div>
                 );
             case "products.due":

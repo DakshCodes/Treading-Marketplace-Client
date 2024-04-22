@@ -31,7 +31,7 @@ const Challan = () => {
   const [customerRef, setcustomerRef] = useState(null)
   const [qty, setqty] = useState("")
   const [qtymeter, setqtymeter] = useState("")
-  const [price, setprice] = useState("")
+  const [rate, setrate] = useState("")
   const [remark, setRemark] = useState("")
   const [unit, setUnit] = useState("")
   const [prodcutkey, setprodcutkey] = useState("")
@@ -225,7 +225,7 @@ const Challan = () => {
       products: mySupplierData?.products.map((product) => ({
         cut: product.cut,
         overall: product.overall,
-        price: product.price,
+        rate: product.rate,
         product: product.product,
         unit: product.unit,
         challanChartImages: product.challanChartImages,
@@ -261,15 +261,15 @@ const Challan = () => {
 
 
   const addProductToTable2 = () => {
-    if (productref && cutref && unit && qty && qtymeter && price) {
+    if (productref && cutref && unit && qty && qtymeter && rate) {
       let overall = 0;
       if (unit === '1') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
+        overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qty) * parseFloat(rate));
       }
       if (unit === '2') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
+        overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(rate));
       }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: price || 0, unit: unit, overall: overall, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, rate: rate || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         supplier: productsData.find(product => product?._id === productref)?.supplierName?._id,
@@ -281,7 +281,7 @@ const Challan = () => {
       setProductChartImage("")
       setcutref("")
       setqty("")
-      setprice("")
+      setrate("")
       setqtymeter("")
       setRemark("")
       setfilterkeys([])
@@ -290,16 +290,16 @@ const Challan = () => {
     }
   };
   const addProductToTable = () => {
-    if (productref && cutref && unit && qty && qtymeter && price) {
+    if (productref && cutref && unit && qty && qtymeter && rate) {
 
       let overall = 0;
       if (unit === '1') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qty) * parseFloat(price));
+        overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qty) * parseFloat(rate));
       }
       if (unit === '2') {
-        overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
+        overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(rate));
       }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, price: price || 0, unit: unit, overall: overall, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, rate: rate || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -311,7 +311,7 @@ const Challan = () => {
       setProductChartImage("")
       setcutref("")
       setqty("")
-      setprice("")
+      setrate("")
       setqtymeter("")
       setRemark("")
     } else {
@@ -336,14 +336,14 @@ const Challan = () => {
   };
   const setproductchange = (value) => {
     console.log(value)
-    const price = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
+    const rate = productsData?.filter(item => item?._id === value)[0]?.ratePerUnit?.magnitude;
     const selectedProductCategory = productsData?.filter(item => item?._id === value)[0]?.category?._id || "";
     const supplier_id = productsData?.find(item => item?._id === value).supplierName?._id || "";
     console.log(selectedProductCategory)
     setproductref(value);
     setsupplierRef(supplier_id)
     setProductCategory(selectedProductCategory);
-    setprice(price)
+    setrate(rate)
   };
 
 
@@ -518,8 +518,8 @@ const Challan = () => {
       label: "Category",
     },
     {
-      key: "pricePerUnit",
-      label: "Price(PerUnit)",
+      key: "ratePerUnit",
+      label: "rate(PerUnit)",
     },
     {
       key: "quality",
@@ -993,7 +993,7 @@ const Challan = () => {
                                   onChange={(e) => setqtymeter(e.target.value)}
                                 />
                                 <Input
-                                  label="Price"
+                                  label="rate"
                                   classNames={{
                                     label: "font-[600] font-font1",
                                     input: "font-[500] font-font1",
@@ -1001,9 +1001,9 @@ const Challan = () => {
                                   labelPlacement="outside"
                                   type="number"
                                   placeholder="0"
-                                  value={price}
+                                  value={rate}
                                   className='max-w-[15rem]'
-                                  onChange={(e) => setprice(e.target.value)}
+                                  onChange={(e) => setrate(e.target.value)}
                                 />
                                 <Autocomplete
                                   classNames={{
@@ -1154,7 +1154,7 @@ const Challan = () => {
                                 <TableColumn>CUT</TableColumn>
                                 <TableColumn>QTY(Pcs)</TableColumn>
                                 <TableColumn>QTY(Mtr)</TableColumn>
-                                <TableColumn>PRICE</TableColumn>
+                                <TableColumn>rate</TableColumn>
                                 <TableColumn>UNIT</TableColumn>
                                 <TableColumn>OVERALL</TableColumn>
                                 <TableColumn>REMARK</TableColumn>
@@ -1177,7 +1177,7 @@ const Challan = () => {
                                         {object.qtyMtr}
                                       </TableCell>
                                       <TableCell>
-                                        {object.price}
+                                        {object.rate}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}
@@ -1678,7 +1678,7 @@ const Challan = () => {
                                 onChange={(e) => setqtymeter(e.target.value)}
                               />
                               <Input
-                                label="Price"
+                                label="rate"
                                 classNames={{
                                   label: "font-[600] font-font1",
                                   input: "font-[500] font-font1",
@@ -1686,9 +1686,9 @@ const Challan = () => {
                                 labelPlacement="outside"
                                 type="number"
                                 placeholder="0"
-                                value={price}
+                                value={rate}
                                 className='max-w-[15rem]'
-                                onChange={(e) => setprice(e.target.value)}
+                                onChange={(e) => setrate(e.target.value)}
                               />
                               <Autocomplete
                                 classNames={{
@@ -1839,7 +1839,7 @@ const Challan = () => {
                                 <TableColumn>CUT</TableColumn>
                                 <TableColumn>QTY(Pcs)</TableColumn>
                                 <TableColumn>QTY(Mtr)</TableColumn>
-                                <TableColumn>PRICE</TableColumn>
+                                <TableColumn>rate</TableColumn>
                                 <TableColumn>UNIT</TableColumn>
                                 <TableColumn>OVERALL</TableColumn>
                                 <TableColumn>REMARK</TableColumn>
@@ -1863,7 +1863,7 @@ const Challan = () => {
                                         {object.qtyMtr}
                                       </TableCell>
                                       <TableCell>
-                                        {object.price}
+                                        {object.rate}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}

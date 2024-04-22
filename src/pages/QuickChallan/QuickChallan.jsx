@@ -185,7 +185,7 @@ const quickchallan = () => {
       verified: true,
     },
     onSubmit: async values => {
-      generateToatl()
+      // generateToatl()
       console.log(values);
       // return;
       if (updateId) {
@@ -297,6 +297,8 @@ const quickchallan = () => {
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
       }));
 
+      settotalbill(price)
+      formik.setFieldValue('totalBill', price);
       setUnit("")
       setproductref("")
       setProductChartImageData([])

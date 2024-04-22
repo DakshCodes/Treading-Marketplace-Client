@@ -31,6 +31,7 @@ import {
   Chip,
   Spinner,
   select,
+  checkbox,
 } from "@nextui-org/react";
 import { useFormik } from "formik";
 import { snapshot_UNSTABLE, RecoilRoot } from "recoil";
@@ -73,8 +74,8 @@ const GenerateInvoice = () => {
   const selectedChallanData = yourArray.map((entry) => {
     return allChallanData.find((item) => item._id === entry);
   });
-
-const selectedChallansProducts =[];
+console.log(invoiceData,"selectedkeyssssssssssssssssssssssssssssss")
+const [selectedChallansProducts , setSelectedChallansProducts] = useState([]);
   // Data Format
   const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -96,17 +97,46 @@ const selectedChallansProducts =[];
   const [supplierRef, setSupplierRef] = useState("");
   const [customerRef, setCustomerRef] = useState("");
 
+  useEffect(() => {
+    const products = [];
+    selectedChallanData.map((item) => {
+      item.products.map((row) => {
+        console.log(row);
+        products.push({
+          product: row.product || "NA",
+          cut: row.cut || "NA",
+          qtyPcs: row.qtyPcs || "NA",
+          qtyMtr: row.qtyMtr || "NA",
+          bales: row.bales || "NA",
+          received: "", // This will be filled by user input
+          due: "", // This will be filled by user input
+          rate: row.rate || "NA",
+          total : row.price || "", // This will be filled by user input
+          markAsCompleted : false, // This will be filled by user input
+        });
+      });
+    });
+    setSelectedChallansProducts(products);
+  }, [selectedKeys]);
+  console.log(selectedChallansProducts,"productssssssssssssssssssssss")
   // Create The width
   const createinvoice = async (values) => {
     try {
-      values.challanRef = challanRef;
-      const filteredProducts = values.products.map((product) => ({
-        product: product.product,
-        received: product.received,
-        due: product.due,
-      }));
+      console.log(values, 'vvvvvvvvvvvvvv')
+      values.challanRef = [...selectedKeys];
+      values.products = selectedChallansProducts;
+     for(var i = 0; i < selectedChallansProducts.length;i++){
+         if(selectedChallansProducts?.[i].markAsCompleted){
+          values.markOverallCompleted = true;
+         }
+         else{
+          values.markOverallCompleted = false;
 
-      values.products = filteredProducts;
+          break;
+         }
+     }
+      console.log(values,"vvvvvvvvvv")
+      
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -142,7 +172,7 @@ const selectedChallansProducts =[];
           prevData.filter((invoice) => invoice._id !== id)
         );
 
-        navigate("/inventory");
+        navigate("/invoice");
       } else {
         throw new Error(response.message);
       }
@@ -213,7 +243,6 @@ const selectedChallansProducts =[];
         formik.setValues({
           name: response.invoice?.name,
         });
-        console.log(formik.values, "ffffffffffffffffffffffffffffffff");
         // Close the modal and reset update ID
         onOpenChange(false);
         setUpdateId(null);
@@ -232,6 +261,8 @@ const selectedChallansProducts =[];
     initialValues: {
       challanRef: [],
       products: [],
+      markOverallCompleted : false
+      
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -250,7 +281,6 @@ const selectedChallansProducts =[];
     formik.resetForm();
     // setrefcat('')
   };
-console.log(selectedChallansProducts, "+++++++++++++++++++++++++++++++++++++++++++++++++++")
   
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
@@ -264,7 +294,6 @@ console.log(selectedChallansProducts, "+++++++++++++++++++++++++++++++++++++++++
 
   };
 
-  console.log(updatedProducts,".......................................")
 
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
@@ -553,57 +582,93 @@ console.log(selectedChallansProducts, "+++++++++++++++++++++++++++++++++++++++++
                     </ModalHeader>
 
                     <div className="overflow-auto">
-                      <table className="border-collapse w-full border border-gray-400">
+                      <table className="border-collapse w-full border border-gray-400 rounded-full">
                         <thead>
-                          <tr className="border-2 border-[#252525] text-[0.8rem] font-normal p-6 ">
+                          <tr className="border-2 border-[#252525] text-[0.8rem] font-normal p-6 w-fit rounded-xl">
                             <th>PRODUCT_NAME</th>
                             <th>CUT</th>
                             <th>QTY_PCS</th>
                             <th>QTY_METER</th>
                             <th>BALES</th>
-
                             <th>RECIEVED</th>
                             <th>DUE</th>
+                            <th>RATE</th>
+                            <th>TOTAL RS.</th>
+                            <th>MARK_AS_COMPLETED</th>
                           </tr>
                         </thead>
                         <tbody>
-                    
-
-                              {selectedChallanData && selectedChallanData.map((item, index) => {
-                                item?.products?.map((row, rowIndex) => {
-                              
-                                  selectedChallansProducts.push({
-                                    product: row.product || "NA",
-                                    cut: row.cut || "NA",
-                                    qtyPcs: row.qtyPcs || "NA",
-                                    qtyMtr: row.qtyMtr || "NA",
-                                    bales: row.bales || "NA",
-                                    received: "", // This will be filled by user input
-                                    due: "", // This will be filled by user input
-                                  });
-                                  console.log(selectedChallansProducts, "selectedchallanproducts");
-                                });
-                              })}
+             
                               {selectedChallansProducts.map((Product, pIndex) => {
                                 return (
                                   <tr
-                                    className="border-2 text-[0.9rem] border-[#252525] max-h-[6rem] mt-2"
+                                    className="border-2 text-[0.9rem] border-[#252525] max-h-[6rem] mt-1 w-fit"
                                     key={pIndex}
                                   >
-                                    <td>{Product.product || "NA"}</td>
-                                    <td>{Product.cut || "NA"}</td>
-                                    <td>{Product.qtyPcs || "NA"}</td>
-                                    <td>{Product.qtyMtr || "NA"}</td>
-                                    <td>{Product.bales || "NA"}</td>
-                                    <td>
+                                    <td className="w-fit px-1 text-center">{Product.product || "NA"}</td>
+                                    <td className="w-fit px-1 text-center">{Product.cut || "NA"}</td>
+                                    <td className="w-fit px-1 text-center">{Product.qtyPcs || "NA"}</td>
+                                    <td className="w-fit px-1 text-center">{Product.qtyMtr || "NA"}</td>
+                                    <td className="w-fit px-1 text-center">{Product.bales || "NA"}</td>
+                                    <td className="w-fit px-1 text-center">
                                       <input
+                                       className="w-1/2 text-center"
                                         type="number"
                                         placeholder="Received Qty"
-                                        value={updatedProducts?.[pIndex]?.received}
-                                        onChange={(e) => handleChange(e, pIndex)}
+                                        value={selectedChallansProducts?.[pIndex]?.received}
+                                        onChange={(e) => {handleChange(e, pIndex)
+                                          const newProducts = [...selectedChallansProducts];
+                                          newProducts[pIndex].total =newProducts[pIndex]?.rate * newProducts[pIndex]?.received ; // Ensure selectedChallansProducts is not mutated directly
+                                          setSelectedChallansProducts(newProducts);
+                                          }}
                                       />
+                                     
                                     </td>
-                                    <td>{updatedProducts?.[pIndex]?.due}</td>
+                                   
+                                  
+                                    <td className="w-fit px-1 text-center">{selectedChallansProducts?.[pIndex]?.due}</td>
+                                    <td className="w-fit px-1 text-center">
+                                      <input
+                                        value={selectedChallansProducts[pIndex]?.bales !== "NA" ? "NA" : selectedChallansProducts[pIndex]?.rate}
+
+                                       className="w-1/2 text-center"
+                                        
+                                        placeholder="enter rate"
+                                        onChange={(e) => {
+                                          const newProducts = [...selectedChallansProducts];
+                                          newProducts[pIndex].rate = e.target.value; // Ensure selectedChallansProducts is not mutated directly
+                                           // Ensure selectedChallansProducts is not mutated directly
+                                          setSelectedChallansProducts(newProducts);
+                                        }}
+                                      />
+                                     
+                                    </td>
+                                   
+                                    <td className="w-fit px-1 text-center">
+                                      <input
+                                       className="w-1/2 text-center"
+                                        type="number"
+                                        placeholder="enter total"
+                                        value={selectedChallansProducts[pIndex]?.qtyPcs === "NA" || selectedChallansProducts[pIndex].qtyMtr === "NA" ?  selectedChallansProducts[pIndex]?.total : selectedChallansProducts[pIndex]?.rate * selectedChallansProducts[pIndex]?.received }
+                                        onChange={(e) => {
+                                          const newProducts = [...selectedChallansProducts];
+                                          newProducts[pIndex].total = e.target.value ; // Ensure selectedChallansProducts is not mutated directly
+                                          setSelectedChallansProducts(newProducts);
+                                        }}
+                                      />
+                                     
+                                    </td>
+
+                                    <td className="w-fit px-1 text-center">  <input
+                                        type="checkbox"
+                                        placeholder="markAsCompleted"
+                                        value={selectedChallansProducts?.[pIndex]?.markAsCompleted}
+                                        onChange={(e) => {
+                                          const newProducts = [...selectedChallansProducts];
+                                          newProducts[pIndex].markAsCompleted = e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+                                          setSelectedChallansProducts(newProducts);
+                                        }}
+                                      /></td>
                                   </tr>
                                 );
                               })}
