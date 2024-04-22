@@ -78,8 +78,9 @@ const selectedChallansProducts =[];
   // Data Format
   const columns = [
     { name: "ID", uid: "id", sortable: true },
-    { name: "NAME", uid: "name", sortable: true },
-    { name: "VERIFIED", uid: "verified", sortable: true },
+    { name: "NAME", uid: "challanRef", sortable: true },
+    { name: "RECEIVED(Total)", uid: "products.received", sortable: true },
+    { name: "DUE(Total)", uid: "products.due", sortable: true },
     { name: "ACTIONS", uid: "actions" },
   ];
 
@@ -88,7 +89,7 @@ const selectedChallansProducts =[];
     { name: "Active", uid: "false" },
   ];
 
-  const INITIAL_VISIBLE_COLUMNS = ["name", "verified", "actions"];
+  const INITIAL_VISIBLE_COLUMNS = ["challanRef", "products.received","products.due","actions"];
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false);
