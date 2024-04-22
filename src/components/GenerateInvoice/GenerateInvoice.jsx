@@ -30,6 +30,7 @@ import {
   DropdownItem,
   Chip,
   Spinner,
+  select,
 } from "@nextui-org/react";
 import { useFormik } from "formik";
 import { snapshot_UNSTABLE, RecoilRoot } from "recoil";
@@ -43,6 +44,8 @@ import {
   Updateinvoice,
 } from "../../apis/invoice";
 import { invoiceDataState } from "../../store/invoice/invoiceAtom";
+import { customerDataState } from "../../store/customer/customerAtom";
+import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
 
@@ -53,18 +56,25 @@ const GenerateInvoice = () => {
   const [updateId, setUpdateId] = useState(null);
   const [challanRef, setChallanRef] = useState(null);
   const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
-  const mainchallanData = useRecoilValue(challanDataState);
-  const quickchallanData = useRecoilValue(quickchallanDataState);
+  const [customerData, setcustomerData] = useRecoilState(customerDataState);
+  const [supplierData, setsupplierData] = useRecoilState(suppliersDataState);
+  const [quickchallansData, setquickchallansData] = useRecoilState(
+    quickchallanDataState
+  );
+  const [challansData, setChallansData] = useRecoilState(challanDataState);
+
   const [updatedProducts, setUpdatedProducts] = useState([]);
-  const [challanType, setChallanType] = useState(null);
-  const [tableColumndata, setTableColumndata] = useState(null);
+  
+  const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
 
-  // console.log(mainchallanData,"mainchalannnnnnnnnnnnnnnnn")
-  // console.log(quickchallanData,"quickchalannnnnnnnnnnnnnnnn")
-  // console.log(challanType,"chalannnnnnnnnnnnnnnnn")
+  const allChallanData = [...challansData, ...quickchallansData];
 
-  console.log(invoiceData, "invoice DataState");
+  const yourArray = [...selectedKeys];
+  const selectedChallanData = yourArray.map((entry) => {
+    return allChallanData.find((item) => item._id === entry);
+  });
 
+const selectedChallansProducts =[];
   // Data Format
   const columns = [
     { name: "ID", uid: "id", sortable: true },
@@ -82,18 +92,19 @@ const GenerateInvoice = () => {
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false);
+  const [supplierRef, setSupplierRef] = useState("");
+  const [customerRef, setCustomerRef] = useState("");
 
   // Create The width
   const createinvoice = async (values) => {
     try {
-
       values.challanRef = challanRef;
       const filteredProducts = values.products.map((product) => ({
-        product : product.product,
+        product: product.product,
         received: product.received,
         due: product.due,
       }));
-  
+
       values.products = filteredProducts;
       setIsLoading(true);
       const response = await Createinvoice(values);
@@ -216,13 +227,10 @@ const GenerateInvoice = () => {
     }
   };
 
-  const finalChallanData = challanType === 1 && mainchallanData;
-
   const formik = useFormik({
     initialValues: {
-      challanRef : "",
+      challanRef: [],
       products: [],
-
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -241,41 +249,21 @@ const GenerateInvoice = () => {
     formik.resetForm();
     // setrefcat('')
   };
-
+console.log(selectedChallansProducts, "+++++++++++++++++++++++++++++++++++++++++++++++++++")
+  
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
-    const {name , value} = e.target
-    const updatedProductsCopy = [...updatedProducts];
-    const product = { ...updatedProductsCopy[rowIndex] };
+    const { name, value } = e.target;
+    const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA" ?  selectedChallansProducts[rowIndex]?.bales : selectedChallansProducts[rowIndex]?.qtyPcs 
+    console.log(console.log(originalQty,rowIndex,"original quantity"))
+    selectedChallansProducts[rowIndex].received = parseInt(value);
+    
+    selectedChallansProducts[rowIndex].due = originalQty - selectedChallansProducts[rowIndex].received;
+    setUpdatedProducts((prevData)=>[...prevData ,selectedChallansProducts[rowIndex]])
 
-     const originalQty =
-      challanType === "1"
-        ? product.qtyPcs
-        : product.bales;
-      const received = parseInt(value);
-    const due = originalQty - received;
-    Object.assign(product, { received, due });
-
-    updatedProductsCopy[rowIndex] = product;
-    setUpdatedProducts(() => {
-      console.log(updatedProductsCopy, 'updated products');
-      return updatedProductsCopy;
-    });
-  
-    // Update formik values
-    formik.setValues((prevValues) => {
-      console.log(updatedProductsCopy, 'formik products');
-      return {
-        ...prevValues,
-        products: updatedProductsCopy,
-      };
-    });
- 
   };
-  
 
-  
-
+  console.log(updatedProducts,".......................................")
 
   const removeAttributeFromTable = (index) => {
     formik.setValues((prevValues) => {
@@ -287,11 +275,11 @@ const GenerateInvoice = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 w-90vw">
         <Modal
           isOpen={isOpen}
           scrollBehavior={"inside"}
-          size={"xl"}
+          size={"full"}
           onOpenChange={(newState) => {
             onOpenChange(newState);
           }}
@@ -303,20 +291,21 @@ const GenerateInvoice = () => {
                   {updateId ? "Update invoice" : "Create invoice"}
                 </ModalHeader>
                 <ModalBody>
-                  <div className="max-w-full rounded-2xl">
-                    <div className="flex  gap-2 p-8">
+                  <div className="max-w-full rounded-2xl p-8 flex gap-2 flex-col">
+                    <div className="flex  gap-2 ">
                       <Autocomplete
                         labelPlacement="outside"
-                        label="Challan Type"
+                        label="SUPPLIER"
                         classNames={{
                           base: "max-w-full mb-2 border-[#fff] ",
 
                           listboxWrapper: "max-h-[270px]",
                           selectorButton: "text-[#000]",
                         }}
-                        onSelectionChange={(value) =>
-                          setChallanType(() => value)
-                        }
+                        onSelectionChange={setSupplierRef}
+                        value={supplierRef}
+                        defaultItems={supplierData}
+                        selectedKey={supplierRef}
                         inputProps={{
                           classNames: {
                             input: "ml-1 text-[#000] font-font1",
@@ -341,131 +330,7 @@ const GenerateInvoice = () => {
                           },
                         }}
                         aria-label="Select an Challan type "
-                        placeholder="Enter Challan type "
-                        popoverProps={{
-                          offset: 10,
-                          classNames: {
-                            base: "rounded-large",
-                            content: "p-1  border-none bg-background",
-                          },
-                        }}
-                        startContent={
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height={20}
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width={20}
-                            color={"#000"}
-                          >
-                            <path
-                              d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                            />
-                            <path
-                              d="M22 22L20 20"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                            />
-                          </svg>
-                        }
-                        variant="flat"
-                      >
-                        <AutocompleteItem key={1} textValue={"Main Challan"}>
-                          <div className="flex justify-between items-center">
-                            <div className="flex gap-2 items-center">
-                              <div className="flex flex-col">
-                                <span className="text-small">Main Challan</span>
-                              </div>
-                            </div>
-                          </div>
-                        </AutocompleteItem>
-                        <AutocompleteItem key={2} textValue={"Quick Challan"}>
-                          <div className="flex justify-between items-center">
-                            <div className="flex gap-2 items-center">
-                              <div className="flex flex-col">
-                                <span className="text-small">
-                                  Quick Challan
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </AutocompleteItem>
-                      </Autocomplete>
-
-                      <Autocomplete
-                        labelPlacement="outside"
-                        label="Select Challan"
-                        classNames={{
-                          base: "max-w-full border-[#fff] ",
-
-                          listboxWrapper: "max-h-[270px]",
-                          selectorButton: "text-[#000]",
-                        }}
-                        onSelectionChange={(selectedId) => {
-                          if (challanType === "1") {
-                            const selectedMainChallanData =
-                              mainchallanData.find(
-                                (item) => item._id === selectedId
-                              );
-                            setTableColumndata(() => selectedMainChallanData);
-                            setUpdatedProducts(() => selectedMainChallanData?.products);
-                            setChallanRef(() => selectedId);
-                            console.log(
-                              tableColumndata,
-                              selectedMainChallanData,
-                              "table column data"
-                            );
-                          } else {
-                            const selectedQuickChallanData =
-                              quickchallanData.find(
-                                (item) => item._id === selectedId
-                              );
-                            setTableColumndata(() => selectedQuickChallanData);
-                            setUpdatedProducts(() => selectedQuickChallanData?.products);
-                            setChallanRef(() => selectedId);
-
-                          }
-                        }}
-                        // value={formik?.values?.customer}
-                        defaultItems={
-                          challanType === "1"
-                            ? mainchallanData
-                            : quickchallanData
-                        }
-                        // selectedKey={formik?.values?.customer}
-                        inputProps={{
-                          classNames: {
-                            input: "ml-1 text-[#000] font-font1",
-                            inputWrapper: "h-[20px]",
-                            label: "font-[600] font-font1",
-                          },
-                        }}
-                        listboxProps={{
-                          hideSelectedIcon: true,
-                          itemClasses: {
-                            base: [
-                              "rounded-medium",
-                              "text-[#000]",
-                              "transition-opacity",
-                              "data-[hover=true]:text-foreground",
-                              "dark:data-[hover=true]:bg-default-50",
-                              "data-[pressed=true]:opacity-70",
-                              "data-[hover=true]:bg-default-200",
-                              "data-[selectable=true]:focus:bg-default-100",
-                              "data-[focus-visible=true]:ring-default-500",
-                            ],
-                          },
-                        }}
-                        aria-label="Select challan "
-                        placeholder="Enter challan "
+                        placeholder="Select Supplier"
                         popoverProps={{
                           offset: 10,
                           classNames: {
@@ -505,14 +370,107 @@ const GenerateInvoice = () => {
                         {(item) => (
                           <AutocompleteItem
                             key={item?._id}
-                            textValue={item?.supplier?.name}
+                            textValue={item?.name}
                           >
                             <div className="flex justify-between items-center">
                               <div className="flex gap-2 items-center">
                                 <div className="flex flex-col">
                                   {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
                                   <span className="text-small">
-                                    {item?.supplier?.name}
+                                    {item?.name}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </AutocompleteItem>
+                        )}
+                      </Autocomplete>
+
+                      <Autocomplete
+                        labelPlacement="outside"
+                        label="CUSTOMER"
+                        classNames={{
+                          base: "max-w-full mb-2 border-[#fff] ",
+
+                          listboxWrapper: "max-h-[270px]",
+                          selectorButton: "text-[#000]",
+                        }}
+                        onSelectionChange={setCustomerRef}
+                        value={customerRef}
+                        defaultItems={customerData}
+                        selectedKey={customerRef}
+                        inputProps={{
+                          classNames: {
+                            input: "ml-1 text-[#000] font-font1",
+                            inputWrapper: "h-[20px]",
+                            label: "font-[600] font-font1",
+                          },
+                        }}
+                        listboxProps={{
+                          hideSelectedIcon: true,
+                          itemClasses: {
+                            base: [
+                              "rounded-medium",
+                              "text-[#000]",
+                              "transition-opacity",
+                              "data-[hover=true]:text-foreground",
+                              "dark:data-[hover=true]:bg-default-50",
+                              "data-[pressed=true]:opacity-70",
+                              "data-[hover=true]:bg-default-200",
+                              "data-[selectable=true]:focus:bg-default-100",
+                              "data-[focus-visible=true]:ring-default-500",
+                            ],
+                          },
+                        }}
+                        aria-label="Select an Challan type "
+                        placeholder="Select Customer"
+                        popoverProps={{
+                          offset: 10,
+                          classNames: {
+                            base: "rounded-large",
+                            content: "p-1  border-none bg-background",
+                          },
+                        }}
+                        startContent={
+                          <svg
+                            aria-hidden="true"
+                            fill="none"
+                            focusable="false"
+                            height={20}
+                            role="presentation"
+                            viewBox="0 0 24 24"
+                            width={20}
+                            color={"#000"}
+                          >
+                            <path
+                              d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2.5}
+                            />
+                            <path
+                              d="M22 22L20 20"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2.5}
+                            />
+                          </svg>
+                        }
+                        variant="flat"
+                      >
+                        {(item) => (
+                          <AutocompleteItem
+                            key={item?._id}
+                            textValue={item?.name}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div className="flex gap-2 items-center">
+                                <div className="flex flex-col">
+                                  {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
+                                  <span className="text-small">
+                                    {item?.name}
                                   </span>
                                 </div>
                               </div>
@@ -521,66 +479,137 @@ const GenerateInvoice = () => {
                         )}
                       </Autocomplete>
                     </div>
-                  </div>
-                  <div className="overflow-auto">
-                    <table className="border-collapse w-full border border-gray-400">
-                      <thead>
-                        <tr className="border-2 border-[#252525] text-[0.8rem] font-normal p-6 ">
-                          {tableColumndata &&
-                            Object.entries(tableColumndata?.products[0]).map(
-                              ([key, value], index) => {
-                                console.log(key);
-                                if (key === "challanChartImages") {
-                                  return;
-                                }
+                    <ModalHeader className=" text-[1rem] font-font1">
+                      Challan Table
+                    </ModalHeader>
+                    <Table
+                      aria-label="Controlled table example with dynamic content"
+                      selectionMode="multiple"
+                      selectedKeys={selectedKeys}
+                      onSelectionChange={setSelectedKeys}
+                    >
+                      <TableHeader>
+                        {allChallanData &&
+                          Object.entries(allChallanData[0]).map(
+                            ([key, value], index) => {
+                              console.log(key);
+
+                              return (
+                                <TableColumn key={index}>
+                                  {key.toUpperCase()}
+                                </TableColumn>
+                              );
+                            }
+                          )}
+                      </TableHeader>
+                      <TableBody
+                        items={
+                          allChallanData.filter((item) => {
+                            return (
+                              item.supplier._id === supplierRef ||
+                              item.customer._id === customerRef
+                            );
+                          })
+                            ? allChallanData.filter((item) => {
                                 return (
-                                  <th className="p-4" key={index}>
-                                    {key.toUpperCase()}
-                                  </th>
+                                  item.supplier._id === supplierRef &&
+                                  item.customer._id === customerRef
+                                );
+                              })
+                            : allChallanData
+                        }
+                      >
+                        {(item) => (
+                          <TableRow key={item._id}>
+                            {Object.entries(item).map(
+                              ([key, value], cellIndex) => {
+                                return (
+                                  <TableCell key={cellIndex}>
+                                    {(() => {
+                                      if (key.toLowerCase() === "products") {
+                                        return value[0]._id;
+                                      }
+                                      if (
+                                        key.toLowerCase() === "supplier" ||
+                                        key.toLowerCase() === "customer"
+                                      ) {
+                                        return value.name;
+                                      }
+                                      return value;
+                                      // Handle other cases or return a default value if needed
+                                    })()}
+                                  </TableCell>
                                 );
                               }
                             )}
-                          <th>RECIEVED</th>
-                          <th>DUE</th>
-                        </tr>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
 
-                      </thead>
-                      <tbody>
-                        {tableColumndata?.products &&
-                          tableColumndata?.products?.map((row, rowIndex) => (
-                            // console.log(row)
-                            <tr
-                              className="border-2 text-[0.9rem] border-[#252525] max-h-[6rem] mt-2"
-                              key={rowIndex}
-                            >
-                              {Object.entries(row).map(
-                                ([key, value], cellIndex) => {
-                                  if (key === "challanChartImages") {
-                                    return;
-                                  }
-                                  return (
-                                    <td className="p-4 " key={cellIndex}>
-                                      {key.toLowerCase() ===
-                                        "challanChartImages"
-                                        ? null
-                                        : value}
+                    <ModalHeader className=" text-[1rem] font-font1">
+                      products Table
+                    </ModalHeader>
+
+                    <div className="overflow-auto">
+                      <table className="border-collapse w-full border border-gray-400">
+                        <thead>
+                          <tr className="border-2 border-[#252525] text-[0.8rem] font-normal p-6 ">
+                            <th>PRODUCT_NAME</th>
+                            <th>CUT</th>
+                            <th>QTY_PCS</th>
+                            <th>QTY_METER</th>
+                            <th>BALES</th>
+
+                            <th>RECIEVED</th>
+                            <th>DUE</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                    
+
+                              {selectedChallanData && selectedChallanData.map((item, index) => {
+                                item?.products?.map((row, rowIndex) => {
+                              
+                                  selectedChallansProducts.push({
+                                    product: row.product || "NA",
+                                    cut: row.cut || "NA",
+                                    qtyPcs: row.qtyPcs || "NA",
+                                    qtyMtr: row.qtyMtr || "NA",
+                                    bales: row.bales || "NA",
+                                    received: "", // This will be filled by user input
+                                    due: "", // This will be filled by user input
+                                  });
+                                  console.log(selectedChallansProducts, "selectedchallanproducts");
+                                });
+                              })}
+                              {selectedChallansProducts.map((Product, pIndex) => {
+                                return (
+                                  <tr
+                                    className="border-2 text-[0.9rem] border-[#252525] max-h-[6rem] mt-2"
+                                    key={pIndex}
+                                  >
+                                    <td>{Product.product || "NA"}</td>
+                                    <td>{Product.cut || "NA"}</td>
+                                    <td>{Product.qtyPcs || "NA"}</td>
+                                    <td>{Product.qtyMtr || "NA"}</td>
+                                    <td>{Product.bales || "NA"}</td>
+                                    <td>
+                                      <input
+                                        type="number"
+                                        placeholder="Received Qty"
+                                        value={updatedProducts?.[pIndex]?.received}
+                                        onChange={(e) => handleChange(e, pIndex)}
+                                      />
                                     </td>
-                                  );
-                                }
-                              )}
-                              <td>
-                                <input
-                                  type="number"
-                                  placeholder="Received Qty"
-                                  // value={formik?.values?.products[rowIndex]?.received}
-                                  onChange={(e) => handleChange(e, rowIndex)}
-                                />
-                              </td>
-                             <td>{formik?.values?.products?.[rowIndex]?.due}</td> {/* intentionnally left blank  */}
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
+                                    <td>{updatedProducts?.[pIndex]?.due}</td>
+                                  </tr>
+                                );
+                              })}
+                              
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </ModalBody>
                 <ModalFooter>

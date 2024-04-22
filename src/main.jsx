@@ -9,7 +9,7 @@ import {
 import Loader from './components/Loader/Loader.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+ 
     <BrowserRouter>
       <NextUIProvider>
         <RecoilRoot>
@@ -21,5 +21,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </RecoilRoot>,
       </NextUIProvider>
     </BrowserRouter>
-  </React.StrictMode >,
+ 
 )

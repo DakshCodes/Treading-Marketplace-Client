@@ -364,29 +364,29 @@ const quickchallan = () => {
       updatedProducts.splice(index, 1);
       return { ...prevValues, products: updatedProducts };
     });
-    generateToatl();
+    // generateToatl();
   };
-  const generateToatl = () => {
-    // Accessing products from formik values
-    const products = formik.values.products;
+  // const generateToatl = () => {
+  //   // Accessing products from formik values
+  //   const products = formik.values.products;
 
-    if (products?.length > 0) {
-      // Calculating the total bill
-      const totalBill = products.reduce((acc, product) => {
-        return acc + product.price;
-      }, 0);
+  //   if (products?.length > 0) {
+  //     // Calculating the total bill
+  //     const totalBill = products.reduce((acc, product) => {
+  //       return acc + product.price;
+  //     }, 0);
 
-      console.log(totalBill)
+  //     console.log(totalBill)
 
-      // Setting the total bill
-      settotalbill(totalBill);
-      formik.setFieldValue('totalBill', totalBill);
-    }
-    else {
-      settotalbill(0);
-      formik.setFieldValue('totalBill', 0);
-    }
-  };
+  //     // Setting the total bill
+  //     settotalbill(totalBill);
+  //     formik.setFieldValue('totalBill', totalBill);
+  //   }
+  //   else {
+  //     settotalbill(0);
+  //     formik.setFieldValue('totalBill', 0);
+  //   }
+  // };
 
   const handleProductChartImageChange = async (e) => {
     setProductChartImage(e.target.files[0]);
@@ -1255,7 +1255,7 @@ const quickchallan = () => {
                                 })}
                               </TableBody>
                             </Table>
-                            <Card>
+                            {/* <Card>
                               <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
                                 <Button
                                   onClick={generateToatl}
@@ -1267,7 +1267,7 @@ const quickchallan = () => {
                                   <p className='font-font1 font-[500] text-[1rem]'>{totalbill || 0}.00</p>
                                 </div>
                               </CardBody>
-                            </Card>
+                            </Card> */}
 
                             <div>
                               <Textarea
@@ -1925,7 +1925,7 @@ const quickchallan = () => {
                                 })}
                               </TableBody>
                             </Table>
-                            <Card>
+                            {/* <Card>
                               <CardBody className='flex flex-row px-10 justify-between items-center py-5'>
                                 <Button
                                   onClick={generateToatl}
@@ -1937,7 +1937,7 @@ const quickchallan = () => {
                                   <p className='font-font1 font-[500] text-[1rem]'>{totalbill || 0}.00</p>
                                 </div>
                               </CardBody>
-                            </Card>
+                            </Card> */}
                             <div>
                               <Textarea
                                 variant="flat"
