@@ -143,18 +143,30 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
                 );
 
 
-            case "customer":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-900">{user?.customer?.name}</p>
-                    </div>
-                );
-            case "supplier":
-                return (
-                    <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-900">{user?.supplier?.name}</p>
-                    </div>
-                );
+                case "customer":
+                    return (
+                        <div className="flex flex-col">
+                            <p className="text-bold text-tiny capitalize text-default-900">{user?.customer?.name}</p>
+                        </div>
+                    );
+                case "supplier":
+                    return (
+                        <div className="flex flex-col">
+                            <p className="text-bold text-tiny capitalize text-default-900">{user?.supplier?.name}</p>
+                        </div>
+                    );
+                    case "customerName":
+                        return (
+                            <div className="flex flex-col">
+                                <p className="text-bold text-tiny capitalize text-default-900">{user?.challanRef?.[0]?.customer?.name}</p>
+                            </div>
+                        );
+                    case "supplierName":
+                        return (
+                            <div className="flex flex-col">
+                                <p className="text-bold text-tiny capitalize text-default-900">{user?.challanRef?.[0]?.supplier?.name}</p>
+                            </div>
+                        );
             case "products":
                 return (
                     <div className="flex max-w-max ml-2 items-center ">
