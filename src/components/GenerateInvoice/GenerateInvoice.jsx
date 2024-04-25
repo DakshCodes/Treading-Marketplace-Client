@@ -77,7 +77,7 @@ const GenerateInvoice = () => {
   console.log(invoiceData, "selectedkeyssssssssssssssssssssssssssssss");
   const [selectedChallansProducts, setSelectedChallansProducts] = useState([]);
   // Data Format
-  console.log(allChallanData,"allxhallandata")
+  console.log(allChallanData, "allxhallandata")
   const columns = [
     { name: "ID", uid: "_id", sortable: true },
     { name: "SUPPLIER_NAME", uid: "supplierName", sortable: true },
@@ -109,7 +109,7 @@ const GenerateInvoice = () => {
     const products = [];
     selectedChallanData.map((item) => {
       item.products.map((row) => {
-        console.log(row,"challan data");
+        console.log(row, "challan data");
         products.push({
           product: row?.product?.productName || "NA",
           cut: row?.cut?.name || "NA",
@@ -202,7 +202,9 @@ const GenerateInvoice = () => {
 
     formik.setValues({
       name: invoiceDataexist?.name,
+      markOverallCompleted: invoiceDataexist?.markOverallCompleted,
     });
+    setSelectedChallansProducts(invoiceDataexist?.products);
   };
   // ...
 
@@ -229,6 +231,16 @@ const GenerateInvoice = () => {
   };
   // Handle update form submission
   const handleUpdateSubmit = async (values) => {
+    values.challanRef = [...selectedKeys];
+    values.products = selectedChallansProducts;
+    for (var i = 0; i < selectedChallansProducts.length; i++) {
+      if (selectedChallansProducts?.[i].markAsCompleted) {
+        values.markOverallCompleted = true;
+      } else {
+        values.markOverallCompleted = false;
+        break;
+      }
+    }
     try {
       // values.ref = refcat;
       setIsLoading(true);
@@ -293,7 +305,7 @@ const GenerateInvoice = () => {
     const { name, value } = e.target;
     const originalQty =
       selectedChallansProducts[rowIndex]?.qtyPcs === "NA" ||
-      selectedChallansProducts[rowIndex].qtyMtr === "NA"
+        selectedChallansProducts[rowIndex].qtyMtr === "NA"
         ? selectedChallansProducts[rowIndex]?.bales
         : selectedChallansProducts[rowIndex]?.qtyPcs;
     console.log(console.log(originalQty, rowIndex, "original quantity"));
@@ -553,11 +565,11 @@ const GenerateInvoice = () => {
                             );
                           })
                             ? allChallanData.filter((item) => {
-                                return (
-                                  item.supplier._id === supplierRef &&
-                                  item.customer._id === customerRef
-                                );
-                              })
+                              return (
+                                item.supplier._id === supplierRef &&
+                                item.customer._id === customerRef
+                              );
+                            })
                             : allChallanData
                         }
                       >
@@ -590,25 +602,25 @@ const GenerateInvoice = () => {
                     </Table>
                     <div className="flex justify-between">
                       <ModalHeader className=" text-[1rem] font-font1">
-                        products Table
+                        Products Table
                       </ModalHeader>
                       <div className="flex justify-center items-center">
                         <input className="w-4 h-4 "
                           type="checkbox"
                           placeholder="markAllCompleted"
-                          // value={
-                          //   selectedChallansProducts?.[pIndex]?.markAsCompleted
-                          // }
+                          value={formik?.values?.markOverallCompleted}
+                          checked={formik?.values?.markOverallCompleted}
                           onChange={(e) => {
                             const newProducts = selectedChallansProducts.map((item) => ({
                               ...item,
                               markAsCompleted: e.target.checked
                             }));
                             setSelectedChallansProducts(newProducts);
+                            formik.setFieldValue("markOverallCompleted", !formik?.values?.markOverallCompleted)
                           }}
                         />
                         <ModalHeader className="p-0.5 text-[1rem] font-font1">
-                          MarkAllCompleted
+                          Mark All Completed
                         </ModalHeader>{" "}
                       </div>
                     </div>
@@ -630,7 +642,7 @@ const GenerateInvoice = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedChallansProducts.map((Product, pIndex) => {
+                          {selectedChallansProducts?.map((Product, pIndex) => {
                             return (
                               <tr
                                 className="border-2 text-[0.9rem] border-[#252525] max-h-[6rem] mt-1 w-fit"
@@ -705,14 +717,14 @@ const GenerateInvoice = () => {
                                     value={
                                       selectedChallansProducts[pIndex]
                                         ?.qtyPcs === "NA" ||
-                                      selectedChallansProducts[pIndex]
-                                        .qtyMtr === "NA"
+                                        selectedChallansProducts[pIndex]
+                                          .qtyMtr === "NA"
                                         ? selectedChallansProducts[pIndex]
-                                            ?.total
+                                          ?.total
                                         : selectedChallansProducts[pIndex]
-                                            ?.rate *
-                                          selectedChallansProducts[pIndex]
-                                            ?.received
+                                          ?.rate *
+                                        selectedChallansProducts[pIndex]
+                                          ?.received
                                     }
                                     onChange={(e) => {
                                       const newProducts = [
@@ -731,6 +743,7 @@ const GenerateInvoice = () => {
                                     type="checkbox"
                                     placeholder="markAsCompleted"
                                     checked={selectedChallansProducts[pIndex]?.markAsCompleted || false}
+                                    value={selectedChallansProducts[pIndex]?.markAsCompleted || false}
                                     onChange={(e) => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
@@ -740,6 +753,7 @@ const GenerateInvoice = () => {
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
+                                  {selectedChallansProducts[pIndex]?.markAsCompleted ? "true" : "false"}
                                 </td>
                               </tr>
                             );
