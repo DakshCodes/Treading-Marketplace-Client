@@ -32,6 +32,7 @@ import {
   Spinner,
   select,
   checkbox,
+  Listbox, ListboxItem, ScrollShadow, Avatar
 } from "@nextui-org/react";
 import { useFormik } from "formik";
 import { snapshot_UNSTABLE, RecoilRoot } from "recoil";
@@ -214,8 +215,6 @@ const GenerateInvoice = () => {
     setUpdated(false);
   }, [updated]);
 
-  // ...
-
   // Call updateFormWithinvoiceData wherever needed
   const handleUpdate = (invoiceId) => {
     try {
@@ -327,6 +326,14 @@ const GenerateInvoice = () => {
     });
   };
 
+
+
+
+  const fillterChallan = React.useMemo(() => {
+    return allChallanData.filter((item) => item.supplier._id === supplierRef || item.customer._id === customerRef)
+  }, [supplierRef, customerRef]);
+
+  console.log(selectedKeys, "selectedKeys");
   return (
     <>
       <div className="flex flex-col gap-2 w-90vw">
@@ -345,198 +352,267 @@ const GenerateInvoice = () => {
                   {updateId ? "Update invoice" : "Create invoice"}
                 </ModalHeader>
                 <ModalBody>
-                  <div className="max-w-full rounded-2xl p-8 flex gap-2 flex-col">
-                    <div className="flex  gap-2 ">
-                      <Autocomplete
-                        labelPlacement="outside"
-                        label="SUPPLIER"
-                        classNames={{
-                          base: "max-w-full mb-2 border-[#fff] ",
-
-                          listboxWrapper: "max-h-[270px]",
-                          selectorButton: "text-[#000]",
-                        }}
-                        onSelectionChange={setSupplierRef}
-                        value={supplierRef}
-                        defaultItems={supplierData}
-                        selectedKey={supplierRef}
-                        inputProps={{
-                          classNames: {
-                            input: "ml-1 text-[#000] font-font1",
-                            inputWrapper: "h-[20px]",
-                            label: "font-[600] font-font1",
-                          },
-                        }}
-                        listboxProps={{
-                          hideSelectedIcon: true,
-                          itemClasses: {
-                            base: [
-                              "rounded-medium",
-                              "text-[#000]",
-                              "transition-opacity",
-                              "data-[hover=true]:text-foreground",
-                              "dark:data-[hover=true]:bg-default-50",
-                              "data-[pressed=true]:opacity-70",
-                              "data-[hover=true]:bg-default-200",
-                              "data-[selectable=true]:focus:bg-default-100",
-                              "data-[focus-visible=true]:ring-default-500",
-                            ],
-                          },
-                        }}
-                        aria-label="Select an Challan type "
-                        placeholder="Select Supplier"
-                        popoverProps={{
-                          offset: 10,
-                          classNames: {
-                            base: "rounded-large",
-                            content: "p-1  border-none bg-background",
-                          },
-                        }}
-                        startContent={
+                  <div className="max-w-full rounded-2xl py-5 flex gap-1 flex-col">
+                    <ModalHeader className="px-2 py-0 text-[1.2rem] font-font1 flex items-center gap-3">
+                      <div className="flex items-center gap-3">
+                        Select Challan For Invoice
+                        <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7">
                           <svg
                             aria-hidden="true"
                             fill="none"
                             focusable="false"
-                            height={20}
+                            height="1em"
+                            width="1em"
                             role="presentation"
                             viewBox="0 0 24 24"
-                            width={20}
-                            color={"#000"}
                           >
                             <path
-                              d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
+                              d="M7.37 22h9.25a4.87 4.87 0 0 0 4.87-4.87V8.37a4.87 4.87 0 0 0-4.87-4.87H7.37A4.87 4.87 0 0 0 2.5 8.37v8.75c0 2.7 2.18 4.88 4.87 4.88Z"
+                              fill="currentColor"
+                              opacity={0.4}
                             />
                             <path
-                              d="M22 22L20 20"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
+                              d="M8.29 6.29c-.42 0-.75-.34-.75-.75V2.75a.749.749 0 1 1 1.5 0v2.78c0 .42-.33.76-.75.76ZM15.71 6.29c-.42 0-.75-.34-.75-.75V2.75a.749.749 0 1 1 1.5 0v2.78c0 .42-.33.76-.75.76ZM12 14.75h-1.69V13c0-.41-.34-.75-.75-.75s-.75.34-.75.75v1.75H7c-.41 0-.75.34-.75.75s.34.75.75.75h1.81V18c0 .41.34.75.75.75s.75-.34.75-.75v-1.75H12c.41 0 .75-.34.75-.75s-.34-.75-.75-.75Z"
+                              fill="currentColor"
                             />
                           </svg>
-                        }
-                        variant="flat"
-                      >
-                        {(item) => (
-                          <AutocompleteItem
-                            key={item?._id}
-                            textValue={item?.name}
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="flex gap-2 items-center">
-                                <div className="flex flex-col">
-                                  {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
-                                  <span className="text-small">
-                                    {item?.name}
-                                  </span>
+                        </div>
+
+                      </div>
+                      <div className="flex gap-3 max-w-max ">
+                        <Autocomplete
+                          classNames={{
+                            base: "max-w-full border-[#fff] ",
+
+                            listboxWrapper: "max-h-[270px]",
+                            selectorButton: "text-[#000]",
+                          }}
+                          onSelectionChange={setSupplierRef}
+                          value={supplierRef}
+                          defaultItems={supplierData}
+                          selectedKey={supplierRef}
+                          inputProps={{
+                            classNames: {
+                              input: "ml-1 text-[#000] font-font1",
+                              inputWrapper: "h-[10px]",
+                              label: "font-[600] font-font1",
+                            },
+                          }}
+                          listboxProps={{
+                            hideSelectedIcon: true,
+                            itemClasses: {
+                              base: [
+                                "rounded-medium",
+                                "text-[#000]",
+                                "transition-opacity",
+                                "data-[hover=true]:text-foreground",
+                                "dark:data-[hover=true]:bg-default-50",
+                                "data-[pressed=true]:opacity-70",
+                                "data-[hover=true]:bg-default-200",
+                                "data-[selectable=true]:focus:bg-default-100",
+                                "data-[focus-visible=true]:ring-default-500",
+                              ],
+                            },
+                          }}
+                          aria-label="Select an Challan type "
+                          placeholder="Select Supplier"
+                          popoverProps={{
+                            offset: 10,
+                            classNames: {
+                              base: "rounded-large",
+                              content: "p-1  border-none bg-background",
+                            },
+                          }}
+                          startContent={
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height={20}
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width={20}
+                              color={"#000"}
+                            >
+                              <path
+                                d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                              />
+                              <path
+                                d="M22 22L20 20"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                              />
+                            </svg>
+                          }
+                          variant="flat"
+                        >
+                          {(item) => (
+                            <AutocompleteItem
+                              key={item?._id}
+                              textValue={item?.name}
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="flex gap-2 items-center">
+                                  <div className="flex flex-col">
+                                    {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
+                                    <span className="text-small">
+                                      {item?.name}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </AutocompleteItem>
-                        )}
-                      </Autocomplete>
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
 
-                      <Autocomplete
-                        labelPlacement="outside"
-                        label="CUSTOMER"
-                        classNames={{
-                          base: "max-w-full mb-2 border-[#fff] ",
+                        <Autocomplete
+                          classNames={{
+                            base: "max-w-full  border-[#fff] ",
 
-                          listboxWrapper: "max-h-[270px]",
-                          selectorButton: "text-[#000]",
-                        }}
-                        onSelectionChange={setCustomerRef}
-                        value={customerRef}
-                        defaultItems={customerData}
-                        selectedKey={customerRef}
-                        inputProps={{
-                          classNames: {
-                            input: "ml-1 text-[#000] font-font1",
-                            inputWrapper: "h-[20px]",
-                            label: "font-[600] font-font1",
-                          },
-                        }}
-                        listboxProps={{
-                          hideSelectedIcon: true,
-                          itemClasses: {
-                            base: [
-                              "rounded-medium",
-                              "text-[#000]",
-                              "transition-opacity",
-                              "data-[hover=true]:text-foreground",
-                              "dark:data-[hover=true]:bg-default-50",
-                              "data-[pressed=true]:opacity-70",
-                              "data-[hover=true]:bg-default-200",
-                              "data-[selectable=true]:focus:bg-default-100",
-                              "data-[focus-visible=true]:ring-default-500",
-                            ],
-                          },
-                        }}
-                        aria-label="Select an Challan type "
-                        placeholder="Select Customer"
-                        popoverProps={{
-                          offset: 10,
-                          classNames: {
-                            base: "rounded-large",
-                            content: "p-1  border-none bg-background",
-                          },
-                        }}
-                        startContent={
-                          <svg
-                            aria-hidden="true"
-                            fill="none"
-                            focusable="false"
-                            height={20}
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width={20}
-                            color={"#000"}
-                          >
-                            <path
-                              d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                            />
-                            <path
-                              d="M22 22L20 20"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2.5}
-                            />
-                          </svg>
-                        }
-                        variant="flat"
-                      >
-                        {(item) => (
-                          <AutocompleteItem
-                            key={item?._id}
-                            textValue={item?.name}
-                          >
-                            <div className="flex justify-between items-center">
-                              <div className="flex gap-2 items-center">
-                                <div className="flex flex-col">
-                                  {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
-                                  <span className="text-small">
-                                    {item?.name}
-                                  </span>
+                            listboxWrapper: "max-h-[270px]",
+                            selectorButton: "text-[#000]",
+                          }}
+                          onSelectionChange={setCustomerRef}
+                          value={customerRef}
+                          defaultItems={customerData}
+                          selectedKey={customerRef}
+                          inputProps={{
+                            classNames: {
+                              input: "ml-1 text-[#000] font-font1",
+                              inputWrapper: "h-[10px]",
+                              label: "font-[600] font-font1",
+                            },
+                          }}
+                          listboxProps={{
+                            hideSelectedIcon: true,
+                            itemClasses: {
+                              base: [
+                                "rounded-medium",
+                                "text-[#000]",
+                                "transition-opacity",
+                                "data-[hover=true]:text-foreground",
+                                "dark:data-[hover=true]:bg-default-50",
+                                "data-[pressed=true]:opacity-70",
+                                "data-[hover=true]:bg-default-200",
+                                "data-[selectable=true]:focus:bg-default-100",
+                                "data-[focus-visible=true]:ring-default-500",
+                              ],
+                            },
+                          }}
+                          aria-label="Select an Challan type "
+                          placeholder="Select Customer"
+                          popoverProps={{
+                            offset: 10,
+                            classNames: {
+                              base: "rounded-large",
+                              content: "p-1  border-none bg-background",
+                            },
+                          }}
+                          startContent={
+                            <svg
+                              aria-hidden="true"
+                              fill="none"
+                              focusable="false"
+                              height={20}
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width={20}
+                              color={"#000"}
+                            >
+                              <path
+                                d="M11.5 21C16.7467 21 21 16.7467 21 11.5C21 6.25329 16.7467 2 11.5 2C6.25329 2 2 6.25329 2 11.5C2 16.7467 6.25329 21 11.5 21Z"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                              />
+                              <path
+                                d="M22 22L20 20"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                              />
+                            </svg>
+                          }
+                          variant="flat"
+                        >
+                          {(item) => (
+                            <AutocompleteItem
+                              key={item?._id}
+                              textValue={item?.name}
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="flex gap-2 items-center">
+                                  <div className="flex flex-col">
+                                    {/* <span className="text-small">{item?.challanNo - item.supplier.name}</span> */}
+                                    <span className="text-small">
+                                      {item?.name}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </AutocompleteItem>
-                        )}
-                      </Autocomplete>
-                    </div>
-                    <ModalHeader className=" text-[1rem] font-font1">
-                      Challan Table
+                            </AutocompleteItem>
+                          )}
+                        </Autocomplete>
+                      </div>
                     </ModalHeader>
-                    <Table
+                    <div className="flex gap-5 w-full mb-5 items-center">
+                      <div className="w-full py-2 rounded-small ">
+                        <Listbox
+                          classNames={{
+                            base: "max-w-full",
+                            list: "max-h-[165px] overflow-scroll",
+                          }}
+                          items={fillterChallan?.length > 0 ? fillterChallan : allChallanData}
+                          label="Assigned to"
+                          selectionMode="multiple"
+                          onSelectionChange={setSelectedKeys}
+                          selectedKeys={selectedKeys}
+                          variant="flat"
+                        >
+                          {(item) => (
+                            <ListboxItem key={item._id} textValue={item._id}>
+                              <div className="flex gap-2 items-center w-full ">
+                                <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7">
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#0850a4" height="1em"
+                                    width="1em">
+                                    <path fill-rule="evenodd" d="M12 1.5c-1.921 0-3.816.111-5.68.327-1.497.174-2.57 1.46-2.57 2.93V21.75a.75.75 0 0 0 1.029.696l3.471-1.388 3.472 1.388a.75.75 0 0 0 .556 0l3.472-1.388 3.471 1.388a.75.75 0 0 0 1.029-.696V4.757c0-1.47-1.073-2.756-2.57-2.93A49.255 49.255 0 0 0 12 1.5Zm3.53 7.28a.75.75 0 0 0-1.06-1.06l-6 6a.75.75 0 1 0 1.06 1.06l6-6ZM8.625 9a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Zm5.625 3.375a1.125 1.125 0 1 0 0 2.25 1.125 1.125 0 0 0 0-2.25Z" clip-rule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex flex-col ">
+                                    <span className="text-[1rem]">{item?.challanNo ? "Challan No." + item.challanNo : "Quick Challan"}</span>
+                                    <span className="flex items-center gap-1">{item?.products?.map((product, idx) => {
+                                      return (
+                                        idx < 2 ? (
+                                          <div>{product?.product?.productName + ","}</div>
+                                        ) : (
+                                          <div>...+</div>
+                                        )
+                                      )
+                                    }
+                                    )}</span>
+                                  </div>
+                                  <span className="text-small">{item?.totalBill ? "Total Bill:" + item.totalBill : "Total Bill:" + 0.00}</span>
+                                </div>
+                              </div>
+                            </ListboxItem>
+                          )}
+                        </Listbox>
+                      </div>
+                    </div>
+                    <ModalHeader className="px-0 text-[1.2rem] font-font1 flex items-center gap-3">
+                      Challan Table
+                      <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7"><svg height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" class="text-lg "><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zm0 2 .001 4H5V5h14zM5 11h8v8H5v-8zm10 8v-8h4.001l.001 8H15z" fill="currentColor"></path></svg></div>
+                    </ModalHeader>
+                    {/* <Table
                       aria-label="Controlled table example with dynamic content"
                       selectionMode="multiple"
                       selectedKeys={selectedKeys}
@@ -599,8 +675,8 @@ const GenerateInvoice = () => {
                           </TableRow>
                         )}
                       </TableBody>
-                    </Table>
-                    <div className="flex justify-between">
+                    </Table> */}
+                    {/* <div className="flex justify-between">
                       <ModalHeader className=" text-[1rem] font-font1">
                         Products Table
                       </ModalHeader>
@@ -623,9 +699,9 @@ const GenerateInvoice = () => {
                           Mark All Completed
                         </ModalHeader>{" "}
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className=" overflow-scroll">
+                    {/* <div className=" overflow-scroll">
                       <table className="border-collapse w-full border border-gray-400 rounded-full ">
                         <thead>
                           <tr className="border-2 border-[#252525] text-[0.8rem] font-normal p-6 w-fit rounded-xl">
@@ -760,7 +836,179 @@ const GenerateInvoice = () => {
                           })}
                         </tbody>
                       </table>
-                    </div>
+                    </div> */}
+                    <section className="table__body">
+                      <table className="table-invoice">
+                        <thead>
+                          <tr>
+                            <th>PRODUCT_NAME</th>
+                            <th>CUT</th>
+                            <th>QTY_PCS</th>
+                            <th>QTY_METER</th>
+                            <th>BALES</th>
+                            <th>RECIEVED_PCS</th>
+                            <th>RECIEVED_METER</th>
+                            <th>RECIEVED_BALES</th>
+                            <th>DUE</th>
+                            <th>RATE</th>
+                            <th>TOTAL RS.</th>
+                            <th>MARK_AS_COMPLETED</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedChallansProducts?.map((Product, pIndex) => {
+                            return (
+                              <tr
+                                key={pIndex}
+                              >
+                                <td>
+                                  {Product.product || "NA"}
+                                </td>
+                                <td>
+                                  {Product.cut || "NA"}
+                                </td>
+                                <td>
+                                  {Product.qtyPcs || "NA"}
+                                </td>
+                                <td>
+                                  {Product.qtyMtr || "NA"}
+                                </td>
+                                <td >
+                                  {Product.bales || "NA"}
+                                </td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    placeholder="Received Qty"
+                                    className="max-w-[2rem]"
+                                    value={
+                                      selectedChallansProducts?.[pIndex]
+                                        ?.received
+                                    }
+                                    onChange={(e) => {
+                                      handleChange(e, pIndex);
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].total =
+                                        newProducts[pIndex]?.rate *
+                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    placeholder="Received Qty"
+                                    className="max-w-[2rem]"
+                                    onChange={(e) => {
+                                      handleChange(e, pIndex);
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].total =
+                                        newProducts[pIndex]?.rate *
+                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="number"
+                                    placeholder="Received Qty"
+                                    className="max-w-[2rem]"
+                                    onChange={(e) => {
+                                      handleChange(e, pIndex);
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].total =
+                                        newProducts[pIndex]?.rate *
+                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+
+                                <td>
+                                  {selectedChallansProducts?.[pIndex]?.due || 0}
+                                </td>
+                                <td >
+                                  <input
+                                    value={
+                                      selectedChallansProducts[pIndex]
+                                        ?.bales !== "NA"
+                                        ? "NA"
+                                        : selectedChallansProducts[pIndex]?.rate
+                                    }
+                                    className="max-w-[2rem]"
+
+                                    placeholder="enter rate"
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].rate = e.target.value; // Ensure selectedChallansProducts is not mutated directly
+                                      // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+
+                                <td >
+                                  <input
+
+                                    type="number"
+                                    placeholder="enter total"
+                                    className="max-w-[2rem]"
+                                    value={
+                                      selectedChallansProducts[pIndex]
+                                        ?.qtyPcs === "NA" ||
+                                        selectedChallansProducts[pIndex]
+                                          .qtyMtr === "NA"
+                                        ? selectedChallansProducts[pIndex]
+                                          ?.total
+                                        : selectedChallansProducts[pIndex]
+                                          ?.rate *
+                                        selectedChallansProducts[pIndex]
+                                          ?.received
+                                    }
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].total =
+                                        e.target.value; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  {" "}
+                                  <input
+                                    type="checkbox"
+                                    placeholder="markAsCompleted"
+                                    checked={selectedChallansProducts[pIndex]?.markAsCompleted || false}
+                                    value={selectedChallansProducts[pIndex]?.markAsCompleted || false}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].markAsCompleted =
+                                        e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                  {selectedChallansProducts[pIndex]?.markAsCompleted ? "true" : "false"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </section>
                   </div>
                 </ModalBody>
                 <ModalFooter>
