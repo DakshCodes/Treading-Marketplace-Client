@@ -879,8 +879,8 @@ const GenerateInvoice = () => {
                                 <td>
                                   <input
                                     type="number"
-                                    placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    placeholder={0}
+                                    className="max-w-[5rem] flex justify-center items-center"
                                     value={
                                       selectedChallansProducts?.[pIndex]
                                         ?.received
@@ -900,8 +900,8 @@ const GenerateInvoice = () => {
                                 <td>
                                   <input
                                     type="number"
-                                    placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    placeholder={0}
+                                    className="max-w-[5rem]"
                                     onChange={(e) => {
                                       handleChange(e, pIndex);
                                       const newProducts = [
@@ -917,8 +917,8 @@ const GenerateInvoice = () => {
                                 <td>
                                   <input
                                     type="number"
-                                    placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    placeholder={0}
+                                    className="max-w-[5rem]"
                                     onChange={(e) => {
                                       handleChange(e, pIndex);
                                       const newProducts = [
@@ -943,9 +943,9 @@ const GenerateInvoice = () => {
                                         ? "NA"
                                         : selectedChallansProducts[pIndex]?.rate
                                     }
-                                    className="max-w-[2rem]"
+                                    className="max-w-[5rem]"
 
-                                    placeholder="enter rate"
+                                    placeholder={0}
                                     onChange={(e) => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
@@ -959,10 +959,9 @@ const GenerateInvoice = () => {
 
                                 <td >
                                   <input
-
                                     type="number"
-                                    placeholder="enter total"
-                                    className="max-w-[2rem]"
+                                    placeholder={0}
+                                    className="max-w-[5rem]"
                                     value={
                                       selectedChallansProducts[pIndex]
                                         ?.qtyPcs === "NA" ||
@@ -990,6 +989,7 @@ const GenerateInvoice = () => {
                                   <input
                                     type="checkbox"
                                     placeholder="markAsCompleted"
+                                    className="flex ml-5 h-4 w-4"
                                     checked={selectedChallansProducts[pIndex]?.markAsCompleted || false}
                                     value={selectedChallansProducts[pIndex]?.markAsCompleted || false}
                                     onChange={(e) => {
@@ -1001,7 +1001,6 @@ const GenerateInvoice = () => {
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
-                                  {selectedChallansProducts[pIndex]?.markAsCompleted ? "true" : "false"}
                                 </td>
                               </tr>
                             );

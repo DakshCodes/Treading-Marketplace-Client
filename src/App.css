@@ -126,15 +126,28 @@ body {
 .table-invoice,
 th{
   border-collapse: collapse;
-  padding: 1rem;
+  padding: 1.2rem 1rem;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
-td {
+.table-invoice td {
   border-collapse: collapse;
-  padding: 1rem;
+  padding: 1.2rem 1rem;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: 1rem;
+  font-family: var(--font1);
+  font-weight: 900;
+  color: #000;
+  max-width: 7rem;
+  width: 6rem;
+  overflow: hidden;
+  border-left: 1px solid #181818;
+  border-top: 1px solid #181818;
+  border-radius: .4rem;
+}
+.table-invoice td:last-child{
+  max-width: 3rem !important;
+  width: 3rem !important;
 }
 
 .table-invoice thead th {
@@ -144,15 +157,26 @@ td {
   background-color: #000;
   cursor: pointer;
   text-transform: capitalize;
-  color: #fff;
+  color: #f5eeee;
+}
+.table-invoice td input{
+  background-color: #fffafa;
+  border-collapse: collapse;
+  color: #000;
+  overflow: hidden;
+  outline: none;
+  border: 2px solid #181818;
+  border-radius: .4rem;
+  padding: 0 7px;
 }
 
+
 .table-invoice tbody tr:nth-child(even) {
-  background-color: #0000000b;
+  background-color: #f5eeee;
 }
 
 .table-invoice tbody tr:nth-child(odd) {
-  background-color: #9ca7b4;
+  background-color: #fffafa;
 }
 
 .table-invoice tbody tr {
