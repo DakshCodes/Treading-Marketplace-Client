@@ -117,7 +117,9 @@ const GenerateInvoice = () => {
           qtyPcs: row.qtyPcs || "NA",
           qtyMtr: row.qtyMtr || "NA",
           bales: row.bales || "NA",
-          received: "", // This will be filled by user input
+          received_mtr: "", // This will be filled by user input
+          received_pcs: "", // This will be filled by user input
+          received_bales: "", // This will be filled by user input
           due: "", // This will be filled by user input
           rate: row.rate || "NA",
           total: row.price || "", // This will be filled by user input
@@ -302,16 +304,30 @@ const GenerateInvoice = () => {
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
     const { name, value } = e.target;
-    const originalQty =
-      selectedChallansProducts[rowIndex]?.qtyPcs === "NA" ||
-        selectedChallansProducts[rowIndex].qtyMtr === "NA"
-        ? selectedChallansProducts[rowIndex]?.bales
-        : selectedChallansProducts[rowIndex]?.qtyPcs;
+    const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
+      ? selectedChallansProducts[rowIndex]?.bales
+      : selectedChallansProducts[rowIndex]?.qtyPcs;
     console.log(console.log(originalQty, rowIndex, "original quantity"));
-    selectedChallansProducts[rowIndex].received = parseInt(value);
+    selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
 
     selectedChallansProducts[rowIndex].due =
-      originalQty - selectedChallansProducts[rowIndex].received;
+      originalQty - selectedChallansProducts[rowIndex].received_pcs;
+    setUpdatedProducts((prevData) => [
+      ...prevData,
+      selectedChallansProducts[rowIndex],
+    ]);
+  };
+  // handleChange function for input fields
+  const handleChange2 = (e, rowIndex) => {
+    const { name, value } = e.target;
+    const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
+      ? selectedChallansProducts[rowIndex]?.bales
+      : selectedChallansProducts[rowIndex]?.qtyMtr;
+    console.log(console.log(originalQty, rowIndex, "original quantity"));
+    selectedChallansProducts[rowIndex].received_mtr = parseInt(value);
+
+    selectedChallansProducts[rowIndex].due =
+      originalQty - selectedChallansProducts[rowIndex].received_mtr;
     setUpdatedProducts((prevData) => [
       ...prevData,
       selectedChallansProducts[rowIndex],
@@ -880,19 +896,28 @@ const GenerateInvoice = () => {
                                   <input
                                     type="number"
                                     placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    className="max-w-[4rem]"
                                     value={
                                       selectedChallansProducts?.[pIndex]
-                                        ?.received
+                                        ?.received_pcs
                                     }
                                     onChange={(e) => {
-                                      handleChange(e, pIndex);
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].total =
-                                        newProducts[pIndex]?.rate *
-                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+
+                                      if (newProducts[pIndex]?.qtyMtr === "NA" || newProducts[pIndex]?.qtyPcs === "NA") {
+                                        newProducts[pIndex].received_mtr = newProducts[pIndex]?.cut * newProducts[pIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
+                                        return;
+                                      }
+                                      handleChange(e, pIndex);
+                                      // if (newProducts[pIndex].cut === Number) {
+                                      newProducts[pIndex].received_mtr = newProducts[pIndex]?.cut * newProducts[pIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
+                                      // }
+
+                                      // newProducts[pIndex].received_mtr = ''
+
+                                      // newProducts[pIndex].total = newProducts[pIndex]?.rate * newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -901,15 +926,17 @@ const GenerateInvoice = () => {
                                   <input
                                     type="number"
                                     placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    className="max-w-[4rem]"
+                                    value={selectedChallansProducts?.[pIndex]?.received_mtr}
                                     onChange={(e) => {
-                                      handleChange(e, pIndex);
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].total =
-                                        newProducts[pIndex]?.rate *
-                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+                                      if (newProducts[pIndex]?.qtyMtr === "NA" || newProducts[pIndex]?.qtyPcs === "NA") {
+                                        return;
+                                      }
+                                      handleChange2(e, pIndex);
+                                      // Ensure selectedChallansProducts is not mutated directly
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -918,15 +945,16 @@ const GenerateInvoice = () => {
                                   <input
                                     type="number"
                                     placeholder="Received Qty"
-                                    className="max-w-[2rem]"
+                                    className="max-w-[4rem]"
                                     onChange={(e) => {
-                                      handleChange(e, pIndex);
+
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].total =
-                                        newProducts[pIndex]?.rate *
-                                        newProducts[pIndex]?.received; // Ensure selectedChallansProducts is not mutated directly
+                                      if (newProducts[pIndex]?.qtyMtr === "NA" || newProducts[pIndex]?.qtyPcs === "NA") {
+                                        handleChange(e, pIndex);
+                                      }
+
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -962,7 +990,7 @@ const GenerateInvoice = () => {
 
                                     type="number"
                                     placeholder="enter total"
-                                    className="max-w-[2rem]"
+                                    className="max-w-[4rem]"
                                     value={
                                       selectedChallansProducts[pIndex]
                                         ?.qtyPcs === "NA" ||
@@ -973,7 +1001,7 @@ const GenerateInvoice = () => {
                                         : selectedChallansProducts[pIndex]
                                           ?.rate *
                                         selectedChallansProducts[pIndex]
-                                          ?.received
+                                          ?.received_mtr
                                     }
                                     onChange={(e) => {
                                       const newProducts = [
