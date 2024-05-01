@@ -50,6 +50,7 @@ import { customerDataState } from "../../store/customer/customerAtom";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
+import { UpdateProduct } from "../../apis/product";
 
 const GenerateInvoice = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -110,7 +111,9 @@ const GenerateInvoice = () => {
     selectedChallanData.map((item) => {
       item.products.map((row) => {
         console.log(row, "challan data-for detail");
+        console.log(row[0] , "[]][][[][]][][][]][][");
         products.push({
+          id: row?.product?._id,
           product: row?.product?.productName || "NA",
           cut: row?.cut?.name || "NA",
           qtyPcs: row.qtyPcs || "NA",
@@ -123,6 +126,7 @@ const GenerateInvoice = () => {
           rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
           total: row.price || "", // This will be filled by user input
           markAsCompleted: false, // This will be filled by user input
+          isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice,
         });
       });
     });
@@ -299,6 +303,20 @@ const GenerateInvoice = () => {
     formik.resetForm();
     // setrefcat('')
   };
+
+
+  const handleDispatchToggle = async (isChecked, product) => {
+    try {
+      console.log("main");
+      const payload = {
+        isProductDispatchedByInvoice: isChecked
+      };
+      await UpdateProduct(product?.id, payload);
+      toast.success("Updated");
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  }
 
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
@@ -645,6 +663,7 @@ const GenerateInvoice = () => {
                             <th>RATE</th>
                             <th>TOTAL RS.</th>
                             <th>MARK_AS_COMPLETED</th>
+                            <th>DISPATCHING PRODUCTS</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -767,7 +786,7 @@ const GenerateInvoice = () => {
                                         ...selectedChallansProducts,
                                       ];
                                       newProducts[pIndex].total =
-                                        e.target.value; 
+                                        e.target.value;
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -786,6 +805,26 @@ const GenerateInvoice = () => {
                                       ];
                                       newProducts[pIndex].markAsCompleted =
                                         e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
+                                </td>
+                                <td>
+                                  {" "}
+                                  <input
+                                    type="checkbox"
+                                    placeholder="markAsCompleted"
+                                    className="flex ml-5 h-4 w-4"
+                                    checked={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
+                                    value={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].isBeingDispatchedInInvoice =
+                                        e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+                                      handleDispatchToggle(e.target.checked, newProducts[pIndex]);
+
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
