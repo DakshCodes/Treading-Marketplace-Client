@@ -32,7 +32,9 @@ import {
   Spinner,
   select,
   checkbox,
-  Listbox, ListboxItem, ScrollShadow, Avatar
+  Listbox, ListboxItem, ScrollShadow, Avatar,
+  Select,
+  SelectItem
 } from "@nextui-org/react";
 import { useFormik } from "formik";
 import { snapshot_UNSTABLE, RecoilRoot } from "recoil";
@@ -51,6 +53,7 @@ import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
 import { UpdateProduct } from "../../apis/product";
+import { productsDataState } from "../../store/product/productAtom";
 
 const GenerateInvoice = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -61,6 +64,7 @@ const GenerateInvoice = () => {
   const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
   const [customerData, setcustomerData] = useRecoilState(customerDataState);
   const [supplierData, setsupplierData] = useRecoilState(suppliersDataState);
+  const [productsData, setProductsData] = useRecoilState(productsDataState)
   const [quickchallansData, setquickchallansData] = useRecoilState(
     quickchallanDataState
   );
@@ -77,8 +81,7 @@ const GenerateInvoice = () => {
     return allChallanData.find((item) => item._id === entry);
   });
   const [selectedChallansProducts, setSelectedChallansProducts] = useState([]);
-  // Data Format
-  console.log(allChallanData, "allxhallandata")
+
   const columns = [
     { name: "ID", uid: "_id", sortable: true },
     { name: "SUPPLIER_NAME", uid: "supplierName", sortable: true },
@@ -110,8 +113,6 @@ const GenerateInvoice = () => {
     const products = [];
     selectedChallanData.map((item) => {
       item.products.map((row) => {
-        console.log(row, "challan data-for detail");
-        console.log(row[0] , "[]][][[][]][][][]][][");
         products.push({
           id: row?.product?._id,
           product: row?.product?.productName || "NA",
@@ -132,11 +133,9 @@ const GenerateInvoice = () => {
     });
     setSelectedChallansProducts(products);
   }, [selectedKeys]);
-  console.log(selectedChallansProducts, "productssssssssssssssssssssss");
   // Create The width
   const createinvoice = async (values) => {
     try {
-      console.log(values, "vvvvvvvvvvvvvv");
       values.challanRef = [...selectedKeys];
       values.products = selectedChallansProducts;
       for (var i = 0; i < selectedChallansProducts.length; i++) {
@@ -148,7 +147,6 @@ const GenerateInvoice = () => {
           break;
         }
       }
-      console.log(values, "vvvvvvvvvv");
 
       setIsLoading(true);
       const response = await Createinvoice(values);
@@ -156,7 +154,6 @@ const GenerateInvoice = () => {
       if (response.success) {
         toast.success(response.message);
         navigate("/invoice");
-        console.log(response.invoiceDoc);
         setInvoiceData([...invoiceData, response.invoiceDoc]);
         onOpenChange(false);
         setUpdateId(null); // Reset update ID when modal is closed
@@ -171,7 +168,6 @@ const GenerateInvoice = () => {
 
   // Delete invoice
   const deleteItem = async (id) => {
-    console.log(id);
 
     try {
       setIsLoading(true);
@@ -199,11 +195,6 @@ const GenerateInvoice = () => {
   const updateFormWithinvoiceData = (invoiceId, updatedinvoiceData) => {
     const invoiceDataexist = updatedinvoiceData.find(
       (element) => element._id === invoiceId
-    );
-    console.log(
-      invoiceDataexist,
-      updatedinvoiceData,
-      "existssssssssssssssssssssss"
     );
 
     formik.setValues({
@@ -253,7 +244,6 @@ const GenerateInvoice = () => {
 
       if (response.success) {
         toast.success(response.message);
-        console.log("Data update", response.invoice);
 
         // Optimistically update UI
 
@@ -307,7 +297,6 @@ const GenerateInvoice = () => {
 
   const handleDispatchToggle = async (isChecked, product) => {
     try {
-      console.log("main");
       const payload = {
         isProductDispatchedByInvoice: isChecked
       };
@@ -324,7 +313,6 @@ const GenerateInvoice = () => {
     const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
       ? selectedChallansProducts[rowIndex]?.bales
       : selectedChallansProducts[rowIndex]?.qtyPcs;
-    console.log(selectedChallansProducts[rowIndex], "product");
     selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
     selectedChallansProducts[rowIndex].received_mtr = selectedChallansProducts[rowIndex]?.cut * selectedChallansProducts[rowIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
     if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
@@ -341,7 +329,6 @@ const GenerateInvoice = () => {
     const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
       ? selectedChallansProducts[rowIndex]?.bales
       : selectedChallansProducts[rowIndex]?.qtyMtr;
-    console.log(console.log(originalQty, rowIndex, "original quantity"));
     selectedChallansProducts[rowIndex].received_mtr = parseInt(value);
 
     if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
@@ -369,6 +356,33 @@ const GenerateInvoice = () => {
     return allChallanData.filter((item) => item.supplier._id === supplierRef || item.customer._id === customerRef)
   }, [supplierRef, customerRef]);
 
+
+  console.log(selectedChallansProducts, "selectedChallansProducts");
+  const [selectedKeynewproduct, setselectedKeynewproduct] = useState("")
+  const productAddInvoice = (value) => {
+    setselectedKeynewproduct(value)
+    console.log(value);
+    let product = productsData.find(p => p._id === value);
+    console.log(product);
+    const newProduct = {
+      id: product?._id,
+      product: product?.productName || "NA",
+      cut: 0,
+      qtyPcs: 0,
+      qtyMtr: 0,
+      bales: 0,
+      received_mtr: "",
+      received_pcs: "",
+      received_bales: "",
+      due: "",
+      rate: product?.pricePerUnit?.magnitude | 0,
+      total: "",
+      markAsCompleted: false,
+      isBeingDispatchedInInvoice: product?.isProductDispatchedByInvoice | false,
+    };
+    setselectedKeynewproduct('')
+    setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
+  }
   return (
     <>
       <div className="flex flex-col gap-2 w-90vw">
@@ -643,10 +657,35 @@ const GenerateInvoice = () => {
                         </Listbox>
                       </div>
                     </div>
-                    <ModalHeader className="px-0 text-[1.2rem] font-font1 flex items-center gap-3">
-                      Challan Table
-                      <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7"><svg height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" class="text-lg "><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zm0 2 .001 4H5V5h14zM5 11h8v8H5v-8zm10 8v-8h4.001l.001 8H15z" fill="currentColor"></path></svg></div>
-                    </ModalHeader>
+                    <div className="flex items-center gap-10">
+                      <ModalHeader className="px-0 text-[1.2rem] font-font1 flex items-center gap-3">
+                        Challan Table
+                        <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7"><svg height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" class="text-lg "><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zm0 2 .001 4H5V5h14zM5 11h8v8H5v-8zm10 8v-8h4.001l.001 8H15z" fill="currentColor"></path></svg></div>
+                      </ModalHeader>
+                      <Autocomplete
+                        placeholder="Add Products"
+                        selectedKey={[selectedKeynewproduct]}
+                        classNames={{
+                          base: "max-w-[18rem] border-[#fff]",
+                          listboxWrapper: "max-h-[270px] ",
+                          selectorButton: "text-[#000] ",
+                        }}
+                        inputProps={{
+                          classNames: {
+                            input: "ml-1 text-[#000] font-font1",
+                            inputWrapper: "h-[10px]",
+                            label: "font-[600] font-font1",
+                          },
+                        }}
+                        onSelectionChange={(value) => productAddInvoice(value)}
+                      >
+                        {productsData.map((item) => (
+                          <AutocompleteItem key={item?._id} textValue={item?.productName}>
+                            {item.productName}
+                          </AutocompleteItem>
+                        ))}
+                      </Autocomplete>
+                    </div>
                     <section className="table__body">
                       <table className="table-invoice">
                         <thead>
@@ -676,16 +715,64 @@ const GenerateInvoice = () => {
                                   {Product.product || "NA"}
                                 </td>
                                 <td>
-                                  {Product.cut || "NA"}
+                                  <input
+                                    type="number"
+                                    placeholder={0}
+                                    className="max-w-[5rem] flex justify-center items-center"
+                                    value={Product.cut}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].cut = e.target.value; 
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
                                 </td>
                                 <td>
-                                  {Product.qtyPcs || "NA"}
+                                  <input
+                                    type="number"
+                                    placeholder={0}
+                                    className="max-w-[5rem] flex justify-center items-center"
+                                    value={Product.qtyPcs}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].qtyPcs = e.target.value; 
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
                                 </td>
                                 <td>
-                                  {Product.qtyMtr || "NA"}
+                                  <input
+                                    type="number"
+                                    placeholder={0}
+                                    className="max-w-[5rem] flex justify-center items-center"
+                                    value={Product.qtyMtr}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].qtyMtr = e.target.value; 
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
                                 </td>
                                 <td >
-                                  {Product.bales || "NA"}
+                                  <input
+                                    type="number"
+                                    placeholder={0}
+                                    className="max-w-[5rem] flex justify-center items-center"
+                                    value={Product.bales}
+                                    onChange={(e) => {
+                                      const newProducts = [
+                                        ...selectedChallansProducts,
+                                      ];
+                                      newProducts[pIndex].bales = e.target.value; 
+                                      setSelectedChallansProducts(newProducts);
+                                    }}
+                                  />
                                 </td>
                                 <td>
                                   <input

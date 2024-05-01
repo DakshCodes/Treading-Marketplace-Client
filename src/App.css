@@ -129,6 +129,7 @@ th{
   padding: 1.2rem 1rem;
   text-align: left;
   font-size: 0.9rem;
+  flex-shrink: 1;
 }
 .table-invoice td {
   border-collapse: collapse;
