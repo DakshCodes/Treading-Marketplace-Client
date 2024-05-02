@@ -413,6 +413,7 @@ const Challan = () => {
         }
 
       } catch (error) {
+        setIsLoading(false)
         toast.error(error.message);
         console.log(error.message);
       }

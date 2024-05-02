@@ -14,7 +14,7 @@ import { suppliersDataState } from '../../store/supplier/supplierAtom';
 import AutoComplete from '../../components/Autocomplete/AutoComplete';
 import { customerDataState } from '../../store/customer/customerAtom';
 import { IndianRupee } from 'lucide-react'
-// import { UploadImagequickchallan } from '../../apis/product';
+import { UploadImageChallan } from '../../apis/product';
 
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
@@ -58,6 +58,17 @@ const quickchallan = () => {
 
   const [attributesvaluesData, setattributesvaluesData] = useState([]);
   const [productCategory, setProductCategory] = useState(null);
+  const [modalImage, setModalImage] = useState(null);
+
+
+  const openModal = (imageSrc) => {
+    setModalImage(imageSrc);
+  };
+
+  const closeModal = () => {
+    setModalImage(null);
+  };
+
 
 
   // Data Format
@@ -214,7 +225,7 @@ const quickchallan = () => {
       customer: mySupplierData?.customer._id,
       products: mySupplierData?.products.map((product) => ({
         cut: product.cut,
-        bales : product.bales,
+        bales: product.bales,
         price: product.price,
         product: product.product,
         unit: product.unit,
@@ -258,7 +269,7 @@ const quickchallan = () => {
       // if (unit === '2') {
       //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
       // }
-      const newProduct = { product: productref, cut: cutref, bales: bale,  price: price || 0, unit: unit, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, bales: bale, challanChartImages: productChartImageData, price: price || 0, unit: unit, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         supplier: productsData.find(product => product?._id === productref)?.supplierName?._id,
@@ -291,7 +302,7 @@ const quickchallan = () => {
       // if (unit === '2') {
       //   overall = isNaN(price) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(price));
       // }
-      const newProduct = { product: productref, cut: cutref, bales: bale, price: price || 0, unit: unit, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, bales: bale, challanChartImages: productChartImageData, price: price || 0, unit: unit, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array
@@ -397,9 +408,9 @@ const quickchallan = () => {
         const formData = new FormData();
         let imageFile = e.target.files[0];
         if (imageFile) {
-          formData.append("color-chart-quickchallan", imageFile);
+          formData.append("color-chart-challan", imageFile);
           setIsLoading(true)
-          const response = await UploadImagequickchallan(formData);
+          const response = await UploadImageChallan(formData);
           setIsLoading(false)
 
           if (response.success) {
@@ -415,6 +426,7 @@ const quickchallan = () => {
         }
 
       } catch (error) {
+        setIsLoading(false)
         toast.error(error.message);
         console.log(error.message);
       }
@@ -988,7 +1000,7 @@ const quickchallan = () => {
                                   placeholder="0"
                                   value={bale}
                                   className='max-w-[15rem]'
-                                  onChange={(e)=> setbale(e.target.value)}
+                                  onChange={(e) => setbale(e.target.value)}
                                 />
                                 {/* <Input
                                   label="Product Qty"
@@ -1115,11 +1127,11 @@ const quickchallan = () => {
                                   value={remark}
                                   onValueChange={setRemark}
                                 />
-                                {/* <div className='flex gap-10  max-w-max items-center flex-grow'>
+                                <div className='flex gap-10  max-w-max items-center flex-grow'>
                                   <input
                                     type="file"
                                     onChange={(e) => handleProductChartImageChange(e)}
-                                    className="hidden"
+                                    className=""
                                     id="bannerImageInput"
                                     name="banner_image"
                                   />
@@ -1141,7 +1153,7 @@ const quickchallan = () => {
                                       <div>No Images</div>
                                     )
                                   }
-                                </div> */}
+                                </div>
                               </div>
                               <Button
                                 // isLoading={loading}
@@ -1286,10 +1298,10 @@ const quickchallan = () => {
                             </div>
                           </Tab>
 
-                        {/* products tab */}
+                          {/* products tab */}
 
 
-                        <Tab
+                          <Tab
                             className="py-6 flex flex-col gap-10 font-[400] font-font2"
                             key="Products"
                             title="Product"
@@ -1678,7 +1690,7 @@ const quickchallan = () => {
                                 className='max-w-[15rem]'
                                 onChange={balepiecesChange}
                               />
-                           
+
                               <Input
                                 label="Price"
                                 classNames={{
@@ -1779,7 +1791,7 @@ const quickchallan = () => {
                                 )}
                               </Autocomplete>
                             </div>
-                            <div className='flex items-center  w-full gap-10 mt-3 '>
+                            <div className='flex items-center w-full gap-10 mt-3 '>
                               <Textarea
                                 variant="flat"
                                 placeholder="Enter your remarks"
@@ -1790,11 +1802,11 @@ const quickchallan = () => {
                                 value={remark}
                                 onValueChange={setRemark}
                               />
-                              {/* <div className='flex gap-10  max-w-max items-center flex-grow'>
+                              <div className='flex gap-10  max-w-max items-center flex-grow'>
                                 <input
                                   type="file"
                                   onChange={(e) => handleProductChartImageChange(e)}
-                                  className="hidden"
+                                  className=""
                                   id="bannerImageInput"
                                   name="banner_image"
                                 />
@@ -1818,7 +1830,7 @@ const quickchallan = () => {
                                 )}
                               </div>
 
-                              {modalImage && <ImageModal imageSrc={modalImage} onClose={closeModal} />} */}
+                              {modalImage && <ImageModal imageSrc={modalImage} onClose={closeModal} />}
                             </div>
                             <Button
                               className="font-font1 max-w-[13rem] w-full m-auto text-[#fff] bg-[#000] font-medium "
@@ -1858,19 +1870,19 @@ const quickchallan = () => {
                                       <TableCell>
                                         {object.bales}
                                       </TableCell>
-                                   
+
                                       <TableCell>
                                         {object.price}
                                       </TableCell>
                                       <TableCell>
                                         {Units[object.unit - 1].name}
                                       </TableCell>
-                  
+
                                       <TableCell className='overflow-hidden'>
                                         {object?.remarkDesc || "nothing"}
-                                       </TableCell>
+                                      </TableCell>
 
-                                       <TableCell>
+                                      <TableCell>
                                         <span
                                           className="text-lg  text-danger cursor-pointer active:opacity-50 mx-auto  inline-block"
                                           onClick={() => removeAttributeFromTable(index)}
