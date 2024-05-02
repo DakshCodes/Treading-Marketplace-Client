@@ -392,10 +392,10 @@ const ProductPageForm = () => {
             // Handle form submission logic here
             console.log(productChartImageData)
 
-            if (!values.productColorChartData.length > 0) {
-                toast.error("Please enter at least one image");
-                return; x
-            }
+            // if (!values.productColorChartData.length > 0) {
+            //     toast.error("Please enter at least one image");
+            //     return; x
+            // }
 
             console.log(values, "+++++++++++++++");
             // return;

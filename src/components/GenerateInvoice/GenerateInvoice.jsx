@@ -113,22 +113,24 @@ const GenerateInvoice = () => {
     const products = [];
     selectedChallanData.map((item) => {
       item.products.map((row) => {
-        products.push({
-          id: row?.product?._id,
-          product: row?.product?.productName || "NA",
-          cut: row?.cut?.name || "NA",
-          qtyPcs: row.qtyPcs || "NA",
-          qtyMtr: row.qtyMtr || "NA",
-          bales: row.bales || "NA",
-          received_mtr: "", // This will be filled by user input
-          received_pcs: "", // This will be filled by user input
-          received_bales: "", // This will be filled by user input
-          due: "", // This will be filled by user input
-          rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
-          total: row.price || "", // This will be filled by user input
-          markAsCompleted: false, // This will be filled by user input
-          isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice,
-        });
+        if (!row?.product?.isProductDispatchedByInvoice) {
+          products.push({
+            id: row?.product?._id,
+            product: row?.product?.productName || "NA",
+            cut: row?.cut?.name || "NA",
+            qtyPcs: row.qtyPcs || "NA",
+            qtyMtr: row.qtyMtr || "NA",
+            bales: row.bales || "NA",
+            received_mtr: "", // This will be filled by user input
+            received_pcs: "", // This will be filled by user input
+            received_bales: "", // This will be filled by user input
+            due: "", // This will be filled by user input
+            rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
+            total: row.price || "", // This will be filled by user input
+            markAsCompleted: false, // This will be filled by user input
+            isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice,
+          });
+        }
       });
     });
     setSelectedChallansProducts(products);
@@ -724,7 +726,7 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].cut = e.target.value; 
+                                      newProducts[pIndex].cut = e.target.value;
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -739,7 +741,7 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].qtyPcs = e.target.value; 
+                                      newProducts[pIndex].qtyPcs = e.target.value;
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -754,7 +756,7 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].qtyMtr = e.target.value; 
+                                      newProducts[pIndex].qtyMtr = e.target.value;
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -769,7 +771,7 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].bales = e.target.value; 
+                                      newProducts[pIndex].bales = e.target.value;
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />

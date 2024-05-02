@@ -31,7 +31,7 @@ export const UploadImage = async (payload) => {
 }
 export const UploadImageChallan = async (payload) => {
     try {
-        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/products//upload-challan-chart`, payload);
+        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/products/upload-challan-chart`, payload);
         return response.data;
 
     } catch (error) {
