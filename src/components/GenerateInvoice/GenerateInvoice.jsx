@@ -52,7 +52,7 @@ import { customerDataState } from "../../store/customer/customerAtom";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
-import { UpdateProduct } from "../../apis/product";
+import { UpdatechallanProducts } from "../../apis/challan";
 import { productsDataState } from "../../store/product/productAtom";
 
 const GenerateInvoice = () => {
@@ -113,9 +113,10 @@ const GenerateInvoice = () => {
     const products = [];
     selectedChallanData.map((item) => {
       item.products.map((row) => {
-        if (!row?.product?.isProductDispatchedByInvoice) {
+        if (item.product?.isProductDispatchedByInvoice) {
           products.push({
             id: row?.product?._id,
+            challanId: item._id,
             product: row?.product?.productName || "NA",
             cut: row?.cut?.name || "NA",
             qtyPcs: row.qtyPcs || "NA",
@@ -140,16 +141,15 @@ const GenerateInvoice = () => {
     try {
       values.challanRef = [...selectedKeys];
       values.products = selectedChallansProducts;
+
+      selectedChallanData.map(challan => {
+
+      })
       for (var i = 0; i < selectedChallansProducts.length; i++) {
-        if (selectedChallansProducts?.[i].markAsCompleted) {
-          values.markOverallCompleted = true;
-        } else {
-          values.markOverallCompleted = false;
-
-          break;
-        }
+        values.isBeingDispatchedInInvoice = selectedChallansProducts[i].isBeingDispatchedInInvoice
+        values.markOverallCompleted = selectedChallansProducts[i].markAsCompleted
       }
-
+      return;
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -279,6 +279,7 @@ const GenerateInvoice = () => {
       markOverallCompleted: false,
     },
     onSubmit: async (values) => {
+      console.log(values, "Formik");
       if (updateId) {
         setIsLoading(true);
         await handleUpdateSubmit(values);
@@ -297,20 +298,25 @@ const GenerateInvoice = () => {
   };
 
 
-  const handleDispatchToggle = async (isChecked, product) => {
+  const handleDispatchToggle = async (isChecked, challanId, productId) => {
     try {
       const payload = {
-        isProductDispatchedByInvoice: isChecked
+        isProductDispatchedByInvoice: isChecked,
+        productId: productId
       };
-      await UpdateProduct(product?.id, payload);
+      await UpdatechallanProducts(challanId, payload);
       toast.success("Updated");
     } catch (error) {
       console.error("Error updating product:", error);
     }
   }
 
+
+
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
+
+    let product = productsData.find(p => p._id === selectedChallansProducts[rowIndex]._id);
     const { name, value } = e.target;
     const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
       ? selectedChallansProducts[rowIndex]?.bales
@@ -319,7 +325,15 @@ const GenerateInvoice = () => {
     selectedChallansProducts[rowIndex].received_mtr = selectedChallansProducts[rowIndex]?.cut * selectedChallansProducts[rowIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
     if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
       selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+      selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
     }
+    else {
+      selectedChallansProducts[pIndex].total = Math.abs(product.pricePerUnit.magnitude * selectedChallansProducts[pIndex].received_mtr)
+    }
+
+
+    // wait
+
     setUpdatedProducts((prevData) => [
       ...prevData,
       selectedChallansProducts[rowIndex],
@@ -350,8 +364,6 @@ const GenerateInvoice = () => {
       return { ...prevValues, products: updatedProducts };
     });
   };
-
-
 
 
   const fillterChallan = React.useMemo(() => {
@@ -385,6 +397,11 @@ const GenerateInvoice = () => {
     setselectedKeynewproduct('')
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
+
+  // console.log(allChallanData,"challan-Data");
+  console.log(selectedChallansProducts, "selected-product");
+  console.log(selectedChallanData,"selected-challan");
+
   return (
     <>
       <div className="flex flex-col gap-2 w-90vw">
@@ -719,7 +736,7 @@ const GenerateInvoice = () => {
                                 <td>
                                   <input
                                     type="number"
-                                    placeholder={0}
+                                    placeholder={Product.cut}
                                     className="max-w-[5rem] flex justify-center items-center"
                                     value={Product.cut}
                                     onChange={(e) => {
@@ -790,10 +807,6 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      // if (newProducts[pIndex]?.challanNo === "NA" || newProducts[pIndex]?.qtyPcs === "NA") {
-                                      // return;
-                                      // }
-                                      // newProducts[pIndex].received_mtr = newProducts[pIndex]?.cut * newProducts[pIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
@@ -834,7 +847,7 @@ const GenerateInvoice = () => {
                                 </td>
 
                                 <td>
-                                  {selectedChallansProducts?.[pIndex]?.due || 0}
+                                  {Math.trunc(selectedChallansProducts?.[pIndex]?.due) || 0}
                                 </td>
                                 <td >
                                   <input
@@ -858,18 +871,8 @@ const GenerateInvoice = () => {
                                     type="number"
                                     placeholder={0}
                                     className="max-w-[5rem]"
-                                    value={
-                                      selectedChallansProducts[pIndex]
-                                        ?.qtyPcs === "NA" ||
-                                        selectedChallansProducts[pIndex]
-                                          .qtyMtr === "NA"
-                                        ? selectedChallansProducts[pIndex]
-                                          ?.total
-                                        : selectedChallansProducts[pIndex]
-                                          ?.rate *
-                                        selectedChallansProducts[pIndex]
-                                          ?.received_mtr
-                                    }
+                                    value={selectedChallansProducts[pIndex]?.total}
+                                    // dekh ho gya set ucchii nhi lene ko bola devleloper ko smjhaaooo
                                     onChange={(e) => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
@@ -910,9 +913,9 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
+                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id)
                                       newProducts[pIndex].isBeingDispatchedInInvoice =
                                         e.target.checked; // Ensure selectedChallansProducts is not mutated directly
-                                      handleDispatchToggle(e.target.checked, newProducts[pIndex]);
 
                                       setSelectedChallansProducts(newProducts);
                                     }}

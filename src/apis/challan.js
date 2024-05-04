@@ -39,3 +39,12 @@ export const Updatechallan = async (id, payload) => {
         return error.message
     }
 }
+export const UpdatechallanProducts = async (id, payload) => {
+    try {
+        const response = await axios.put(`${import.meta.env.VITE_SERVER}/api/challan/update-challan-products/${id}`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message
+    }
+}
