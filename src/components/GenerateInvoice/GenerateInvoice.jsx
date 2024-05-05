@@ -112,8 +112,9 @@ const GenerateInvoice = () => {
   useEffect(() => {
     const products = [];
     selectedChallanData.map((item) => {
+      console.log(item) ; 
       item.products.map((row) => {
-        if (item.product?.isProductDispatchedByInvoice) {
+        if (!row?.isProductDispatchedByInvoice) {
           products.push({
             id: row?.product?._id,
             challanId: item._id,
@@ -127,7 +128,7 @@ const GenerateInvoice = () => {
             received_bales: "", // This will be filled by user input
             due: "", // This will be filled by user input
             rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
-            total: row.price || "", // This will be filled by user input
+            total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
             isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice,
           });
@@ -326,8 +327,7 @@ const GenerateInvoice = () => {
     if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
       selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
       selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
-    }
-    else {
+    }else {
       selectedChallansProducts[pIndex].total = Math.abs(product.pricePerUnit.magnitude * selectedChallansProducts[pIndex].received_mtr)
     }
 
@@ -399,8 +399,8 @@ const GenerateInvoice = () => {
   }
 
   // console.log(allChallanData,"challan-Data");
-  console.log(selectedChallansProducts, "selected-product");
-  console.log(selectedChallanData,"selected-challan");
+  // console.log(selectedChallansProducts, "selected-product");
+  console.log(fillterChallan,"fillterChallan");
 
   return (
     <>
@@ -656,7 +656,7 @@ const GenerateInvoice = () => {
                                 </div>
                                 <div className="flex items-center justify-between w-full">
                                   <div className="flex flex-col ">
-                                    <span className="text-[1rem]">{item?.challanNo ? "Challan No." + item.challanNo : "Quick Challan"}</span>
+                                    <span className="text-[1rem]">{item?.challanNo ? "Challan No-" + item.challanNo : "Q-Challan No-" + item.quickchallanNo}</span>
                                     <span className="flex items-center gap-1">{item?.products?.map((product, idx) => {
                                       return (
                                         idx < 2 ? (
@@ -759,6 +759,7 @@ const GenerateInvoice = () => {
                                         ...selectedChallansProducts,
                                       ];
                                       newProducts[pIndex].qtyPcs = e.target.value;
+                                      newProducts[pIndex].qtyMtr = (newProducts[pIndex].cut * e.target.value);
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
