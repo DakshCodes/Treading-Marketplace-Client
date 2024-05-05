@@ -1166,10 +1166,10 @@ const Challan = () => {
                                   return (
                                     <TableRow key={index}>
                                       <TableCell>
-                                        {productsData.find(product => product._id === object.product)?.productName}
+                                        {productsData.find(product => product._id === object.product._id)?.productName}
                                       </TableCell>
                                       <TableCell>
-                                        {cutData.find(product => product._id === object.cut)?.name}
+                                        {cutData.find(product => product._id === object.cut._id)?.name}
                                       </TableCell>
                                       <TableCell>
                                         {object.qtyPcs}
@@ -1852,10 +1852,10 @@ const Challan = () => {
                                   return (
                                     <TableRow key={index}>
                                       <TableCell>
-                                        {productsData.find(product => product._id === object.product)?.productName}
+                                        {productsData.find(product => product._id === object.product._id)?.productName}
                                       </TableCell>
                                       <TableCell>
-                                        {cutData.find(product => product._id === object.cut)?.name}
+                                        {cutData.find(product => product._id === object.cut._id)?.name}
                                       </TableCell>
                                       <TableCell>
                                         {object.qtyPcs}
