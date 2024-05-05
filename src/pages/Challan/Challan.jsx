@@ -624,9 +624,9 @@ const Challan = () => {
                                   }}
 
                                   onSelectionChange={(value) => onCustomerChange(value, "supplier")}
-                                  value={formik?.values?.customer}
+                                  value={formik?.values?.customer?._id}
                                   defaultItems={customerData}
-                                  selectedKey={formik?.values?.customer}
+                                  selectedKey={formik?.values?.customer?._id}
                                   inputProps={{
                                     classNames: {
                                       input: "ml-1 text-[#000] font-font1",
@@ -711,9 +711,9 @@ const Challan = () => {
                                   }}
 
                                   onSelectionChange={onSupplierChange}
-                                  value={formik?.values?.supplier}
+                                  value={formik?.values?.supplier?._id}
                                   defaultItems={suppliersData}
-                                  selectedKey={formik?.values?.supplier}
+                                  selectedKey={formik?.values?.supplier?._id}
                                   inputProps={{
                                     classNames: {
                                       input: "ml-1 text-[#000] font-font1",
@@ -1442,9 +1442,9 @@ const Challan = () => {
                                 }}
 
                                 onSelectionChange={(value) => onCustomerChange(value, "product")}
-                                value={formik?.values?.customer}
+                                value={formik?.values?.customer?._id}
                                 defaultItems={customerData}
-                                selectedKey={formik?.values?.customer}
+                                selectedKey={formik?.values?.customer?._id}
                                 inputProps={{
                                   classNames: {
                                     input: "ml-1 text-[#000] font-font1",
