@@ -15,7 +15,7 @@ const PrivateRoute = ({ children }) => {
     const validateToken = async () => {
         try {
             const response = await GetCurrentUser();
-
+            // console.log(response);
             if (response.success) {
                 setUser(response.data); // Set the user in the Recoil atom
             } else {

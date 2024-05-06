@@ -197,7 +197,6 @@ const Challan = () => {
     onSubmit: async values => {
       generateToatl()
       console.log(values);
-      // return;
       if (updateId) {
         setIsLoading(true)
         console.log(values, "update")

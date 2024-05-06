@@ -103,6 +103,11 @@ const GenerateInvoice = () => {
     "products.due",
     "actions",
   ];
+  const Units = [
+    { name: "Pcs", _id: 1 },
+    { name: "Meter", _id: 2 },
+  ]
+
 
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false);
@@ -112,15 +117,16 @@ const GenerateInvoice = () => {
   useEffect(() => {
     const products = [];
     selectedChallanData.map((item) => {
-      console.log(item) ; 
       item.products.map((row) => {
         if (!row?.isProductDispatchedByInvoice) {
           products.push({
             id: row?.product?._id,
             challanId: item._id,
+            unit: row?.unit,
             product: row?.product?.productName || "NA",
             cut: row?.cut?.name || "NA",
             qtyPcs: row.qtyPcs || "NA",
+            challanType: item.challanType,
             qtyMtr: row.qtyMtr || "NA",
             bales: row.bales || "NA",
             received_mtr: "", // This will be filled by user input
@@ -142,15 +148,9 @@ const GenerateInvoice = () => {
     try {
       values.challanRef = [...selectedKeys];
       values.products = selectedChallansProducts;
-
-      selectedChallanData.map(challan => {
-
-      })
-      for (var i = 0; i < selectedChallansProducts.length; i++) {
-        values.isBeingDispatchedInInvoice = selectedChallansProducts[i].isBeingDispatchedInInvoice
-        values.markOverallCompleted = selectedChallansProducts[i].markAsCompleted
-      }
-      return;
+      values.supplierRef = supplierRef;
+      values.customerRef = customerRef;
+      console.log(values);
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -171,19 +171,15 @@ const GenerateInvoice = () => {
 
   // Delete invoice
   const deleteItem = async (id) => {
-
     try {
       setIsLoading(true);
       const response = await Deleteinvoice(id);
       setIsLoading(false);
       if (response.success) {
         toast.success(response.message);
-
-        // Update local state based on the correct identifier (use _id instead of id)
         setInvoiceData((prevData) =>
           prevData.filter((invoice) => invoice._id !== id)
         );
-
         navigate("/invoice");
       } else {
         throw new Error(response.message);
@@ -199,16 +195,8 @@ const GenerateInvoice = () => {
     const invoiceDataexist = updatedinvoiceData.find(
       (element) => element._id === invoiceId
     );
-
-    formik.setValues({
-      name: invoiceDataexist?.name,
-      markOverallCompleted: invoiceDataexist?.markOverallCompleted,
-    });
     setSelectedChallansProducts(invoiceDataexist?.products);
   };
-  // ...
-
-  // Use updateFormWithinvoiceData in the useEffect
   useEffect(() => {
     updateFormWithinvoiceData(updateId, invoiceData);
     setUpdated(false);
@@ -231,14 +219,8 @@ const GenerateInvoice = () => {
   const handleUpdateSubmit = async (values) => {
     values.challanRef = [...selectedKeys];
     values.products = selectedChallansProducts;
-    for (var i = 0; i < selectedChallansProducts.length; i++) {
-      if (selectedChallansProducts?.[i].markAsCompleted) {
-        values.markOverallCompleted = true;
-      } else {
-        values.markOverallCompleted = false;
-        break;
-      }
-    }
+    values.products = selectedChallansProducts;
+    values.products = selectedChallansProducts;
     try {
       // values.ref = refcat;
       setIsLoading(true);
@@ -256,10 +238,6 @@ const GenerateInvoice = () => {
           });
           return updatedinvoices;
         });
-        formik.setValues({
-          name: response.invoice?.name,
-        });
-        // Close the modal and reset update ID
         onOpenChange(false);
         setUpdateId(null);
       } else {
@@ -276,11 +254,13 @@ const GenerateInvoice = () => {
   const formik = useFormik({
     initialValues: {
       challanRef: [],
+      invoiceDate: new Date().toISOString().slice(0, 10),
+      invoiceNo: "",
       products: [],
-      markOverallCompleted: false,
+      supplierRef:"",
+      customerRef:""
     },
     onSubmit: async (values) => {
-      console.log(values, "Formik");
       if (updateId) {
         setIsLoading(true);
         await handleUpdateSubmit(values);
@@ -316,7 +296,6 @@ const GenerateInvoice = () => {
 
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
-
     let product = productsData.find(p => p._id === selectedChallansProducts[rowIndex]._id);
     const { name, value } = e.target;
     const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
@@ -324,15 +303,24 @@ const GenerateInvoice = () => {
       : selectedChallansProducts[rowIndex]?.qtyPcs;
     selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
     selectedChallansProducts[rowIndex].received_mtr = selectedChallansProducts[rowIndex]?.cut * selectedChallansProducts[rowIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
-    if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
-      selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
-      selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
-    }else {
-      selectedChallansProducts[pIndex].total = Math.abs(product.pricePerUnit.magnitude * selectedChallansProducts[pIndex].received_mtr)
+    if (selectedChallansProducts[rowIndex]?.challanType === "main") {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
     }
-
-
-    // wait
+    if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
+    }
 
     setUpdatedProducts((prevData) => [
       ...prevData,
@@ -347,9 +335,24 @@ const GenerateInvoice = () => {
       : selectedChallansProducts[rowIndex]?.qtyMtr;
     selectedChallansProducts[rowIndex].received_mtr = parseInt(value);
 
-    if (selectedChallansProducts[rowIndex]?.qtyMtr !== "NA" || selectedChallansProducts[rowIndex]?.qtyPcs !== "NA") {
-      selectedChallansProducts[rowIndex].due =
-        originalQty - selectedChallansProducts[rowIndex].received_mtr;
+
+    if (selectedChallansProducts[rowIndex]?.challanType === "main") {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
+    }
+    if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
     }
     setUpdatedProducts((prevData) => [
       ...prevData,
@@ -371,13 +374,10 @@ const GenerateInvoice = () => {
   }, [supplierRef, customerRef]);
 
 
-  console.log(selectedChallansProducts, "selectedChallansProducts");
   const [selectedKeynewproduct, setselectedKeynewproduct] = useState("")
   const productAddInvoice = (value) => {
     setselectedKeynewproduct(value)
-    console.log(value);
     let product = productsData.find(p => p._id === value);
-    console.log(product);
     const newProduct = {
       id: product?._id,
       product: product?.productName || "NA",
@@ -399,8 +399,10 @@ const GenerateInvoice = () => {
   }
 
   // console.log(allChallanData,"challan-Data");
+  console.log(selectedChallanData,"selectedChallanData");
   // console.log(selectedChallansProducts, "selected-product");
-  console.log(fillterChallan,"fillterChallan");
+  // console.log(fillterChallan,"fillterChallan");
+  // console.log(invoiceData, "invoiceData");
 
   return (
     <>
@@ -447,7 +449,7 @@ const GenerateInvoice = () => {
                         </div>
 
                       </div>
-                      <div className="flex gap-3 max-w-max ">
+                      <div className="flex gap-3 max-w-max items-center">
                         <Autocomplete
                           classNames={{
                             base: "max-w-full border-[#fff] ",
@@ -629,6 +631,35 @@ const GenerateInvoice = () => {
                             </AutocompleteItem>
                           )}
                         </Autocomplete>
+                        <Input
+                          type="date"
+                          classNames={{
+                            label: "font-[600] font-font1",
+                            input: "font-[500] font-font1",
+                            inputWrapper: "max-h-[10px]",
+                          }}
+                          value={formik.values?.invoiceDate?.split('T')[0]}
+                          onChange={(e) => formik.setValues(prevValues => ({
+                            ...prevValues,
+                            invoiceDate: e.target.value,
+                          }))}
+                          className="max-w-[15rem]"
+                        />
+                        <Input
+                          type="text"
+                          placeholder="Enter Invoice No"
+                          classNames={{
+                            label: "font-[600] font-font1",
+                            input: "font-[500] font-font1",
+                            inputWrapper: "max-h-[10px]",
+                          }}
+                          value={formik.values?.invoiceNo}
+                          onChange={(e) => formik.setValues(prevValues => ({
+                            ...prevValues,
+                            invoiceNo: e.target.value,
+                          }))}
+                          className="max-w-[15rem]"
+                        />
                       </div>
                     </ModalHeader>
                     <div className="flex gap-5 w-full mb-5 items-center">
@@ -638,7 +669,7 @@ const GenerateInvoice = () => {
                             base: "max-w-full",
                             list: "max-h-[165px] overflow-scroll",
                           }}
-                          items={fillterChallan?.length > 0 ? fillterChallan : allChallanData}
+                          items={fillterChallan?.length > 0 ? fillterChallan : []}
                           label="Assigned to"
                           selectionMode="multiple"
                           onSelectionChange={setSelectedKeys}
@@ -696,6 +727,7 @@ const GenerateInvoice = () => {
                             label: "font-[600] font-font1",
                           },
                         }}
+
                         onSelectionChange={(value) => productAddInvoice(value)}
                       >
                         {productsData.map((item) => (
