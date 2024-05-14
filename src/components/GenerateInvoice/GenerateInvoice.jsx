@@ -54,6 +54,7 @@ import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
 import { UpdatechallanProducts } from "../../apis/challan";
 import { productsDataState } from "../../store/product/productAtom";
+import { UpdateQuickChallanProducts } from "../../apis/quickChallan";
 
 const GenerateInvoice = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -279,19 +280,22 @@ const GenerateInvoice = () => {
   };
 
 
-  const handleDispatchToggle = async (isChecked, challanId, productId) => {
+  const handleDispatchToggle = async (isChecked, challanId, productId, challanType) => {
     try {
       const payload = {
         isProductDispatchedByInvoice: isChecked,
         productId: productId
       };
-      await UpdatechallanProducts(challanId, payload);
+      if (challanType === "quick") {
+        await UpdateQuickChallanProducts(challanId, payload);
+      } else if (challanType === "main") {
+        await UpdatechallanProducts(challanId, payload);
+      }
       toast.success("Updated");
     } catch (error) {
       console.error("Error updating product:", error);
     }
   }
-
 
 
   // handleChange function for input fields
@@ -370,7 +374,7 @@ const GenerateInvoice = () => {
 
 
   const fillterChallan = React.useMemo(() => {
-    return allChallanData.filter((item) => item.supplier._id === supplierRef && item.customer._id === customerRef && item.products.filter(product => product.isProductDispatchedByInvoice === false).length > 0 ? true : false)
+    return allChallanData.filter((item) => item.supplier._id === supplierRef && item.customer._id === customerRef)
   }, [supplierRef, customerRef]);
 
 
@@ -398,8 +402,8 @@ const GenerateInvoice = () => {
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
 
-  console.log(allChallanData,"challan-Data");
-  // console.log(selectedChallanData,"selectedChallanData");
+  // console.log(allChallanData,"challan-Data");
+  console.log(selectedChallanData,"selectedChallanData");
   // console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan,"fillterChallan");
   // console.log(invoiceData, "invoiceData");
@@ -946,9 +950,8 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id)
-                                      newProducts[pIndex].isBeingDispatchedInInvoice =
-                                        e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id,newProducts[pIndex].challanType)
+                                      newProducts[pIndex].isBeingDispatchedInInvoice = e.target.checked; // Ensure selectedChallansProducts is not mutated directly
 
                                       setSelectedChallansProducts(newProducts);
                                     }}
