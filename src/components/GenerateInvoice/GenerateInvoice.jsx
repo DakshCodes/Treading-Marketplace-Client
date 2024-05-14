@@ -370,7 +370,7 @@ const GenerateInvoice = () => {
 
 
   const fillterChallan = React.useMemo(() => {
-    return allChallanData.filter((item) => item.supplier._id === supplierRef || item.customer._id === customerRef)
+    return allChallanData.filter((item) => item.supplier._id === supplierRef && item.customer._id === customerRef && item.products.filter(product => product.isProductDispatchedByInvoice === false).length > 0 ? true : false)
   }, [supplierRef, customerRef]);
 
 
@@ -398,8 +398,8 @@ const GenerateInvoice = () => {
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
 
-  // console.log(allChallanData,"challan-Data");
-  console.log(selectedChallanData,"selectedChallanData");
+  console.log(allChallanData,"challan-Data");
+  // console.log(selectedChallanData,"selectedChallanData");
   // console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan,"fillterChallan");
   // console.log(invoiceData, "invoiceData");
