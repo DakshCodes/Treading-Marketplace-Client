@@ -374,7 +374,7 @@ const GenerateInvoice = () => {
 
 
   const fillterChallan = React.useMemo(() => {
-    return allChallanData.filter((item) => item.supplier._id === supplierRef && item.customer._id === customerRef)
+    return allChallanData.filter((item) => item.supplier._id === supplierRef && item.customer._id === customerRef && (item.products.filter(product => product.isBeingDispatchedInInvoice === false)).length > 0 ? true : false)
   }, [supplierRef, customerRef]);
 
 
