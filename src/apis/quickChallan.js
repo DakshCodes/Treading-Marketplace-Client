@@ -39,3 +39,14 @@ export const Updatequickchallan = async (id, payload) => {
         return error.message
     }
 }
+
+export const UpdateQuickChallanProducts = async (id, payload) => {
+    try {
+        const response = await axios.put(`${import.meta.env.VITE_SERVER}/api/quickchallan/update-quick-challan-products/${id}`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message
+    }
+}
+
