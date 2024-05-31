@@ -379,9 +379,9 @@ const ProductPageForm = () => {
             // if (!values.width) {
             //     errors.width = "Width is required";
             // }
-            if (!values.pricePerUnit || values.pricePerUnit.magnitude === null || values.pricePerUnit.unit === null) {
-                errors.pricePerUnit = "Both Magnitude and Unit are required for Price Per Unit";
-            }
+            // if (!values.pricePerUnit || values.pricePerUnit.magnitude === null || values.pricePerUnit.unit === null) {
+            //     errors.pricePerUnit = "Both Magnitude and Unit are required for Price Per Unit";
+            // }
 
 
             // Add validation for other fields...
