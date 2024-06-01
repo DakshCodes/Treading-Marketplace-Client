@@ -137,7 +137,7 @@ const GenerateInvoice = () => {
             rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
-            isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice,
+            isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice || false,
           });
         }
       });
@@ -151,7 +151,14 @@ const GenerateInvoice = () => {
       values.products = selectedChallansProducts;
       values.supplierRef = supplierRef;
       values.customerRef = customerRef;
-      console.log(values);
+      values?.products?.forEach(product => {
+        if (product.due === 0) {
+          handleDispatchToggle(true, product.challanId, product.id, product.challanType)
+          product.isBeingDispatchedInInvoice = true;
+        }
+      });
+      console.log(values, "values-invoice");
+      return;
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -258,8 +265,8 @@ const GenerateInvoice = () => {
       invoiceDate: new Date().toISOString().slice(0, 10),
       invoiceNo: "",
       products: [],
-      supplierRef:"",
-      customerRef:""
+      supplierRef: "",
+      customerRef: ""
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -403,10 +410,10 @@ const GenerateInvoice = () => {
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
 
-  console.log(allChallanData,"challan-Data");
+  console.log(allChallanData, "challan-Data");
   // console.log(selectedChallanData,"selectedChallanData");
   // console.log(selectedChallansProducts, "selected-product");
-  console.log(fillterChallan,"fillterChallan");
+  console.log(fillterChallan, "fillterChallan");
   // console.log(invoiceData, "invoiceData");
 
   return (
@@ -757,7 +764,6 @@ const GenerateInvoice = () => {
                             <th>DUE</th>
                             <th>RATE</th>
                             <th>TOTAL RS.</th>
-                            <th>MARK_AS_COMPLETED</th>
                             <th>DISPATCHING PRODUCTS</th>
                           </tr>
                         </thead>
@@ -910,7 +916,6 @@ const GenerateInvoice = () => {
                                     placeholder={0}
                                     className="max-w-[5rem]"
                                     value={selectedChallansProducts[pIndex]?.total}
-                                    // dekh ho gya set ucchii nhi lene ko bola devleloper ko smjhaaooo
                                     onChange={(e) => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
@@ -927,31 +932,13 @@ const GenerateInvoice = () => {
                                     type="checkbox"
                                     placeholder="markAsCompleted"
                                     className="flex ml-5 h-4 w-4"
-                                    checked={selectedChallansProducts[pIndex]?.markAsCompleted || false}
-                                    value={selectedChallansProducts[pIndex]?.markAsCompleted || false}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].markAsCompleted =
-                                        e.target.checked; // Ensure selectedChallansProducts is not mutated directly
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  {" "}
-                                  <input
-                                    type="checkbox"
-                                    placeholder="markAsCompleted"
-                                    className="flex ml-5 h-4 w-4"
                                     checked={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
                                     value={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
                                     onChange={(e) => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id,newProducts[pIndex].challanType)
+                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id, newProducts[pIndex].challanType)
                                       newProducts[pIndex].isBeingDispatchedInInvoice = e.target.checked; // Ensure selectedChallansProducts is not mutated directly
 
                                       setSelectedChallansProducts(newProducts);
