@@ -120,6 +120,7 @@ const GenerateInvoice = () => {
     selectedChallanData.map((item) => {
       item.products.map((row) => {
         if (!row?.isProductDispatchedByInvoice) {
+          console.log(item.products);
           products.push({
             id: row?.product?._id,
             challanId: item._id,
@@ -134,7 +135,7 @@ const GenerateInvoice = () => {
             received_pcs: "", // This will be filled by user input
             received_bales: "", // This will be filled by user input
             due: "", // This will be filled by user input
-            rate: row.rate ? row.rate : row.product.pricePerUnit.magnitude,
+            rate: row.price ? row.price : row.product.pricePerUnit.magnitude,
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
             isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice || false,
@@ -410,8 +411,11 @@ const GenerateInvoice = () => {
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
 
+  // console.log(allChallanData,"challan-Data");
+  console.log(selectedChallanData, "selectedChallanData");
   console.log(allChallanData, "challan-Data");
   // console.log(selectedChallanData,"selectedChallanData");
+
   // console.log(selectedChallansProducts, "selected-product");
   console.log(fillterChallan, "fillterChallan");
   // console.log(invoiceData, "invoiceData");
@@ -742,7 +746,7 @@ const GenerateInvoice = () => {
 
                         onSelectionChange={(value) => productAddInvoice(value)}
                       >
-                        {productsData.map((item) => (
+                        {productsData.filter((x) => x.supplierName._id === supplierRef).map((item) => (
                           <AutocompleteItem key={item?._id} textValue={item?.productName}>
                             {item.productName}
                           </AutocompleteItem>
