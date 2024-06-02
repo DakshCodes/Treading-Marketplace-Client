@@ -187,7 +187,7 @@ const quickchallan = () => {
     initialValues: {
       quickchallanNo: '',
       quickchallanDate: new Date().toISOString().slice(0, 10),
-      totalBill: '',
+      // totalBill: '',
       customer: '',
       type: '',
       supplier: '',
@@ -221,7 +221,7 @@ const quickchallan = () => {
     formik.setValues({
       quickchallanNo: mySupplierData?.quickchallanNo,
       quickchallanDate: mySupplierData?.quickchallanDate,
-      totalBill: mySupplierData?.totalBill,
+      // totalBill: mySupplierData?.totalBill,
       customer: mySupplierData?.customer._id,
       products: mySupplierData?.products.map((product) => ({
         cut: product.cut,
@@ -277,7 +277,7 @@ const quickchallan = () => {
       }));
 
       settotalbill(price)
-      formik.setFieldValue('totalBill', price);
+      // formik.setFieldValue('totalBill', price);
       setUnit("")
       setproductref("")
       setProductChartImageData([])
@@ -309,7 +309,7 @@ const quickchallan = () => {
       }));
 
       settotalbill(price)
-      formik.setFieldValue('totalBill', price);
+      // formik.setFieldValue('totalBill', price);
       setUnit("")
       setproductref("")
       setProductChartImageData([])
