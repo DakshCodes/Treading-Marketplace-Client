@@ -50,3 +50,13 @@ export const UpdateQuickChallanProducts = async (id, payload) => {
     }
 }
 
+export const UpdateQuickProductsDue = async (id, payload) => {
+    try {
+        const response = await axios.put(`${import.meta.env.VITE_SERVER}/api/quickchallan/update-quick-due-products/${id}`, payload);
+        return response.data;
+
+    } catch (error) {
+        return error.message
+    }
+}
+

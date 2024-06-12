@@ -52,9 +52,9 @@ import { customerDataState } from "../../store/customer/customerAtom";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
 import { challanDataState } from "../../store/challan/challan";
 import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom";
-import { UpdatechallanProducts } from "../../apis/challan";
+import { UpdateProductsDue, UpdatechallanProducts } from "../../apis/challan";
 import { productsDataState } from "../../store/product/productAtom";
-import { UpdateQuickChallanProducts } from "../../apis/quickChallan";
+import { UpdateQuickChallanProducts, UpdateQuickProductsDue } from "../../apis/quickChallan";
 
 const GenerateInvoice = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -134,7 +134,7 @@ const GenerateInvoice = () => {
             received_mtr: "", // This will be filled by user input
             received_pcs: "", // This will be filled by user input
             received_bales: "", // This will be filled by user input
-            due: "", // This will be filled by user input
+            due: row.due || 0, // This will be filled by user input
             rate: row.price ? row.price : row.product.pricePerUnit.magnitude,
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
@@ -145,6 +145,24 @@ const GenerateInvoice = () => {
     });
     setSelectedChallansProducts(products);
   }, [selectedKeys]);
+
+  // update due of profucts
+  const updateProductDue = async (challanId, productId, challanType, due) => {
+    try {
+      const payload = {
+        productId: productId,
+        due: due
+      };
+      if (challanType === "quick") {
+        await UpdateQuickProductsDue(challanId, payload);
+      } else if (challanType === "main") {
+        await UpdateProductsDue(challanId, payload);
+      }
+      toast.success("Updated");
+    } catch (error) {
+      console.error("Error updating product:", error);
+    }
+  }
   // Create The width
   const createinvoice = async (values) => {
     try {
@@ -156,9 +174,10 @@ const GenerateInvoice = () => {
         if (product.due === 0) {
           handleDispatchToggle(true, product.challanId, product.id, product.challanType)
           product.isBeingDispatchedInInvoice = true;
+        } else {
+          updateProductDue(product.challanId, product.id, product.challanType, product.due);
         }
       });
-      console.log(values, "values-invoice");
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -288,6 +307,7 @@ const GenerateInvoice = () => {
 
 
   const handleDispatchToggle = async (isChecked, challanId, productId, challanType) => {
+
     try {
       const payload = {
         isProductDispatchedByInvoice: isChecked,
@@ -411,12 +431,12 @@ const GenerateInvoice = () => {
   }
 
   // console.log(allChallanData,"challan-Data");
+  // console.log(selectedChallanData, "selectedChallanData");
+  // console.log(allChallanData, "challan-Data");
   console.log(selectedChallanData, "selectedChallanData");
-  console.log(allChallanData, "challan-Data");
-  // console.log(selectedChallanData,"selectedChallanData");
 
-  // console.log(selectedChallansProducts, "selected-product");
-  console.log(fillterChallan, "fillterChallan");
+  console.log(selectedChallansProducts, "selected-product");
+  // console.log(fillterChallan, "fillterChallan");
   // console.log(invoiceData, "invoiceData");
 
   return (
