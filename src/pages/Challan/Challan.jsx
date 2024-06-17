@@ -292,13 +292,14 @@ const Challan = () => {
     if (productref && cutref && unit && qty && qtymeter && rate) {
 
       let overall = 0;
+      let due = 0;
       if (unit === '1') {
         overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qty) * parseFloat(rate));
       }
       if (unit === '2') {
         overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qtymeter) * parseFloat(rate));
       }
-      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, challanChartImages: productChartImageData, rate: rate || 0, unit: unit, overall: overall, remarkDesc: remark };
+      const newProduct = { product: productref, cut: cutref, qtyPcs: qty, qtyMtr: qtymeter, due: unit === '1' ? qty : qtymeter, challanChartImages: productChartImageData, rate: rate || 0, unit: unit, overall: overall, remarkDesc: remark };
       formik.setValues(prevValues => ({
         ...prevValues,
         products: [...(prevValues?.products || []), newProduct] // Ensure products is initialized as an array

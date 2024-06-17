@@ -121,30 +121,51 @@ const GenerateInvoice = () => {
       item.products.map((row) => {
         if (!row?.isProductDispatchedByInvoice) {
           console.log(item.products);
+          const newRow = { ...row };
+
+          // Update the copied row object
+          if (newRow.due !== 0) {
+            if (newRow.unit === '1') {
+              //if unit in pcs
+              newRow.qtyPcs = newRow.unit === '1' ? newRow.due : newRow.qtyPcs;
+              newRow.qtyMtr = (newRow.qtyPcs * newRow.cut?.name) || newRow.qtyMtr;
+
+            } else if (newRow.unit === '2') {
+              //if unit in meter
+              newRow.qtyMtr = newRow.unit === '2' ? newRow.due : newRow.qtyMtr;
+              newRow.qtyPcs = (newRow.qtyMtr / newRow.cut?.name) || newRow.qtyMtr;
+            }
+
+            if (item.challanType === 'quick') {
+              newRow.bales = newRow.unit === 'pcs' ? newRow.due : newRow.bales;
+            }
+          }
+
           products.push({
-            id: row?.product?._id,
+            id: newRow?.product?._id,
             challanId: item._id,
-            unit: row?.unit,
-            product: row?.product?.productName || "NA",
-            cut: row?.cut?.name || "NA",
-            qtyPcs: row.qtyPcs || "NA",
+            unit: newRow?.unit,
+            product: newRow?.product?.productName || "NA",
+            cut: newRow?.cut?.name || "NA",
+            qtyPcs: newRow.qtyPcs || "NA",
             challanType: item.challanType,
-            qtyMtr: row.qtyMtr || "NA",
-            bales: row.bales || "NA",
+            qtyMtr: newRow.qtyMtr || "NA",
+            bales: newRow.bales || "NA",
             received_mtr: "", // This will be filled by user input
             received_pcs: "", // This will be filled by user input
             received_bales: "", // This will be filled by user input
-            due: row.due || 0, // This will be filled by user input
-            rate: row.price ? row.price : row.product.pricePerUnit.magnitude,
+            due: newRow.due || 0, // This will be filled by user input
+            rate: newRow.price ? newRow.price : newRow.product.pricePerUnit.magnitude,
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
-            isBeingDispatchedInInvoice: row?.product?.isProductDispatchedByInvoice || false,
+            isBeingDispatchedInInvoice: newRow?.product?.isProductDispatchedByInvoice || false,
           });
         }
       });
     });
     setSelectedChallansProducts(products);
   }, [selectedKeys]);
+
 
   // update due of profucts
   const updateProductDue = async (challanId, productId, challanType, due) => {
@@ -174,9 +195,8 @@ const GenerateInvoice = () => {
         if (product.due === 0) {
           handleDispatchToggle(true, product.challanId, product.id, product.challanType)
           product.isBeingDispatchedInInvoice = true;
-        } else {
-          updateProductDue(product.challanId, product.id, product.challanType, product.due);
         }
+        updateProductDue(product.challanId, product.id, product.challanType, product.due);
       });
       setIsLoading(true);
       const response = await Createinvoice(values);
