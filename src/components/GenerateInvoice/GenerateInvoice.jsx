@@ -359,6 +359,7 @@ const GenerateInvoice = () => {
       : selectedChallansProducts[rowIndex]?.qtyPcs;
     selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
     selectedChallansProducts[rowIndex].received_mtr = selectedChallansProducts[rowIndex]?.cut * selectedChallansProducts[rowIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
+
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
@@ -367,8 +368,15 @@ const GenerateInvoice = () => {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
         selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
-    }
-    if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
+    } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
+    } else {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
@@ -400,13 +408,20 @@ const GenerateInvoice = () => {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
-    }
-    if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
+    } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
       } else {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+      }
+    } else {
+      if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
     }
@@ -437,6 +452,7 @@ const GenerateInvoice = () => {
     const newProduct = {
       id: product?._id,
       product: product?.productName || "NA",
+      unit: product?.pricePerUnit?.unit?.name === "Pcs" ? "1" : "0",
       cut: selectedCut,
       qtyPcs: 0,
       qtyMtr: 0,
@@ -458,7 +474,7 @@ const GenerateInvoice = () => {
   // console.log(allChallanData,"challan-Data");
   // console.log(selectedChallanData, "selectedChallanData");
   // console.log(allChallanData, "challan-Data");
-  console.log(selectedChallanData, "selectedChallanData");
+  // console.log(selectedChallanData, "selectedChallanData");
 
   console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan, "fillterChallan");
@@ -797,7 +813,7 @@ const GenerateInvoice = () => {
                         ))}
                       </Autocomplete>
                       <Autocomplete
-                        placeholder="Add Products"
+                        placeholder="Add Cut"
                         // selectedKey={[selectedKeynewproduct]}
                         classNames={{
                           base: "max-w-[18rem] border-[#fff]",
