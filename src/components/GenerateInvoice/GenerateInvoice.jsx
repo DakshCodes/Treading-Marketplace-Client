@@ -55,6 +55,7 @@ import { quickchallanDataState } from "../../store/quickchallan/quickChallanAtom
 import { UpdateProductsDue, UpdatechallanProducts } from "../../apis/challan";
 import { productsDataState } from "../../store/product/productAtom";
 import { UpdateQuickChallanProducts, UpdateQuickProductsDue } from "../../apis/quickChallan";
+import { cutDataState } from "../../store/cut/cutAtom";
 
 const GenerateInvoice = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -82,6 +83,10 @@ const GenerateInvoice = () => {
     return allChallanData.find((item) => item._id === entry);
   });
   const [selectedChallansProducts, setSelectedChallansProducts] = useState([]);
+
+  const cutData = useRecoilValue(cutDataState);
+  const [selectedCut, setSelectedCut] = useState(null);
+
 
   const columns = [
     { name: "ID", uid: "_id", sortable: true },
@@ -137,7 +142,7 @@ const GenerateInvoice = () => {
             }
 
             if (item.challanType === 'quick') {
-              newRow.bales = newRow.unit === 'pcs' ? newRow.due : newRow.bales;
+              newRow.bales = newRow.due
             }
           }
 
@@ -365,10 +370,10 @@ const GenerateInvoice = () => {
     }
     if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
       } else {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].bales - selectedChallansProducts[rowIndex].received_bales);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
     }
@@ -427,13 +432,12 @@ const GenerateInvoice = () => {
 
 
   const [selectedKeynewproduct, setselectedKeynewproduct] = useState("")
-  const productAddInvoice = (value) => {
-    setselectedKeynewproduct(value)
-    let product = productsData.find(p => p._id === value);
+  const productAddInvoice = () => {
+    let product = productsData.find(p => p._id === selectedKeynewproduct);
     const newProduct = {
       id: product?._id,
       product: product?.productName || "NA",
-      cut: 0,
+      cut: selectedCut,
       qtyPcs: 0,
       qtyMtr: 0,
       bales: 0,
@@ -446,7 +450,8 @@ const GenerateInvoice = () => {
       markAsCompleted: false,
       isBeingDispatchedInInvoice: product?.isProductDispatchedByInvoice | false,
     };
-    setselectedKeynewproduct('')
+    setselectedKeynewproduct('');
+    setSelectedCut('');
     setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
   }
 
@@ -769,7 +774,7 @@ const GenerateInvoice = () => {
                       </ModalHeader>
                       <Autocomplete
                         placeholder="Add Products"
-                        selectedKey={[selectedKeynewproduct]}
+                        selectedKey={selectedKeynewproduct}
                         classNames={{
                           base: "max-w-[18rem] border-[#fff]",
                           listboxWrapper: "max-h-[270px] ",
@@ -783,7 +788,7 @@ const GenerateInvoice = () => {
                           },
                         }}
 
-                        onSelectionChange={(value) => productAddInvoice(value)}
+                        onSelectionChange={(value) => setselectedKeynewproduct(value)}
                       >
                         {productsData.filter((x) => x.supplierName._id === supplierRef).map((item) => (
                           <AutocompleteItem key={item?._id} textValue={item?.productName}>
@@ -791,6 +796,32 @@ const GenerateInvoice = () => {
                           </AutocompleteItem>
                         ))}
                       </Autocomplete>
+                      <Autocomplete
+                        placeholder="Add Products"
+                        // selectedKey={[selectedKeynewproduct]}
+                        classNames={{
+                          base: "max-w-[18rem] border-[#fff]",
+                          listboxWrapper: "max-h-[270px] ",
+                          selectorButton: "text-[#000] ",
+                        }}
+                        inputProps={{
+                          classNames: {
+                            input: "ml-1 text-[#000] font-font1",
+                            inputWrapper: "h-[10px]",
+                            label: "font-[600] font-font1",
+                          },
+                        }}
+
+                        onSelectionChange={(value) => setSelectedCut(value)}
+                      >
+                        {cutData.map((item) => (
+                          <AutocompleteItem key={item?.name} textValue={item?.productName}>
+                            {item.name}
+                          </AutocompleteItem>
+                        ))}
+                      </Autocomplete>
+
+                      <Button onClick={() => productAddInvoice()}>Add Product</Button>
                     </div>
                     <section className="table__body">
                       <table className="table-invoice">
@@ -817,7 +848,10 @@ const GenerateInvoice = () => {
                                 key={pIndex}
                               >
                                 <td>
-                                  {Product.product || "NA"}
+                                  <div className="flex flex-col justify-center items-center">
+                                    <p>{Product.product || "NA"}</p>
+                                    <p className="bg-blue-500 text-white px-2 rounded-md font-normal tex-xs">{Product.unit === '1' ? 'Pcs' : 'MTR'}</p>
+                                  </div>
                                 </td>
                                 <td>
                                   <input
@@ -924,9 +958,9 @@ const GenerateInvoice = () => {
                                         ...selectedChallansProducts,
                                       ];
                                       newProducts[pIndex].received_bales = e.target.value;
-                                      if (newProducts[pIndex]?.qtyMtr === "NA" || newProducts[pIndex]?.qtyPcs === "NA") {
+                                      if (newProducts[pIndex]?.challanType === "quick") {
                                         newProducts[pIndex].due =
-                                          selectedChallansProducts[pIndex].bales - e.target.value;
+                                          selectedChallansProducts[pIndex].bales - newProducts[pIndex].received_bales;
                                       }
                                       setSelectedChallansProducts(newProducts);
                                     }}
