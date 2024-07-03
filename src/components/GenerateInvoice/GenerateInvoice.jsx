@@ -125,7 +125,6 @@ const GenerateInvoice = () => {
     selectedChallanData.map((item) => {
       item.products.map((row) => {
         if (!row?.isProductDispatchedByInvoice) {
-          console.log(item.products);
           const newRow = { ...row };
 
           // Update the copied row object
@@ -476,7 +475,7 @@ const GenerateInvoice = () => {
   // console.log(allChallanData, "challan-Data");
   // console.log(selectedChallanData, "selectedChallanData");
 
-  console.log(selectedChallansProducts, "selected-product");
+  // console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan, "fillterChallan");
   // console.log(invoiceData, "invoiceData");
 
@@ -996,8 +995,8 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].rate = e.target.value; // Ensure selectedChallansProducts is not mutated directly
-                                      // Ensure selectedChallansProducts is not mutated directly
+                                      newProducts[pIndex].rate = e.target.value; 
+                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "0" ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
