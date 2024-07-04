@@ -409,10 +409,10 @@ const GenerateInvoice = () => {
       }
     } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        // selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
       } else {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        // selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
     } else {
@@ -996,7 +996,7 @@ const GenerateInvoice = () => {
                                         ...selectedChallansProducts,
                                       ];
                                       newProducts[pIndex].rate = e.target.value; 
-                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "0" ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
+                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "2" || newProducts[pIndex].unit !== "Pcs"  ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
