@@ -158,8 +158,8 @@ const GenerateInvoice = () => {
             received_mtr: "", // This will be filled by user input
             received_pcs: "", // This will be filled by user input
             received_bales: "", // This will be filled by user input
-            due: newRow.due || 0, // This will be filled by user input
-            rate: newRow.price ? newRow.price : newRow.product.pricePerUnit.magnitude,
+            due: newRow.due || null, // This will be filled by user input
+            rate: newRow?.rate ?? newRow.product.pricePerUnit.magnitude,
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
             isBeingDispatchedInInvoice: newRow?.product?.isProductDispatchedByInvoice || false,
@@ -351,21 +351,20 @@ const GenerateInvoice = () => {
 
   // handleChange function for input fields
   const handleChange = (e, rowIndex) => {
-    let product = productsData.find(p => p._id === selectedChallansProducts[rowIndex]._id);
     const { name, value } = e.target;
-    const originalQty = selectedChallansProducts[rowIndex]?.qtyPcs === "NA" || selectedChallansProducts[rowIndex].qtyMtr === "NA"
-      ? selectedChallansProducts[rowIndex]?.bales
-      : selectedChallansProducts[rowIndex]?.qtyPcs;
     selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
-    selectedChallansProducts[rowIndex].received_mtr = selectedChallansProducts[rowIndex]?.cut * selectedChallansProducts[rowIndex]?.received_pcs; // Ensure selectedChallansProducts is not mutated directly
+    const cutvalue = cutData.find(cut => cut.name === selectedChallansProducts[rowIndex]?.cut)
 
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
-      if (selectedChallansProducts[rowIndex]?.unit === "1") {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
-        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
-      } else {
+      if (cutvalue.isNameNumerica) {
         selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
-        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+        if (selectedChallansProducts[rowIndex]?.unit === "1") {
+          selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+        } else {
+          selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+        }
+      } else {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
       }
     } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
@@ -401,18 +400,14 @@ const GenerateInvoice = () => {
 
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
-        selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+        selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
       } else {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
     } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
-        // selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
       } else {
-        // selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
         selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
       }
     } else {
@@ -447,11 +442,19 @@ const GenerateInvoice = () => {
 
   const [selectedKeynewproduct, setselectedKeynewproduct] = useState("")
   const productAddInvoice = () => {
+    if (!selectedKeynewproduct) {
+      toast.error("Put Product Details !")
+      return;
+    }
+    if (!selectedCut) {
+      toast.error("Put Product Details !")
+      return;
+    }
     let product = productsData.find(p => p._id === selectedKeynewproduct);
     const newProduct = {
       id: product?._id,
       product: product?.productName || "NA",
-      unit: product?.pricePerUnit?.unit?.name === "Pcs" ? "1" : "0",
+      unit: product?.pricePerUnit?.unit?.name === "Pcs" ? "1" : "2",
       cut: selectedCut,
       qtyPcs: 0,
       qtyMtr: 0,
@@ -477,7 +480,7 @@ const GenerateInvoice = () => {
 
   // console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan, "fillterChallan");
-  // console.log(invoiceData, "invoiceData");
+  console.log(cutData, "invoiceData");
 
   return (
     <>
@@ -836,7 +839,7 @@ const GenerateInvoice = () => {
                         ))}
                       </Autocomplete>
 
-                      <Button onClick={() => productAddInvoice()}>Add Product</Button>
+                      <Button onClick={productAddInvoice}>Add Product</Button>
                     </div>
                     <section className="table__body">
                       <table className="table-invoice">
@@ -865,7 +868,26 @@ const GenerateInvoice = () => {
                                 <td>
                                   <div className="flex flex-col justify-center items-center">
                                     <p>{Product.product || "NA"}</p>
-                                    <p className="bg-blue-500 text-white px-2 rounded-md font-normal tex-xs">{Product.unit === '1' ? 'Pcs' : 'MTR'}</p>
+                                    <Select
+                                      className="max-w-xs text-[0.7rem]"
+                                      selectedKeys={[Product.unit === "1" ? 'Pcs' : "MTR"]}
+                                      onSelectionChange={(value) => {
+                                        const newProducts = [
+                                          ...selectedChallansProducts,
+                                        ];
+                                        newProducts[pIndex].unit = value.currentKey === "Pcs" ? "1" : "2";
+                                        newProducts[pIndex].total = newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? (newProducts[pIndex].received_mtr * newProducts[pIndex].rate) : (newProducts[pIndex].received_pcs * newProducts[pIndex].rate)
+                                        setSelectedChallansProducts(newProducts);
+                                      }}
+                                    >
+                                      {["Pcs", "MTR"].map((animal) => (
+                                        <SelectItem
+                                          className="text-[0.7rem]"
+                                          key={animal}>
+                                          {animal}
+                                        </SelectItem>
+                                      ))}
+                                    </Select>
                                   </div>
                                 </td>
                                 <td>
@@ -995,8 +1017,8 @@ const GenerateInvoice = () => {
                                       const newProducts = [
                                         ...selectedChallansProducts,
                                       ];
-                                      newProducts[pIndex].rate = e.target.value; 
-                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "2" || newProducts[pIndex].unit !== "Pcs"  ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
+                                      newProducts[pIndex].rate = e.target.value;
+                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
                                       setSelectedChallansProducts(newProducts);
                                     }}
                                   />
