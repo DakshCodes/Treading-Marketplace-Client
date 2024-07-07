@@ -129,12 +129,12 @@ const GenerateInvoice = () => {
 
           // Update the copied row object
           if (newRow.due !== 0) {
-            if (newRow.unit === '1') {
+            if (newRow.unit === '1' && (item.challanType === 'main')) {
               //if unit in pcs
               newRow.qtyPcs = newRow.unit === '1' ? newRow.due : newRow.qtyPcs;
               newRow.qtyMtr = (newRow.qtyPcs * newRow.cut?.name) || newRow.qtyMtr;
 
-            } else if (newRow.unit === '2') {
+            } else if (newRow.unit === '2' && (item.challanType === 'main')) {
               //if unit in meter
               newRow.qtyMtr = newRow.unit === '2' ? newRow.due : newRow.qtyMtr;
               newRow.qtyPcs = (newRow.qtyMtr / newRow.cut?.name) || newRow.qtyMtr;
