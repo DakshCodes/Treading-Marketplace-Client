@@ -2,7 +2,8 @@ import React from 'react'
 import './Inventory.css'
 import { Tabs, Tab, Chip } from "@nextui-org/react";
 import { FaCut } from "react-icons/fa";
-import { UilRuler,UilCube,UilArrowsHAlt , UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard } from '@iconscout/react-unicons'
+import { GrTransaction } from "react-icons/gr";
+import { UilRuler,UilCube,UilArrowsHAlt , UilPalette, UilSlack, UilLightbulbAlt, UilCheckCircle, UilUsersAlt, UilFilter, UilCreateDashboard, } from '@iconscout/react-unicons'
 import ProductPage from '../../components/ProductPage/ProductPage';
 import Suppliers from '../../components/Suppliers/Suppliers';
 import Categories from '../../components/Categories/Categories';
@@ -34,6 +35,8 @@ import Attribute from '../../components/Attribute/Attribute';
 import AttributeValue from '../../components/AttributeValue/AttributeValue';
 import { attributeDataState } from '../../store/attribute/attributeAtom';
 import { attributeValueDataState } from '../../store/attributevalue/attributevalueAtom';
+import PaymentMode from '../../components/paymentmode/PaymentMode';
+import { paymentModeState } from '../../store/paymentmode/paymentModeAtom';
 
 const Inventory = () => {
 
@@ -43,6 +46,7 @@ const Inventory = () => {
     const attributeData = useRecoilValue(attributeDataState);
     const attributeValueData = useRecoilValue(attributeValueDataState);
     const unitData = useRecoilValue(unitDataState);
+    const paymentModeData = useRecoilValue(paymentModeState);
     const cutData = useRecoilValue(unitDataState);
 
 
@@ -138,6 +142,19 @@ const Inventory = () => {
                         className="max-h-max px-5 "
                     >
                         <Unit />
+                    </Tab>
+                    <Tab
+                        key="PaymentMode"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                            <GrTransaction/>
+                                <span>Payment Mode</span>
+                                <Chip size="sm" variant="light">{paymentModeData?.length}</Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <PaymentMode />
                     </Tab>
                     {/* <Tab
                         key="Quality"
