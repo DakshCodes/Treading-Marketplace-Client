@@ -13,8 +13,8 @@ const Header = ({ toggleSidebar }) => {
 
     const formik = useFormik({
         initialValues: {
-            username: user.username,
-            email: user.email,
+            username: user?.username,
+            email: user?.email,
             password: '',
         },
 
