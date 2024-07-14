@@ -98,40 +98,27 @@ const Sidenav = () => {
                             title="Invoice"
                             classNames={`${path == '/invoice' && 'active-tab'}`}
                             icon={(
-                                <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 24 24" id="invoice"><path fill="#B8FF1F" d="M13,16H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2ZM9,10h2a1,1,0,0,0,0-2H9a1,1,0,0,0,0,2Zm12,2H18V3a1,1,0,0,0-.5-.87,1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0A1,1,0,0,0,2,3V19a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V13A1,1,0,0,0,21,12ZM5,20a1,1,0,0,1-1-1V4.73L6,5.87a1.08,1.08,0,0,0,1,0l3-1.72,3,1.72a1.08,1.08,0,0,0,1,0l2-1.14V19a3,3,0,0,0,.18,1Zm15-1a1,1,0,0,1-2,0V14h2Zm-7-7H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2Z"></path></svg> 
+                                <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" viewBox="0 0 24 24" id="invoice"><path fill="#B8FF1F" d="M13,16H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2ZM9,10h2a1,1,0,0,0,0-2H9a1,1,0,0,0,0,2Zm12,2H18V3a1,1,0,0,0-.5-.87,1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0l-3,1.72-3-1.72a1,1,0,0,0-1,0A1,1,0,0,0,2,3V19a3,3,0,0,0,3,3H19a3,3,0,0,0,3-3V13A1,1,0,0,0,21,12ZM5,20a1,1,0,0,1-1-1V4.73L6,5.87a1.08,1.08,0,0,0,1,0l3-1.72,3,1.72a1.08,1.08,0,0,0,1,0l2-1.14V19a3,3,0,0,0,.18,1Zm15-1a1,1,0,0,1-2,0V14h2Zm-7-7H7a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2Z"></path></svg>
                             )}
                         />
-                         
-                         <MenuItem
+
+                        <MenuItem
                             href="/customers"
                             title="Customers"
                             classNames={`${path == '/customers' && 'active-tab'}`}
                             icon={(
-                                <FaUserAlt/>
+                                <FaUserAlt />
                             )}
                         />
-                         
-                        <MenuItem
-                            title="Activity"
+
+                        {/* <MenuItem
+                            title="Payments"
+                            href="/payments"
+                            classNames={`${path == '/payments' && 'active-tab'}`}
                             icon={(
-                                <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" fill="#000000">
-                                    <g id="SVGRepo_bgCarrier" strokeWidth={0} />
-                                    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round" />
-                                    <g id="SVGRepo_iconCarrier">
-                                        <title>activity-solid</title>
-                                        <g id="Layer_2" data-name="Layer 2">
-                                            <g id="invisible_box" data-name="invisible box">
-                                                <rect width={48} height={48} fill="none" />
-                                            </g>
-                                            <g id="Q3_icons" data-name="Q3 icons">
-                                                <path d="M29,42a1.9,1.9,0,0,1-1.9-1.4L20.9,21.9l-5,12.8A1.9,1.9,0,0,1,14.1,36a2.1,2.1,0,0,1-1.9-1.1L8.6,27.6,5.5,31.3a2,2,0,0,1-2.8.2,2,2,0,0,1-.2-2.8l5-6A1.9,1.9,0,0,1,9.2,22a2.1,2.1,0,0,1,1.6,1.1l3,6,5.3-13.8a2,2,0,0,1,3.8.1L28.8,33,36.1,5.5A1.9,1.9,0,0,1,37.9,4a2,2,0,0,1,2,1.4l6,18a2,2,0,0,1-3.8,1.2L38.2,13,30.9,40.5A1.9,1.9,0,0,1,29.1,42Z">
-                                                </path>
-                                            </g>
-                                        </g>
-                                    </g>
-                                </svg>
+                                <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" class="bi bi-cash-stack"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path> <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"></path> </g></svg>
                             )}
-                        />
+                        /> */}
                         <MenuItem
                             title="Schedule"
                             icon={(
