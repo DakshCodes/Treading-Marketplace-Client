@@ -87,6 +87,7 @@ const GenerateInvoice = () => {
   const cutData = useRecoilValue(cutDataState);
   const [selectedCut, setSelectedCut] = useState(null);
 
+  console.log(invoiceData,"iniiiiiiiii")
 
   const columns = [
     { name: "ID", uid: "_id", sortable: true },
@@ -195,6 +196,7 @@ const GenerateInvoice = () => {
       values.products = selectedChallansProducts;
       values.supplierRef = supplierRef;
       values.customerRef = customerRef;
+     
       values?.products?.forEach(product => {
         if (product.due === 0) {
           handleDispatchToggle(true, product.challanId, product.id, product.challanType)
@@ -202,6 +204,7 @@ const GenerateInvoice = () => {
         }
         updateProductDue(product.challanId, product.id, product.challanType, product.due);
       });
+      values.grandTotal = values.products?.reduce((acc,product)=>(acc+product.total),0);
       setIsLoading(true);
       const response = await Createinvoice(values);
       setIsLoading(false);
@@ -209,6 +212,7 @@ const GenerateInvoice = () => {
         toast.success(response.message);
         navigate("/invoice");
         setInvoiceData([...invoiceData, response.invoiceDoc]);
+        console.log(response.invoiceDoc,"in dataaaaaaaaaaaa")
         onOpenChange(false);
         setUpdateId(null); // Reset update ID when modal is closed
       } else {
@@ -309,7 +313,8 @@ const GenerateInvoice = () => {
       invoiceNo: "",
       products: [],
       supplierRef: "",
-      customerRef: ""
+      customerRef: "",
+      grandTotal: ""
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -480,7 +485,7 @@ const GenerateInvoice = () => {
 
   // console.log(selectedChallansProducts, "selected-product");
   // console.log(fillterChallan, "fillterChallan");
-  console.log(cutData, "invoiceData");
+  // console.log(cutData, "invoiceData");
 
   return (
     <>

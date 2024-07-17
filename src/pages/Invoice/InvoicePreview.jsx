@@ -179,8 +179,9 @@ const InvoicePreview = () => {
                                                     <div className='flex items-center justify-center '>
                                                         <span className='text-green-500 mr-2 class'>Rs.</span>
 
-                                                        <p className='w-[5rem] '>{invoice?.challanRef?.totalBill}</p>
-
+                                                        <p className='w-[5rem] '>{invoice.grandTotal}</p>
+                                                        
+                                                        
                                                     </div>
                                                 </div>
                                             </div>
