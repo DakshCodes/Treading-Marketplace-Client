@@ -68,7 +68,7 @@ const GenerateInvoice = () => {
     const [updateId, setUpdateId] = useState(null);
     // const [checkBoxItems, setCheckBoxItems] = React.useState([{ name: "", isChecked: "false" }, { name: "", isChecked: "false" }]);
     const [challanRef, setChallanRef] = useState(null);
-    const [selectedPaymentResolveType, setSelectedPaymentResolveType] = React.useState('adjustment');
+    const [selectedPaymentResolveType, setSelectedPaymentResolveType] = React.useState('');
     const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
     const [customerData, setcustomerData] = useRecoilState(customerDataState);
     const [suppliersData, setsuppliersData] = useRecoilState(suppliersDataState);
@@ -128,7 +128,18 @@ const GenerateInvoice = () => {
     const [updated, setUpdated] = useState(false);
     const [supplierRef, setSupplierRef] = useState("");
     const [customerRef, setCustomerRef] = useState("");
+
+    // const [newRefFeild, setNewRefFeild] = useState([]);
+
+
     const [filteredInvoiceData, setFilteredInvoiceData] = useState([]);
+    const onPaymentTypeSelection = (value) => {
+        if (!customerRef || !supplierRef) {
+            toast.error("Select both customer and supplier")
+            return;
+        }
+        setSelectedPaymentResolveType(value)
+    }
 
     console.log(filteredInvoiceData, "===================")
 
@@ -184,11 +195,12 @@ const GenerateInvoice = () => {
 
 
     useEffect(() => {
-        // if (selectedPaymentResolveType === "adjustment") {
-        const updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef)
+        if (!selectedPaymentResolveType) {
+            return;
+        }
+        const updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef);
         setFilteredInvoiceData(updatedInvoiceData);
-        // }
-    }, [selectedPaymentResolveType, customerRef, supplierRef, invoiceData])
+    }, [selectedPaymentResolveType, customerRef, supplierRef, invoiceData]);
 
 
     // update due of profucts
@@ -517,6 +529,34 @@ const GenerateInvoice = () => {
     // console.log(fillterChallan, "fillterChallan");
     console.log(cutData, "invoiceData");
 
+    const [invoices, setInvoices] = useState([]);
+
+    useEffect(() => {
+        if (filteredInvoiceData) {
+            setInvoices(filteredInvoiceData.map(item => ({
+                ...item,
+                adjust: 0,
+                remaining: item?.grandTotal
+            })));
+        }
+    }, [filteredInvoiceData]);
+
+
+    const handleAdjustChange = (index, value) => {
+        const updatedInvoices = [...invoices];
+        const adjustValue = parseFloat(value) || 0;
+        updatedInvoices[index].adjust = adjustValue;
+        updatedInvoices[index].remaining = updatedInvoices[index].grandTotal - adjustValue;
+        setInvoices(updatedInvoices);
+    };
+
+    const [newRefData, setNewRefData] = useState({ adjust: 0 });
+
+
+    const handleNewRefAdjustChange = (value) => {
+        const adjustValue = parseFloat(value) || 0;
+        setNewRefData({ adjust: adjustValue });
+    };
 
 
     return (
@@ -817,7 +857,9 @@ const GenerateInvoice = () => {
 
                                         <div className="font-semibold my-4">Select the payment resolve mode </div>
 
-                                        <div className="flex flex-col  gap-2">
+
+
+                                        <div className="flex flex-col items-center justify-center  gap-2">
 
                                             {/* <div className="border-2 h-fit px-4 py-2 rounded-full border-[#2020204d]">
                                                 <Checkbox onValueChange={console.log} className={`font-semibold`}>Adjustment</Checkbox>
@@ -828,7 +870,10 @@ const GenerateInvoice = () => {
                                             </div> */}
 
 
-                                            <Tabs
+
+
+
+                                            {/* <Tabs
                                                 aria-label="Options"
                                                 selectedKey={selectedPaymentResolveType}
                                                 onSelectionChange={setSelectedPaymentResolveType}
@@ -844,7 +889,87 @@ const GenerateInvoice = () => {
                                                     <NewRefrence />
                                                 </Tab>
 
-                                            </Tabs>
+                                            </Tabs> */}
+
+                                            {/* Table for the adjustment */}
+
+                                            <div>Adjustment</div>
+
+                                            <div className="container mx-auto py-6 px-4">
+                                                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                                                    <thead className="bg-gray-100">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Number</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Products</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-200">
+                                                        {
+                                                            invoices && invoices?.map((item, idx) => {
+                                                                return (
+                                                                    <tr key={idx} className="hover:bg-gray-50">
+                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item?.invoiceNo}</td>
+                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item.products?.length}</td>
+                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item?.grandTotal}</td>
+                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                            <input
+                                                                                type="number"
+                                                                                className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
+                                                                                value={item?.adjust === 0 ? '' : item?.adjust}
+                                                                                onChange={(e) => handleAdjustChange(idx, e.target.value)}
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td>
+                                                                    </tr>
+                                                                )
+                                                            })
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+
+
+                                            {selectedPaymentResolveType}
+
+                                            {/* table for new ref */}
+
+                                            <div>New Reference</div>
+
+
+                                            { selectedPaymentResolveType === "newRef" && <div className="container mx-auto py-6 px-4">
+                                                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                                                    <thead className="bg-gray-100">
+                                                        <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr className="hover:bg-gray-50">
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-full px-2 py-1 border rounded"
+                                                                    value={newRefData.adjust}
+                                                                    onChange={(e) => handleNewRefAdjustChange(e.target.value)}
+                                                                />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            }
+
+
+
+                                            <div className="flex gap-2 items-center">
+                                                <Button className={`${selectedPaymentResolveType === "adjustment" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("adjustment")}>Adjustment</Button>
+                                                <Button className={`${selectedPaymentResolveType === "newRef" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("newRef")}>New Reference</Button>
+                                            </div>
+
 
 
                                         </div>
