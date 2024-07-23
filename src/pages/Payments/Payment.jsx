@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { IndianRupee } from "lucide-react"
 import {
     Modal,
     ModalContent,
@@ -96,6 +97,8 @@ const GenerateInvoice = () => {
     const cutData = useRecoilValue(cutDataState);
     const [selectedCut, setSelectedCut] = useState(null);
 
+    const [discountedAmount, setDiscountedAmount] = useState(0);
+
 
     const columns = [
         { name: "ID", uid: "_id", sortable: true },
@@ -129,18 +132,44 @@ const GenerateInvoice = () => {
     const [supplierRef, setSupplierRef] = useState("");
     const [customerRef, setCustomerRef] = useState("");
 
+    const [invoices, setInvoices] = useState([]);
+
+
     // const [newRefFeild, setNewRefFeild] = useState([]);
 
 
     const [filteredInvoiceData, setFilteredInvoiceData] = useState([]);
+
+    const [totalDue, setTotalDue] = useState(0);
+
+    useEffect(() => {
+        const newTotalDue = invoices.reduce((acc, item) => acc + (item?.remaining || 0), 0);
+        setTotalDue(newTotalDue);
+    }, [invoices]);
+
+
+    // const onPaymentTypeSelection = (value) => {
+    //     if (!customerRef || !supplierRef) {
+    //         toast.error("Select both customer and supplier")
+    //         return;
+    //     }
+    //     if (value === "newRef") {
+    //         setNewRefData({ adjust: 0 })
+    //     }
+    //     setSelectedPaymentResolveType(value)
+    // }
+
     const onPaymentTypeSelection = (value) => {
         if (!customerRef || !supplierRef) {
             toast.error("Select both customer and supplier")
             return;
         }
+        if (value === "newRef") {
+            setNewRefData({ adjust: 0, prevAdjust: 0 })
+        }
         setSelectedPaymentResolveType(value)
+        // Don't reset the invoices here
     }
-
     console.log(filteredInvoiceData, "===================")
 
     useEffect(() => {
@@ -193,14 +222,57 @@ const GenerateInvoice = () => {
         setSelectedChallansProducts(products);
     }, [selectedKeys]);
 
+    const [amountEntered, setAmountEntered] = useState(0)
+    const [newTotalAmountEntered, setNewTotalAmountEntered] = useState(amountEntered)
+
+    useEffect(() => {
+        setNewTotalAmountEntered(amountEntered)
+    }, [amountEntered])
+
+    const handleAmountChange = (e) => {
+        setAmountEntered(e.target.value)
+    }
+
+
+    // useEffect(() => {
+    //     if (!selectedPaymentResolveType) {
+    //         return;
+    //     }
+    //     let updatedInvoiceData = [];
+    //     if (selectedPaymentResolveType === "newRef") {
+    //         const productRequest = confirm("Do you want to show the invoices ?");
+    //         if (productRequest) {
+    //             updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef);
+    //             setSelectedPaymentResolveType("adjustment");
+    //             return;
+    //         }
+
+    //     } else {
+    //         updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef);
+    //     }
+    //     setFilteredInvoiceData(updatedInvoiceData);
+    // }, [selectedPaymentResolveType, customerRef, supplierRef, invoiceData]);
 
     useEffect(() => {
         if (!selectedPaymentResolveType) {
             return;
         }
-        const updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef);
-        setFilteredInvoiceData(updatedInvoiceData);
-    }, [selectedPaymentResolveType, customerRef, supplierRef, invoiceData]);
+        let updatedInvoiceData = [];
+        if (selectedPaymentResolveType === "newRef") {
+            const productRequest = confirm("Do you want to show the invoices ?");
+            if (productRequest) {
+                // If user wants to show invoices, switch back to adjustment mode
+                setSelectedPaymentResolveType("adjustment");
+            } else {
+                setFilteredInvoiceData(updatedInvoiceData)
+            }
+            // Don't update filteredInvoiceData here
+        } else if (selectedPaymentResolveType === "adjustment" && invoices.length === 0) {
+            // Only update filteredInvoiceData if invoices are empty
+            updatedInvoiceData = invoiceData.filter(item => item?.customerRef === customerRef && item?.supplierRef === supplierRef);
+            setFilteredInvoiceData(updatedInvoiceData);
+        }
+    }, [selectedPaymentResolveType, customerRef, supplierRef]);
 
 
     // update due of profucts
@@ -520,16 +592,8 @@ const GenerateInvoice = () => {
         setSelectedChallansProducts([...selectedChallansProducts || [], newProduct]);
     }
 
-    // console.log(allChallanData,"challan-Data");
-    // console.log(selectedChallanData, "selectedChallanData");
-    // console.log(allChallanData, "challan-Data");
-    // console.log(selectedChallanData, "selectedChallanData");
-
-    // console.log(selectedChallansProducts, "selected-product");
-    // console.log(fillterChallan, "fillterChallan");
     console.log(cutData, "invoiceData");
 
-    const [invoices, setInvoices] = useState([]);
 
     useEffect(() => {
         if (filteredInvoiceData) {
@@ -542,22 +606,111 @@ const GenerateInvoice = () => {
     }, [filteredInvoiceData]);
 
 
+    // const handleAdjustChange = (index, value) => {
+    //     const updatedInvoices = [...invoices];
+    //     const adjustValue = parseFloat(value) || 0;
+    //     const previousAdjust = updatedInvoices[index].adjust || 0;
+
+    //     // Calculate the difference between the new and previous adjust value
+    //     const adjustDifference = adjustValue - previousAdjust;
+
+    //     // Update newTotalAmountEntered
+    //     const newTotalAmount = newTotalAmountEntered - adjustDifference;
+    //     setNewTotalAmountEntered(newTotalAmount);
+
+
+    //     updatedInvoices[index].adjust = adjustValue;
+    //     updatedInvoices[index].remaining = updatedInvoices[index].grandTotal - adjustValue;
+    //     setInvoices(updatedInvoices);
+    // };
+
     const handleAdjustChange = (index, value) => {
         const updatedInvoices = [...invoices];
+        const currentInvoice = updatedInvoices[index];
         const adjustValue = parseFloat(value) || 0;
-        updatedInvoices[index].adjust = adjustValue;
-        updatedInvoices[index].remaining = updatedInvoices[index].grandTotal - adjustValue;
+        const previousAdjust = currentInvoice.adjust || 0;
+
+        // Check if the new adjust value exceeds the grand total
+        if (adjustValue > currentInvoice.grandTotal) {
+            // If it does, set adjust to the grand total
+            currentInvoice.adjust = currentInvoice.grandTotal;
+            currentInvoice.remaining = 0;
+        } else {
+            // If it doesn't, proceed as normal
+            currentInvoice.adjust = adjustValue;
+            currentInvoice.remaining = currentInvoice.grandTotal - adjustValue;
+        }
+
+        // Calculate the difference between the new and previous adjust value
+        const adjustDifference = currentInvoice.adjust - previousAdjust;
+
+        // Update newTotalAmountEntered
+        const newTotalAmount = newTotalAmountEntered - adjustDifference;
+        setNewTotalAmountEntered(newTotalAmount);
+
+        // If newTotalAmount becomes negative, update remainingAmount
+        if (newTotalAmount < 0) {
+            setDiscountedAmount(Math.abs(newTotalAmount));
+            // newTotalAmount = 0;
+        } else {
+            setDiscountedAmount(0);
+        }
+
+
         setInvoices(updatedInvoices);
     };
 
-    const [newRefData, setNewRefData] = useState({ adjust: 0 });
+    const [newRefData, setNewRefData] = useState(null);
 
 
     const handleNewRefAdjustChange = (value) => {
         const adjustValue = parseFloat(value) || 0;
-        setNewRefData({ adjust: adjustValue });
+        const prevAdjust = newRefData.prevAdjust;
+
+        // Calculate the difference between the new and previous adjustment
+        const adjustDifference = adjustValue - prevAdjust;
+
+        // Update newTotalAmountEntered
+        setNewTotalAmountEntered(prev => prev - adjustDifference);
+
+        // Update newRefData with new adjust value and store the current adjust as prevAdjust
+        setNewRefData({ adjust: adjustValue, prevAdjust: adjustValue });
     };
 
+
+    const [interestAmount, setInterestAmount] = useState(0);
+
+    // const handleInterestChange = (value) => {
+    //     const interestValue = parseFloat(value) || 0;
+    //     setInterestAmount(interestValue);
+
+    // };
+
+    const handleInterestChange = (value) => {
+        // Convert input to a number, default to 0 if NaN
+        const numValue = parseFloat(value) || 0;
+        const prevValue = interestAmount
+
+        console.log("value : ",numValue)
+
+        const adjustDiff = numValue - prevValue;
+        
+        // // Ensure interest is not negative and doesn't exceed newTotalAmountEntered
+        // const validInterest = Math.max(0, Math.min(numValue, newTotalAmountEntered));
+        // console.log("validInterest : ",validInterest)
+        
+        setInterestAmount(numValue);
+        
+        // Update newTotalAmountEntered
+        const updatedNewAmount = newTotalAmountEntered - adjustDiff;
+        console.log("updated New Total amount : ",updatedNewAmount)
+        setNewTotalAmountEntered(updatedNewAmount);
+    }
+
+    const handleRemoveNewReference = () => {
+        setNewTotalAmountEntered(prev => prev + newRefData.adjust);
+        setNewRefData(null);
+    };
 
     return (
         <>
@@ -578,7 +731,7 @@ const GenerateInvoice = () => {
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl py-5 flex gap-1 flex-col">
-                                        <div className="px-2 py-0 text-[1.2rem] font-font1 flex items-center gap-3">
+                                        <div className="px-2 py-0 text-[1.2rem] font-font1 flex items-center gap-10">
                                             <div className='flex items-center gap-10 mt-5'>
                                                 <Autocomplete
                                                     labelPlacement="outside"
@@ -757,7 +910,7 @@ const GenerateInvoice = () => {
 
                                             <Input
                                                 type="date"
-                                                labelPlacement="outside-left"
+                                                labelPlacement="outside"
                                                 label="Date"
                                                 classNames={{
                                                     label: "font-[600] font-font1",
@@ -774,22 +927,23 @@ const GenerateInvoice = () => {
                                                 className=" max-w-[15rem] mt-5"
                                             />
 
+
+
+                                            {/* <div className="text-sm border-2 bg-gray-100 p-2 rounded-lg">
+                                                <p>Current Balance of Customer</p>
+                                                <p className="text-green-500 font-semibold text-xl">Rs. 5000</p>
+                                            </div> */}
+
                                         </div>
 
                                         <div className=" flex items-center mt-6 gap-4 max-w-[40rem]">
                                             <Input
                                                 type="number"
-                                                placeholder={'hi'}
+                                                placeholder={'0.00'}
                                                 className="flex max-w-[50%]"
-                                                label="Amount"
-                                            // value={Product.cut}
-                                            // onChange={(e) => {
-                                            //     const newProducts = [
-                                            //         ...selectedChallansProducts,
-                                            //     ];
-                                            //     newProducts[pIndex].cut = e.target.value;
-                                            //     setSelectedChallansProducts(newProducts);
-                                            // }}
+                                                label="Amount (in Rs.)"
+                                                value={amountEntered}
+                                                onChange={(e) => handleAmountChange(e)}
                                             />
 
                                             {/* <Autocomplete
@@ -893,69 +1047,108 @@ const GenerateInvoice = () => {
 
                                             {/* Table for the adjustment */}
 
-                                            <div>Adjustment</div>
 
-                                            <div className="container mx-auto py-6 px-4">
-                                                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                                                    <thead className="bg-gray-100">
-                                                        <tr>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Number</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Products</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-200">
-                                                        {
-                                                            invoices && invoices?.map((item, idx) => {
-                                                                return (
-                                                                    <tr key={idx} className="hover:bg-gray-50">
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item?.invoiceNo}</td>
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item.products?.length}</td>
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item?.grandTotal}</td>
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                            <input
-                                                                                type="number"
-                                                                                className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
-                                                                                value={item?.adjust === 0 ? '' : item?.adjust}
-                                                                                onChange={(e) => handleAdjustChange(idx, e.target.value)}
-                                                                            />
-                                                                        </td>
-                                                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td>
-                                                                    </tr>
-                                                                )
-                                                            })
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            {
+                                                invoices.length !== 0 &&
+                                                <div className="container mx-auto py-6 px-4">
+                                                    <div className="flex items-center my-4">
+                                                        <p>Adjustment</p>
+                                                        <span className={`${newTotalAmountEntered < 0 ? "text-red-800 bg-red-100" : "text-green-800 bg-green-100"} mx-2 rounded-xl font-semibold px-2 flex items-center py-1`}>
+                                                            <IndianRupee size={18} />
+                                                            <p>{newTotalAmountEntered}/-</p>
+                                                        </span>
+                                                    </div>
+                                                    <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                                                        <thead className="bg-gray-100">
+                                                            <tr>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Number</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Products</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-200">
+                                                            {
+                                                                invoices && invoices?.map((item, idx) => {
+                                                                    return (
+                                                                        <tr key={idx} className="hover:bg-gray-50">
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item?.invoiceNo}</td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item.products?.length}</td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item?.grandTotal}</td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
+                                                                                    value={item?.adjust === 0 ? '' : item?.adjust}
+                                                                                    onChange={(e) => handleAdjustChange(idx, e.target.value)}
+                                                                                    max={item?.grandTotal}
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td>
+                                                                        </tr>
+                                                                    )
+                                                                })
+                                                            }
+                                                        </tbody>
+                                                    </table>
 
-
-
-                                            {selectedPaymentResolveType}
+                                                </div>
+                                            }
 
                                             {/* table for new ref */}
 
-                                            <div>New Reference</div>
 
 
-                                            { selectedPaymentResolveType === "newRef" && <div className="container mx-auto py-6 px-4">
+                                            {newRefData && <div className="container mx-auto py-6 px-4">
+                                                <div className="flex items-center justify-between my-2 ">
+                                                    <div>New Reference</div>
+
+                                                    {selectedPaymentResolveType === "newRef" &&
+                                                        <span className={`${newTotalAmountEntered < 0 ? "text-red-800 bg-red-100" : "text-green-800 bg-green-100"} mx-2 rounded-xl font-semibold px-2 flex items-center py-1`}>
+                                                            <IndianRupee size={18} />
+                                                            <p>{newTotalAmountEntered}/-</p>
+                                                        </span>
+                                                    }
+
+                                                    {selectedPaymentResolveType === "adjustment" && <button
+                                                        className="text-sm text-red-500 underline"
+                                                        onClick={handleRemoveNewReference}
+                                                    >
+                                                        Remove New Reference
+                                                    </button>
+                                                    }
+                                                </div>
                                                 <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
                                                     <thead className="bg-gray-100">
                                                         <tr>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Balance</th>
                                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
+                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Balance</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr className="hover:bg-gray-50">
                                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                <input
+                                                                1000
+                                                            </td>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                {/* <input
                                                                     type="number"
                                                                     className="w-full px-2 py-1 border rounded"
                                                                     value={newRefData.adjust}
                                                                     onChange={(e) => handleNewRefAdjustChange(e.target.value)}
+                                                                /> */}
+
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-full px-2 py-1 border rounded"
+                                                                    value={newRefData.adjust === 0 ? '' : newRefData.adjust}
+                                                                    onChange={(e) => handleNewRefAdjustChange(e.target.value)}
                                                                 />
+                                                            </td>
+                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                1500
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -968,6 +1161,43 @@ const GenerateInvoice = () => {
                                             <div className="flex gap-2 items-center">
                                                 <Button className={`${selectedPaymentResolveType === "adjustment" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("adjustment")}>Adjustment</Button>
                                                 <Button className={`${selectedPaymentResolveType === "newRef" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("newRef")}>New Reference</Button>
+                                            </div>
+
+
+                                            <div className="w-full flex items-start justify-between mt-8 px-10 ">
+                                                <div className="flex flex-col w-[30%] gap-6">
+                                                    <Input
+                                                        placeholder="0.00"
+                                                        label="Discount"
+                                                        labelPlacement="outside"
+                                                        value={discountedAmount.toFixed(2)}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(e.target.value) || 0;
+                                                            setDiscountedAmount(value);
+                                                        }}
+                                                    />
+
+                                                    <Input
+                                                        // placeholder="0.00"
+                                                        label="Interest"
+                                                        labelPlacement="outside"
+                                                        value={interestAmount === 0 ? "" : interestAmount}
+                                                        onChange={(e) => handleInterestChange(e.target.value)}
+                                                        // disabled={newTotalAmountEntered <= 0}
+                                                    />
+
+                                                </div>
+
+                                                <div>
+                                                    <Input
+                                                        placeholder="0.00"
+                                                        label="Total Due"
+                                                        value={totalDue.toFixed(2)}
+                                                        labelPlacement="outside"
+                                                        readOnly
+                                                    />
+                                                </div>
+
                                             </div>
 
 
