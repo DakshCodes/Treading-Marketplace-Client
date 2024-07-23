@@ -61,7 +61,7 @@ import DataTableModel from "../../components/DataTableModel/DataTableModel";
 import Adjustment from "./Adjustment";
 import NewRefrence from "./NewRefrence";
 
-const GenerateInvoice = () => {
+const Payment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
@@ -233,6 +233,19 @@ const GenerateInvoice = () => {
         setAmountEntered(e.target.value)
     }
 
+
+
+    const updateNewTotalAmountEntered = () => {
+        const totalAdjusted = invoices.reduce((sum, invoice) => sum + invoice.adjust, 0);
+        const newTotal = amountEntered - totalAdjusted;
+        setNewTotalAmountEntered(newTotal);
+
+        if (newTotal < 0) {
+            setDiscountedAmount(Math.abs(newTotal));
+        } else {
+            setDiscountedAmount(0);
+        }
+    };
 
     // useEffect(() => {
     //     if (!selectedPaymentResolveType) {
@@ -600,6 +613,8 @@ const GenerateInvoice = () => {
             setInvoices(filteredInvoiceData.map(item => ({
                 ...item,
                 adjust: 0,
+                discount: 0,
+                interest: 0,
                 remaining: item?.grandTotal
             })));
         }
@@ -624,40 +639,78 @@ const GenerateInvoice = () => {
     //     setInvoices(updatedInvoices);
     // };
 
+
+    // adjust change 1
+
+    // const handleAdjustChange = (index, value) => {
+    //     const updatedInvoices = [...invoices];
+    //     const currentInvoice = updatedInvoices[index];
+    //     const adjustValue = parseFloat(value) || 0;
+    //     const previousAdjust = currentInvoice.adjust || 0;
+
+    //     // Check if the new adjust value exceeds the grand total
+    //     if (adjustValue > currentInvoice.grandTotal) {
+    //         // If it does, set adjust to the grand total
+    //         currentInvoice.adjust = currentInvoice.grandTotal;
+    //         currentInvoice.remaining = 0;
+    //     } else {
+    //         // If it doesn't, proceed as normal
+    //         currentInvoice.adjust = adjustValue;
+    //         currentInvoice.remaining = currentInvoice.grandTotal - adjustValue;
+    //     }
+
+    //     // Calculate the difference between the new and previous adjust value
+    //     const adjustDifference = currentInvoice.adjust - previousAdjust;
+
+    //     // Update newTotalAmountEntered
+    //     const newTotalAmount = newTotalAmountEntered - adjustDifference;
+    //     setNewTotalAmountEntered(newTotalAmount);
+
+    //     // If newTotalAmount becomes negative, update remainingAmount
+    //     if (newTotalAmount < 0) {
+    //         setDiscountedAmount(Math.abs(newTotalAmount));
+    //         // newTotalAmount = 0;
+    //     } else {
+    //         setDiscountedAmount(0);
+    //     }
+
+
+    //     setInvoices(updatedInvoices);
+    // };
+
+
+    // adjust change 2
+
+    // const handleAdjustChange = (index, value) => {
+    //     const updatedInvoices = [...invoices];
+    //     const currentInvoice = updatedInvoices[index];
+    //     const adjustValue = parseFloat(value) || 0;
+
+    //     currentInvoice.adjust = Math.min(adjustValue, newTotalAmountEntered);
+
+    //     // Recalculate remaining amount
+    //     const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+    //     currentInvoice.remaining = Math.max(0, currentInvoice.grandTotal - totalAdjustment);
+
+    //     setInvoices(updatedInvoices);
+    //     updateNewTotalAmountEntered();
+    // };
+
+
+    //latest one 
     const handleAdjustChange = (index, value) => {
         const updatedInvoices = [...invoices];
         const currentInvoice = updatedInvoices[index];
         const adjustValue = parseFloat(value) || 0;
-        const previousAdjust = currentInvoice.adjust || 0;
 
-        // Check if the new adjust value exceeds the grand total
-        if (adjustValue > currentInvoice.grandTotal) {
-            // If it does, set adjust to the grand total
-            currentInvoice.adjust = currentInvoice.grandTotal;
-            currentInvoice.remaining = 0;
-        } else {
-            // If it doesn't, proceed as normal
-            currentInvoice.adjust = adjustValue;
-            currentInvoice.remaining = currentInvoice.grandTotal - adjustValue;
-        }
+        currentInvoice.adjust = adjustValue;
 
-        // Calculate the difference between the new and previous adjust value
-        const adjustDifference = currentInvoice.adjust - previousAdjust;
-
-        // Update newTotalAmountEntered
-        const newTotalAmount = newTotalAmountEntered - adjustDifference;
-        setNewTotalAmountEntered(newTotalAmount);
-
-        // If newTotalAmount becomes negative, update remainingAmount
-        if (newTotalAmount < 0) {
-            setDiscountedAmount(Math.abs(newTotalAmount));
-            // newTotalAmount = 0;
-        } else {
-            setDiscountedAmount(0);
-        }
-
+        // Recalculate remaining amount, allowing negative values
+        const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+        currentInvoice.remaining = currentInvoice.grandTotal - totalAdjustment;
 
         setInvoices(updatedInvoices);
+        updateNewTotalAmountEntered();
     };
 
     const [newRefData, setNewRefData] = useState(null);
@@ -680,32 +733,90 @@ const GenerateInvoice = () => {
 
     const [interestAmount, setInterestAmount] = useState(0);
 
-    // const handleInterestChange = (value) => {
-    //     const interestValue = parseFloat(value) || 0;
-    //     setInterestAmount(interestValue);
 
+    // const handleDiscountChange = (index, value) => {
+    //     const updatedInvoices = [...invoices];
+    //     const currentInvoice = updatedInvoices[index];
+    //     const discountValue = parseFloat(value) || 0;
+
+    //     currentInvoice.discount = discountValue;
+
+    //     // Recalculate remaining amount
+    //     const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+    //     currentInvoice.remaining = Math.max(0, currentInvoice.grandTotal - totalAdjustment);
+
+    //     setInvoices(updatedInvoices);
+    //     updateNewTotalAmountEntered();
     // };
 
-    const handleInterestChange = (value) => {
-        // Convert input to a number, default to 0 if NaN
-        const numValue = parseFloat(value) || 0;
-        const prevValue = interestAmount
+    // latest one (downside)
 
-        console.log("value : ",numValue)
+    const handleDiscountChange = (index, value) => {
+        const updatedInvoices = [...invoices];
+        const currentInvoice = updatedInvoices[index];
+        const discountValue = parseFloat(value) || 0;
 
-        const adjustDiff = numValue - prevValue;
-        
-        // // Ensure interest is not negative and doesn't exceed newTotalAmountEntered
-        // const validInterest = Math.max(0, Math.min(numValue, newTotalAmountEntered));
-        // console.log("validInterest : ",validInterest)
-        
-        setInterestAmount(numValue);
-        
-        // Update newTotalAmountEntered
-        const updatedNewAmount = newTotalAmountEntered - adjustDiff;
-        console.log("updated New Total amount : ",updatedNewAmount)
-        setNewTotalAmountEntered(updatedNewAmount);
-    }
+        currentInvoice.discount = discountValue;
+
+        // Recalculate remaining amount, allowing negative values
+        const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+        currentInvoice.remaining = currentInvoice.grandTotal - totalAdjustment;
+
+        setInvoices(updatedInvoices);
+        updateNewTotalAmountEntered();
+    };
+
+    // const handleInterestChange = (index, value) => {
+    //     const updatedInvoices = [...invoices];
+    //     const currentInvoice = updatedInvoices[index];
+    //     const interestValue = parseFloat(value) || 0;
+
+    //     currentInvoice.interest = interestValue;
+
+    //     // Recalculate remaining amount
+    //     const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+    //     currentInvoice.remaining = Math.max(0, currentInvoice.grandTotal - totalAdjustment);
+
+    //     setInvoices(updatedInvoices);
+    //     updateNewTotalAmountEntered();
+    // };
+
+
+    const handleInterestChange = (index, value) => {
+        const updatedInvoices = [...invoices];
+        const currentInvoice = updatedInvoices[index];
+        const interestValue = parseFloat(value) || 0;
+
+        currentInvoice.interest = interestValue;
+
+        // Recalculate remaining amount, allowing negative values
+        const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
+        currentInvoice.remaining = currentInvoice.grandTotal - totalAdjustment;
+
+        setInvoices(updatedInvoices);
+        updateNewTotalAmountEntered();
+    };
+
+    // const handleInterestChange = (value) => {
+    //     // Convert input to a number, default to 0 if NaN
+    //     const numValue = parseFloat(value) || 0;
+    //     const prevValue = interestAmount
+
+    //     console.log("value : ", numValue)
+
+    //     const adjustDiff = numValue - prevValue;
+
+    //     // // Ensure interest is not negative and doesn't exceed newTotalAmountEntered
+    //     // const validInterest = Math.max(0, Math.min(numValue, newTotalAmountEntered));
+    //     // console.log("validInterest : ",validInterest)
+
+    //     setInterestAmount(numValue);
+
+    //     // Update newTotalAmountEntered
+    //     const updatedNewAmount = newTotalAmountEntered - adjustDiff;
+    //     console.log("updated New Total amount : ", updatedNewAmount)
+    //     setNewTotalAmountEntered(updatedNewAmount);
+    // }
 
     const handleRemoveNewReference = () => {
         setNewTotalAmountEntered(prev => prev + newRefData.adjust);
@@ -1065,6 +1176,8 @@ const GenerateInvoice = () => {
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Products</th>
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
                                                             </tr>
                                                         </thead>
@@ -1082,10 +1195,31 @@ const GenerateInvoice = () => {
                                                                                     className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
                                                                                     value={item?.adjust === 0 ? '' : item?.adjust}
                                                                                     onChange={(e) => handleAdjustChange(idx, e.target.value)}
-                                                                                    max={item?.grandTotal}
+                                                                                    max={newTotalAmountEntered}
                                                                                 />
                                                                             </td>
-                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
+                                                                                    value={item?.discount === 0 ? '' : item?.discount}
+                                                                                    onChange={(e) => handleDiscountChange(idx, e.target.value)}
+                                                                                />
+                                                                            </td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    className="w-[50%] px-2 py-1 border-2 border-[#3535355c] rounded"
+                                                                                    value={item?.interest === 0 ? '' : item?.interest}
+                                                                                    onChange={(e) => handleInterestChange(idx, e.target.value)}
+                                                                                />
+                                                                            </td>
+                                                                            {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td> */}
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                                <span className={item.remaining < 0 ? 'text-red-600' : ''}>
+                                                                                    {item.remaining.toFixed(2)}
+                                                                                </span>
+                                                                            </td>
                                                                         </tr>
                                                                     )
                                                                 })
@@ -1164,7 +1298,7 @@ const GenerateInvoice = () => {
                                             </div>
 
 
-                                            <div className="w-full flex items-start justify-between mt-8 px-10 ">
+                                            {/* <div className="w-full flex items-start justify-between mt-8 px-10 ">
                                                 <div className="flex flex-col w-[30%] gap-6">
                                                     <Input
                                                         placeholder="0.00"
@@ -1183,7 +1317,7 @@ const GenerateInvoice = () => {
                                                         labelPlacement="outside"
                                                         value={interestAmount === 0 ? "" : interestAmount}
                                                         onChange={(e) => handleInterestChange(e.target.value)}
-                                                        // disabled={newTotalAmountEntered <= 0}
+                                                    // disabled={newTotalAmountEntered <= 0}
                                                     />
 
                                                 </div>
@@ -1199,7 +1333,7 @@ const GenerateInvoice = () => {
                                                 </div>
 
                                             </div>
-
+ */}
 
 
                                         </div>
@@ -1241,4 +1375,4 @@ const GenerateInvoice = () => {
     );
 };
 
-export default GenerateInvoice;
+export default Payment;
