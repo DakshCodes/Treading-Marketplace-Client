@@ -59,7 +59,8 @@ import { UpdateQuickChallanProducts, UpdateQuickProductsDue } from "../../apis/q
 import { cutDataState } from "../../store/cut/cutAtom";
 import DataTableModel from "../../components/DataTableModel/DataTableModel";
 import Adjustment from "./Adjustment";
-import NewRefrence from "./NewRefrence";
+import NewRefrence from "./NewReferenceTable";
+import NewReferenceTable from "./NewReferenceTable";
 
 const Payment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -1253,40 +1254,20 @@ const Payment = () => {
                                                     </button>
                                                     }
                                                 </div>
-                                                <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
-                                                    <thead className="bg-gray-100">
-                                                        <tr>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Balance</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adjust</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Balance</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr className="hover:bg-gray-50">
-                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                1000
-                                                            </td>
-                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                {/* <input
-                                                                    type="number"
-                                                                    className="w-full px-2 py-1 border rounded"
-                                                                    value={newRefData.adjust}
-                                                                    onChange={(e) => handleNewRefAdjustChange(e.target.value)}
-                                                                /> */}
+                                                {/* <NewRefrence
+                                                /> */}
 
-                                                                <input
-                                                                    type="number"
-                                                                    className="w-full px-2 py-1 border rounded"
-                                                                    value={newRefData.adjust === 0 ? '' : newRefData.adjust}
-                                                                    onChange={(e) => handleNewRefAdjustChange(e.target.value)}
-                                                                />
-                                                            </td>
-                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                1500
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                <NewReferenceTable
+                                                    customer={customerData}
+                                                    currentSupplierId={supplierRef}
+                                                    currentCustomerId={customerRef}
+                                                    setCustomerData={setcustomerData}
+                                                    newRefData={newRefData}
+                                                    setNewRefData={setNewRefData}
+                                                    setNewTotalAmountEntered={setNewTotalAmountEntered}
+                                                    newTotalAmountEntered={newTotalAmountEntered}
+                                                    onAdjustChange={handleAdjustChange}
+                                                />
                                             </div>
                                             }
 
