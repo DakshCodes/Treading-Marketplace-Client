@@ -61,6 +61,7 @@ import DataTableModel from "../../components/DataTableModel/DataTableModel";
 import Adjustment from "./Adjustment";
 import NewRefrence from "./NewReferenceTable";
 import NewReferenceTable from "./NewReferenceTable";
+import { paymentModeState } from "../../store/paymentmode/paymentModeAtom";
 
 const Payment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -73,6 +74,7 @@ const Payment = () => {
     const [selectedPaymentResolveType, setSelectedPaymentResolveType] = React.useState('');
     const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
     const [customerData, setcustomerData] = useRecoilState(customerDataState);
+    const [paymentModeData, setPaymentModeData] = useRecoilState(paymentModeState);
     const [suppliersData, setsuppliersData] = useRecoilState(suppliersDataState);
     const [productsData, setProductsData] = useRecoilState(productsDataState)
     const [quickchallansData, setquickchallansData] = useRecoilState(
@@ -132,6 +134,8 @@ const Payment = () => {
     const [updated, setUpdated] = useState(false);
     const [supplierRef, setSupplierRef] = useState("");
     const [customerRef, setCustomerRef] = useState("");
+    const [currentBalance, setCurrentBalance] = useState(0);
+
 
     const [invoices, setInvoices] = useState([]);
 
@@ -224,6 +228,9 @@ const Payment = () => {
     }, [selectedKeys]);
 
     const [amountEntered, setAmountEntered] = useState(0)
+    const [paymentModeType, setPaymentModeType] = useState("")
+    const [inputsVisible, setInputsVisible] = useState(false)
+    const [chequeNumber, setChequeNumber] = useState("")
     const [newTotalAmountEntered, setNewTotalAmountEntered] = useState(amountEntered)
 
     useEffect(() => {
@@ -236,16 +243,27 @@ const Payment = () => {
 
 
 
+    const onPaymentModeChange = (modeValue) => {
+        if (modeValue.toLowerCase() === "cheque") {
+            setInputsVisible(true);
+        } else {
+            setInputsVisible(false);
+        }
+        setPaymentModeType(modeValue);
+    }
+
+
+
     const updateNewTotalAmountEntered = () => {
         const totalAdjusted = invoices.reduce((sum, invoice) => sum + invoice.adjust, 0);
         const newTotal = amountEntered - totalAdjusted;
         setNewTotalAmountEntered(newTotal);
 
-        if (newTotal < 0) {
-            setDiscountedAmount(Math.abs(newTotal));
-        } else {
-            setDiscountedAmount(0);
-        }
+        // if (newTotal < 0) {
+        //     setDiscountedAmount(Math.abs(newTotal));
+        // } else {
+        //     setDiscountedAmount(0);
+        // }
     };
 
     // useEffect(() => {
@@ -422,38 +440,68 @@ const Payment = () => {
 
     const formik = useFormik({
         initialValues: {
-            challanRef: [],
-            paymentDate: new Date().toISOString().slice(0, 10),
+            customerRef: "",
             supplierRef: "",
-            customerRef: ""
+            paymentDate: new Date().toISOString().slice(0, 10),
+            amountEntered: 0,
+            paymentMode: "",
+            chequeNumber: "",
+            adjustments: [],
+            newReference: null
         },
         onSubmit: async (values) => {
+            // Prepare the data for submission
+
+            const paymentData = {
+                ...values,
+                adjustments: invoices.map(invoice => ({
+                    invoiceNo: invoice.invoiceNo,
+                    adjust: invoice.adjust,
+                    discount: invoice.discount,
+                    interest: invoice.interest,
+                    remaining: invoice.remaining
+                })),
+                newReference: newRefData ? {
+                    currentBalance: currentBalance,
+                    adjust: newRefData.adjust,
+                    newBalance: currentBalance + newRefData.adjust
+                } : null
+            };
+            console.log(paymentData);
+            return;
+
             if (updateId) {
                 setIsLoading(true);
-                await handleUpdateSubmit(values);
+                await handleUpdateSubmit(paymentData);
                 setIsLoading(false);
             } else {
                 setIsLoading(true);
-                await createinvoice(values);
+                await createPayment(paymentData);
                 setIsLoading(false);
             }
         },
     });
 
+    // Update formik values when certain states change
+    useEffect(() => {
+        formik.setFieldValue('amountEntered', amountEntered);
+        formik.setFieldValue('paymentMode', paymentModeType);
+        formik.setFieldValue('chequeNumber', chequeNumber);
+    }, [amountEntered, paymentModeType, chequeNumber]);
 
     const onCustomerChange = (value) => {
-        setCustomerRef(value)
-        formik.setValues((prevValues) => {
-            return { ...prevValues, customer: value };
-        });
+        setCustomerRef(value);
+        formik.setFieldValue('customerRef', value);
     };
 
-
     const onSupplierChange = (value) => {
-        setSupplierRef(value)
-        formik.setValues((prevValues) => {
-            return { ...prevValues, supplier: value };
-        });
+        setSupplierRef(value);
+        formik.setFieldValue('supplierRef', value);
+    };
+
+    // Function to pass to NewReferenceTable
+    const handleNewRefChange = (newRefData) => {
+        formik.setFieldValue('newReference', newRefData);
     };
 
     const setUpdate = () => {
@@ -1048,30 +1096,31 @@ const Payment = () => {
 
                                         </div>
 
-                                        <div className=" flex items-center mt-6 gap-4 max-w-[40rem]">
+                                        <div className="flex flex-col md:flex-row items-center mt-6 gap-4 max-w-[60rem]">
                                             <Input
                                                 type="number"
                                                 placeholder={'0.00'}
-                                                className="flex max-w-[50%]"
+                                                className="flex"
                                                 label="Amount (in Rs.)"
                                                 value={amountEntered}
                                                 onChange={(e) => handleAmountChange(e)}
                                             />
 
-                                            {/* <Autocomplete
+
+                                            <Autocomplete
                                                 labelPlacement="outside"
-                                                label="Supplier Name"
+                                                label="Payment Mode"
                                                 classNames={{
-                                                    base: "max-w-[50%] border-[#fff] ",
+                                                    base: " border-[#fff] ",
 
                                                     listboxWrapper: "max-h-[270px]",
                                                     selectorButton: "text-[#000]",
                                                 }}
 
-                                                onSelectionChange={onSupplierChange}
-                                                value={formik?.values?.supplier?._id}
-                                                defaultItems={suppliersData}
-                                                selectedKey={formik?.values?.supplier?._id}
+                                                onSelectionChange={(e) => onPaymentModeChange(e)}
+                                                // value={formik?.values?.supplier?._id}
+                                                defaultItems={paymentModeData}
+                                                // selectedKey={formik?.values?.supplier?._id}
                                                 inputProps={{
                                                     classNames: {
                                                         input: "ml-1 text-[#000] font-font1",
@@ -1108,7 +1157,7 @@ const Payment = () => {
                                                 variant="flat"
                                             >
                                                 {(item) => (
-                                                    <AutocompleteItem key={item?._id} textValue={item?.name}>
+                                                    <AutocompleteItem key={item?.name} textValue={item?.name}>
                                                         <div className="flex justify-between items-center">
                                                             <div className="flex gap-2 items-center">
                                                                 <div className="flex flex-col">
@@ -1118,8 +1167,22 @@ const Payment = () => {
                                                         </div>
                                                     </AutocompleteItem>
                                                 )}
-                                            </Autocomplete> */}
+                                            </Autocomplete>
+
+
+                                            {inputsVisible &&
+                                                <Input
+                                                    labelPlacement="outside"
+                                                    label="Enter Cheque Number"
+                                                    placeholder="ex.12345689"
+                                                    value={chequeNumber}
+                                                    onChange={(e) => {
+                                                        setChequeNumber(e.target.value)
+                                                    }}
+                                                />
+                                            }
                                         </div>
+
 
                                         <div className="font-semibold my-4">Select the payment resolve mode </div>
 
@@ -1258,7 +1321,7 @@ const Payment = () => {
                                                 /> */}
 
                                                 <NewReferenceTable
-                                                    customer={customerData}
+                                                    customerData={customerData}
                                                     currentSupplierId={supplierRef}
                                                     currentCustomerId={customerRef}
                                                     setCustomerData={setcustomerData}
@@ -1267,6 +1330,8 @@ const Payment = () => {
                                                     setNewTotalAmountEntered={setNewTotalAmountEntered}
                                                     newTotalAmountEntered={newTotalAmountEntered}
                                                     onAdjustChange={handleAdjustChange}
+                                                    currentBalance={currentBalance}
+                                                    setCurrentBalance={setCurrentBalance}
                                                 />
                                             </div>
                                             }

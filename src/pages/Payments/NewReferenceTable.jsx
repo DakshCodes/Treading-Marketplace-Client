@@ -2,27 +2,30 @@ import axios from 'axios';
 import { IndianRupee } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
-export default function NewReferenceTable({ customerData, newTotalAmountEntered ,setCustomerData, newRefData, setNewRefData, setNewTotalAmountEntered, currentSupplierId, currentCustomerId, onAdjustChange }) {
-
-
-  const [currentBalance, setCurrentBalance] = useState(0);
+export default function NewReferenceTable({ customerData,currentBalance ,setCurrentBalance, newTotalAmountEntered, setCustomerData, newRefData, setNewRefData, setNewTotalAmountEntered, currentSupplierId, currentCustomerId, onAdjustChange }) {
   const [adjustAmount, setAdjustAmount] = useState(0);
-  const [supplierBalanceExists, setSupplierBalanceExists] = useState(false);
+  const [supplierBalanceExists, setSupplierBalanceExists] = useState(null);
 
   useEffect(() => {
-    const currentCustomer = customerData?.find(customer => customer._id === currentCustomerId);
-    if (currentCustomer) {
-      const supplierBalance = currentCustomer.supplierBalances.find(
-        sb => sb.supplier.toString() === currentSupplierId
-      );
-      if (supplierBalance) {
-        setCurrentBalance(supplierBalance.balance);
-        console.log(supplierBalance);
-        setSupplierBalanceExists(true);
-      } else {
-        setCurrentBalance(0);
-        setSupplierBalanceExists(false);
+    if (currentSupplierId || currentCustomerId) {
+      const currentCustomer = customerData?.find(customer => customer._id === currentCustomerId);
+      if (currentCustomer) {
+        const supplierBalance = currentCustomer.supplierBalances.find(
+          sb => sb.supplier.toString() === currentSupplierId
+        );
+
+        if (supplierBalance) {
+          setCurrentBalance(supplierBalance.balance);
+          console.log(supplierBalance);
+          setSupplierBalanceExists(true);
+        } else {
+          setCurrentBalance(0);
+          setSupplierBalanceExists(false);
+          handleInitialize();
+        }
       }
+    } else {
+      console.log('supplier id not defined')
     }
   }, [customerData, currentSupplierId, currentCustomerId]);
 
@@ -43,8 +46,17 @@ export default function NewReferenceTable({ customerData, newTotalAmountEntered 
     setNewTotalAmountEntered(prev => prev - adjustDifference);
 
     // Update newRefData with new adjust value and store the current adjust as prevAdjust
-    setNewRefData({ adjust: adjustValue, prevAdjust: adjustValue });
-};
+    // Update newRefData
+    const updatedNewRefData = {
+      adjust: adjustValue,
+      prevAdjust: adjustValue,
+      currentBalance: currentBalance,
+      newBalance: currentBalance + adjustValue
+    };
+    setNewRefData(updatedNewRefData);
+
+    // setNewRefData({ adjust: adjustValue, prevAdjust: adjustValue });
+  };
 
   const handleInitialize = async () => {
     try {
@@ -69,16 +81,16 @@ export default function NewReferenceTable({ customerData, newTotalAmountEntered 
   };
 
   const newBalance = currentBalance + newRefData.adjust;
-  if (!supplierBalanceExists) {
-    return (
-      <button
-        onClick={handleInitialize}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Initialize Balance for This Supplier
-      </button>
-    );
-  }
+  // if (!supplierBalanceExists) {
+  //   return (
+  //     <button
+  //       onClick={handleInitialize}
+  //       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+  //     >
+  //       Initialize Balance for This Supplier
+  //     </button>
+  //   );
+  // }
   return (
     <div className="container mx-auto py-6 px-4">
       <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
