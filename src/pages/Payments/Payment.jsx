@@ -358,6 +358,20 @@ const Payment = () => {
         }
     };
 
+    const [existingBalance, setExisitingBalance] = useState(0);
+    const [balanceUsed, setBalanceUsed] = useState(false);
+
+    useEffect(() => {
+        const selectedCustomer = customerData?.find(item => item._id === customerRef)
+        console.log(selectedCustomer)
+        const linkedSupplierData = selectedCustomer?.supplierBalances?.find(item => item?.supplier === supplierRef)
+        console.log(linkedSupplierData)
+
+        const prevBalance = linkedSupplierData?.balance;
+
+        setExisitingBalance(prevBalance)
+    }, [customerRef, supplierRef])
+
     // Delete invoice
     const deleteItem = async (id) => {
         try {
@@ -1153,11 +1167,17 @@ const Payment = () => {
                                             />
 
 
+                                            {
+                                                existingBalance &&
 
-                                            {/* <div className="text-sm border-2 bg-gray-100 p-2 rounded-lg">
-                                                <p>Current Balance of Customer</p>
-                                                <p className="text-green-500 font-semibold text-xl">Rs. 5000</p>
-                                            </div> */}
+                                                <div className="text-sm border-2 bg-gray-100 p-2 rounded-lg">
+                                                    <p>Current Balance of Customer</p>
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-green-500 font-semibold text-xl">Rs. {existingBalance}</p>
+                                                        <button onClick={() =>{ setBalanceUsed(true) ; setAmountEntered(existingBalance)}} className="text-white bg-blue-500 px-2 py-1 text-xs">use me</button>
+                                                    </div>
+                                                </div>
+                                            }
 
                                         </div>
 
@@ -1388,6 +1408,7 @@ const Payment = () => {
 
                                                 <NewReferenceTable
                                                     customerData={customerData}
+                                                    balanceUsed={balanceUsed}
                                                     currentSupplierId={supplierRef}
                                                     currentCustomerId={customerRef}
                                                     setCustomerData={setcustomerData}

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { IndianRupee } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
-export default function NewReferenceTable({ customerData,currentBalance ,setCurrentBalance, newTotalAmountEntered, setCustomerData, newRefData, setNewRefData, setNewTotalAmountEntered, currentSupplierId, currentCustomerId, onAdjustChange }) {
+export default function NewReferenceTable({ customerData, balanceUsed, currentBalance, setCurrentBalance, newTotalAmountEntered, setCustomerData, newRefData, setNewRefData, setNewTotalAmountEntered, currentSupplierId, currentCustomerId, onAdjustChange }) {
   const [adjustAmount, setAdjustAmount] = useState(0);
   const [supplierBalanceExists, setSupplierBalanceExists] = useState(null);
 
@@ -13,9 +13,14 @@ export default function NewReferenceTable({ customerData,currentBalance ,setCurr
         const supplierBalance = currentCustomer.supplierBalances.find(
           sb => sb.supplier.toString() === currentSupplierId
         );
+        console.log(supplierBalance)
 
+        const existingBalance = supplierBalance?.balance
         if (supplierBalance) {
           setCurrentBalance(supplierBalance.balance);
+          if (balanceUsed && existingBalance >= 0 ) {
+            setCurrentBalance(0);
+          }
           console.log(supplierBalance);
           setSupplierBalanceExists(true);
         } else {
