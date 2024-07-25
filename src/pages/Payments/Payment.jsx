@@ -63,6 +63,7 @@ import NewRefrence from "./NewReferenceTable";
 import NewReferenceTable from "./NewReferenceTable";
 import { paymentModeState } from "../../store/paymentmode/paymentModeAtom";
 import axios from "axios";
+import { Createpayment } from "../../apis/payment";
 
 const Payment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -454,13 +455,13 @@ const Payment = () => {
         }
     }
 
-    const updateSupplierBalanceOfCustomer = async (newBalance,adjustment) => {
+    const updateSupplierBalanceOfCustomer = async (newBalance, adjustment) => {
 
         const finalData = {
-            updatedBalance : newBalance,
-            customerId : customerRef,
-            supplierId : supplierRef,
-            invoiceAdjustments : adjustment
+            updatedBalance: newBalance,
+            customerId: customerRef,
+            supplierId: supplierRef,
+            invoiceAdjustments: adjustment
         }
 
         const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/customer/update-supplier-balance`, finalData);
@@ -482,10 +483,12 @@ const Payment = () => {
             paymentMode: "",
             chequeNumber: "",
             adjustments: [],
+            overallRemarks: "",
             newReference: null
         },
         onSubmit: async (values) => {
             // Prepare the data for submission
+
 
             updateInvoiceAsPerRemaining();
 
@@ -505,9 +508,13 @@ const Payment = () => {
                 } : null
             };
 
-            updateSupplierBalanceOfCustomer(paymentData?.newReference?.newBalance , paymentData?.adjustments);
+            if (!paymentData) {
+                return;
+            }
+
+            updateSupplierBalanceOfCustomer(paymentData?.newReference?.newBalance, paymentData?.adjustments);
             console.log(paymentData);
-            return;
+            // return;
 
             if (updateId) {
                 setIsLoading(true);
@@ -515,7 +522,8 @@ const Payment = () => {
                 setIsLoading(false);
             } else {
                 setIsLoading(true);
-                await createPayment(paymentData);
+                await Createpayment(paymentData);
+                onOpenChange(false)
                 setIsLoading(false);
             }
         },
@@ -1400,6 +1408,14 @@ const Payment = () => {
                                                 <Button className={`${selectedPaymentResolveType === "adjustment" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("adjustment")}>Adjustment</Button>
                                                 <Button className={`${selectedPaymentResolveType === "newRef" ? "bg-primary text-white" : ""}`} onClick={() => onPaymentTypeSelection("newRef")}>New Reference</Button>
                                             </div>
+
+
+                                            <Textarea
+                                                label="Overall Remarks"
+                                                labelPlacement="outside"
+                                                value={formik?.values?.overallRemarks}
+                                                onChange={(e) => formik.setFieldValue("overallRemarks", e.target.value)}
+                                            />
 
 
                                             {/* <div className="w-full flex items-start justify-between mt-8 px-10 ">
