@@ -260,7 +260,7 @@ const Challan = () => {
 
 
   const addProductToTable2 = () => {
-    if (productref && cutref && unit && qty && qtymeter && rate) {
+    if (productref && cutref && unit && rate) {
       let overall = 0;
       if (unit === '1') {
         overall = isNaN(rate) ? 0 : Math.floor(parseFloat(qty) * parseFloat(rate));
@@ -289,7 +289,7 @@ const Challan = () => {
     }
   };
   const addProductToTable = () => {
-    if (productref && cutref && unit && qty && qtymeter && rate) {
+    if (productref && cutref && unit && rate) {
 
       let overall = 0;
       let due = 0;
@@ -336,9 +336,9 @@ const Challan = () => {
   };
   const setproductchange = (value) => {
     console.log(value)
-    const rate = productsData?.filter(item => item?._id === value)[0]?.ratePerUnit?.magnitude;
+    const rate = productsData?.filter(item => item?._id === value)[0]?.pricePerUnit?.magnitude;
     const selectedProductCategory = productsData?.filter(item => item?._id === value)[0]?.category?._id || "";
-    const supplier_id = productsData?.find(item => item?._id === value).supplierName?._id || "";
+    const supplier_id = productsData?.find(item => item?._id === value)?.supplierName?._id || "";
     console.log(selectedProductCategory)
     setproductref(value);
     setsupplierRef(supplier_id)
@@ -519,7 +519,8 @@ const Challan = () => {
       label: "Category",
     },
     {
-      key: "ratePerUnit",
+      // key: "ratePerUnit",
+      key: "pricePerUnit",
       label: "rate(PerUnit)",
     },
     {

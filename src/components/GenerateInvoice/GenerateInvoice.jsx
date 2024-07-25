@@ -143,6 +143,7 @@ const GenerateInvoice = () => {
 
             if (item.challanType === 'quick') {
               newRow.bales = newRow.due
+              // newRow.price = price 
             }
           }
 
@@ -160,7 +161,7 @@ const GenerateInvoice = () => {
             received_pcs: "", // This will be filled by user input
             received_bales: "", // This will be filled by user input
             due: newRow.due || null, // This will be filled by user input
-            rate: newRow?.rate ?? newRow.product.pricePerUnit.magnitude,
+            rate: newRow?.price || (newRow?.rate ?? newRow.product.pricePerUnit.magnitude),
             total: "", // This will be filled by user input
             markAsCompleted: false, // This will be filled by user input
             isBeingDispatchedInInvoice: newRow?.product?.isProductDispatchedByInvoice || false,
