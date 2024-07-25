@@ -62,6 +62,7 @@ import Adjustment from "./Adjustment";
 import NewRefrence from "./NewReferenceTable";
 import NewReferenceTable from "./NewReferenceTable";
 import { paymentModeState } from "../../store/paymentmode/paymentModeAtom";
+import axios from "axios";
 
 const Payment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -438,6 +439,40 @@ const Payment = () => {
         }
     };
 
+    const updateInvoiceAsPerRemaining = async () => {
+        const invoiceAdjustments = invoices.map(invoice => ({
+            invoiceId: invoice?._id,
+            remainingAmount: invoice?.remaining
+        }));
+
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/invoice/process-payment`, { invoiceAdjustments });
+            // Update the state with the new data
+            // setInvoices(response.data.updatedInvoices.filter(invoice => !invoice.isCleared));
+        } catch (error) {
+            console.error("Error processing payment:", error);
+        }
+    }
+
+    const updateSupplierBalanceOfCustomer = async (newBalance,adjustment) => {
+
+        const finalData = {
+            updatedBalance : newBalance,
+            customerId : customerRef,
+            supplierId : supplierRef,
+            invoiceAdjustments : adjustment
+        }
+
+        const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/customer/update-supplier-balance`, finalData);
+
+        if (response.data.success) {
+            console.log('Payment processed successfully:', response.data);
+            // Update your frontend state or notify the user accordingly
+        } else {
+            console.error('Error processing payment:', response.data.message);
+        }
+    }
+
     const formik = useFormik({
         initialValues: {
             customerRef: "",
@@ -451,6 +486,8 @@ const Payment = () => {
         },
         onSubmit: async (values) => {
             // Prepare the data for submission
+
+            updateInvoiceAsPerRemaining();
 
             const paymentData = {
                 ...values,
@@ -467,6 +504,8 @@ const Payment = () => {
                     newBalance: currentBalance + newRefData.adjust
                 } : null
             };
+
+            updateSupplierBalanceOfCustomer(paymentData?.newReference?.newBalance , paymentData?.adjustments);
             console.log(paymentData);
             return;
 
@@ -656,18 +695,36 @@ const Payment = () => {
 
     console.log(cutData, "invoiceData");
 
-
     useEffect(() => {
         if (filteredInvoiceData) {
-            setInvoices(filteredInvoiceData.map(item => ({
-                ...item,
-                adjust: 0,
-                discount: 0,
-                interest: 0,
-                remaining: item?.grandTotal
-            })));
+            setInvoices(filteredInvoiceData.map(item => {
+                if (item?.isCleared) {
+                    return null; // Or any other suitable placeholder, or you can filter them out separately
+                }
+                return {
+                    ...item,
+                    grandTotal: item?.currentTotal ?? item?.grandTotal,
+                    adjust: 0,
+                    discount: 0,
+                    interest: 0,
+                    remaining: item?.currentTotal ?? item?.grandTotal
+                };
+            }).filter(item => item !== null)); // This ensures that cleared invoices are not set in the state
         }
     }, [filteredInvoiceData]);
+
+
+    // useEffect(() => {
+    //     if (filteredInvoiceData) {
+    //         setInvoices(filteredInvoiceData.map(item => ({
+    //             ...item,
+    //             adjust: 0,
+    //             discount: 0,
+    //             interest: 0,
+    //             remaining: item?.grandTotal
+    //         })));
+    //     }
+    // }, [filteredInvoiceData]);
 
 
     // const handleAdjustChange = (index, value) => {
@@ -1222,6 +1279,7 @@ const Payment = () => {
 
                                             {/* Table for the adjustment */}
 
+                                            {(!invoices || invoices.length === 0) && <div>Currently No Invoices are there</div>}
 
                                             {
                                                 invoices.length !== 0 &&
@@ -1247,11 +1305,11 @@ const Payment = () => {
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-200">
                                                             {
-                                                                invoices && invoices?.map((item, idx) => {
+                                                                invoices.length !== 0 && invoices?.map((item, idx) => {
                                                                     return (
                                                                         <tr key={idx} className="hover:bg-gray-50">
                                                                             <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item?.invoiceNo}</td>
-                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item.products?.length}</td>
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item?.products?.length}</td>
                                                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item?.grandTotal}</td>
                                                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
                                                                                 <input
@@ -1280,8 +1338,8 @@ const Payment = () => {
                                                                             </td>
                                                                             {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">{item?.remaining?.toFixed(2)}</td> */}
                                                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
-                                                                                <span className={item.remaining < 0 ? 'text-red-600' : ''}>
-                                                                                    {item.remaining.toFixed(2)}
+                                                                                <span className={item?.remaining < 0 ? 'text-red-600' : ''}>
+                                                                                    {item?.remaining.toFixed(2)}
                                                                                 </span>
                                                                             </td>
                                                                         </tr>
