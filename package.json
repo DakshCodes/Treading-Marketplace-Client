@@ -13,6 +13,7 @@
     "@iconscout/react-unicons": "^2.0.2",
     "@nextui-org/react": "^2.2.9",
     "axios": "^1.6.7",
+    "date-fns": "^3.6.0",
     "formik": "^2.4.5",
     "framer-motion": "^11.0.3",
     "lucide-react": "^0.344.0",

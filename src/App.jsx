@@ -18,6 +18,7 @@ import QuickChallan from './pages/QuickChallan/QuickChallan';
 import Invoice from './pages/Invoice/Invoice';
 import InvoicePreview from './pages/Invoice/InvoicePreview';
 import Payment from './pages/Payments/Payment';
+import Report from './pages/Reports/Report';
 const routesConfig = [
   { path: '/', element: <Home /> },
   { path: '/inventory', element: <Inventory /> },
@@ -26,6 +27,7 @@ const routesConfig = [
   { path: '/quick-challan', element: <QuickChallan /> },
   { path: '/invoice', element: <Invoice /> },
   { path: '/payments', element: <Payment /> },
+  { path: '/reports', element: <Report /> },
   {
     path: '/product/:id',
     element: <ProductPageForm />,
