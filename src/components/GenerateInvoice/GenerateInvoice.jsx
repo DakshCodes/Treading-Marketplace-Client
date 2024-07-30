@@ -114,8 +114,7 @@ const GenerateInvoice = () => {
     { name: "Pcs", _id: 1 },
     { name: "Meter", _id: 2 },
   ]
-
-
+console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false);
   const [supplierRef, setSupplierRef] = useState("");
@@ -138,7 +137,7 @@ const GenerateInvoice = () => {
             } else if (newRow.unit === '2' && (item.challanType === 'main')) {
               //if unit in meter
               newRow.qtyMtr = newRow.unit === '2' ? newRow.due : newRow.qtyMtr;
-              newRow.qtyPcs = (newRow.qtyMtr / newRow.cut?.name) || newRow.qtyMtr;
+              newRow.qtyPcs = (newRow.qtyMtr / newRow.cut?.name);
             }
 
             if (item.challanType === 'quick') {
@@ -315,7 +314,11 @@ const GenerateInvoice = () => {
       products: [],
       supplierRef: "",
       customerRef: "",
-      grandTotal: ""
+      grandTotal: "",
+      discount: "",
+      otherExpenses: "",
+      gst: "",
+      totalBillingAmount: "",
     },
     onSubmit: async (values) => {
       if (updateId) {
@@ -360,17 +363,25 @@ const GenerateInvoice = () => {
     const { name, value } = e.target;
     selectedChallansProducts[rowIndex].received_pcs = parseInt(value);
     const cutvalue = cutData.find(cut => cut.name === selectedChallansProducts[rowIndex]?.cut)
-
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
-      if (cutvalue.isNameNumerica) {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+      if (cutvalue.isNameNumerical) {
+        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
         if (selectedChallansProducts[rowIndex]?.unit === "1") {
           selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
         } else {
           selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
         }
       } else {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        if (selectedChallansProducts[rowIndex]?.unit === "") {
+          selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
+        } else {
+          selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
+        }
+
+        if(selectedChallansProducts[rowIndex]?.qtyPcs !== ""){
+          selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+        }
+       
       }
     } else if (selectedChallansProducts[rowIndex]?.challanType === "quick") {
       if (selectedChallansProducts[rowIndex]?.unit === "1") {
@@ -402,6 +413,20 @@ const GenerateInvoice = () => {
       ? selectedChallansProducts[rowIndex]?.bales
       : selectedChallansProducts[rowIndex]?.qtyMtr;
     selectedChallansProducts[rowIndex].received_mtr = parseInt(value);
+
+    const cutvalue = cutData.find(cut => cut.name === selectedChallansProducts[rowIndex]?.cut)
+    if (selectedChallansProducts[rowIndex]?.challanType === "main") {
+      if (!cutvalue.isNameNumerical) {
+
+        if(selectedChallansProducts[rowIndex]?.qtyMtr !== ""){
+          selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+        }
+       
+      }}
+
+
+
+
 
 
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
@@ -791,7 +816,12 @@ const GenerateInvoice = () => {
                         </Listbox>
                       </div>
                     </div>
-                    <div className="flex items-center gap-10">
+                    
+                    {selectedChallansProducts && 
+
+  <>
+  
+  <div className="flex items-center gap-10">
                       <ModalHeader className="px-0 text-[1.2rem] font-font1 flex items-center gap-3">
                         Challan Table
                         <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7"><svg height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" class="text-lg "><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zm0 2 .001 4H5V5h14zM5 11h8v8H5v-8zm10 8v-8h4.001l.001 8H15z" fill="currentColor"></path></svg></div>
@@ -847,231 +877,287 @@ const GenerateInvoice = () => {
 
                       <Button onClick={productAddInvoice}>Add Product</Button>
                     </div>
-                    <section className="table__body">
-                      <table className="table-invoice">
-                        <thead>
-                          <tr>
-                            <th>PRODUCT_NAME</th>
-                            <th>CUT</th>
-                            <th>QTY_PCS</th>
-                            <th>QTY_METER</th>
-                            <th>BALES</th>
-                            <th>RECIEVED_PCS</th>
-                            <th>RECIEVED_METER</th>
-                            <th>RECIEVED_BALES</th>
-                            <th>DUE</th>
-                            <th>RATE</th>
-                            <th>TOTAL RS.</th>
-                            <th>DISPATCHING PRODUCTS</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedChallansProducts?.map((Product, pIndex) => {
-                            return (
-                              <tr
-                                key={pIndex}
-                              >
-                                <td>
-                                  <div className="flex flex-col justify-center items-center">
-                                    <p>{Product.product || "NA"}</p>
-                                    <Select
-                                      className="max-w-xs text-[0.7rem]"
-                                      selectedKeys={[Product.unit === "1" ? 'Pcs' : "MTR"]}
-                                      onSelectionChange={(value) => {
-                                        const newProducts = [
-                                          ...selectedChallansProducts,
-                                        ];
-                                        newProducts[pIndex].unit = value.currentKey === "Pcs" ? "1" : "2";
-                                        newProducts[pIndex].total = newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? (newProducts[pIndex].received_mtr * newProducts[pIndex].rate) : (newProducts[pIndex].received_pcs * newProducts[pIndex].rate)
-                                        setSelectedChallansProducts(newProducts);
-                                      }}
-                                    >
-                                      {["Pcs", "MTR"].map((animal) => (
-                                        <SelectItem
-                                          className="text-[0.7rem]"
-                                          key={animal}>
-                                          {animal}
-                                        </SelectItem>
-                                      ))}
-                                    </Select>
-                                  </div>
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={Product.cut}
-                                    className="max-w-[5rem] flex justify-center items-center"
-                                    value={Product.cut}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].cut = e.target.value;
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem] flex justify-center items-center"
-                                    value={Product.qtyPcs}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].qtyPcs = e.target.value;
-                                      newProducts[pIndex].qtyMtr = (newProducts[pIndex].cut * e.target.value);
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem] flex justify-center items-center"
-                                    value={Product.qtyMtr}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].qtyMtr = e.target.value;
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td >
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem] flex justify-center items-center"
-                                    value={Product.bales}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].bales = e.target.value;
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem] flex justify-center items-center"
-                                    value={
-                                      selectedChallansProducts?.[pIndex]
-                                        ?.received_pcs
-                                    }
-                                    onChange={(e) => {
-                                      handleChange(e, pIndex);
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem]"
-                                    value={selectedChallansProducts?.[pIndex]?.received_mtr}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      handleChange2(e, pIndex);
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem]"
-                                    value={selectedChallansProducts[pIndex].received_bales}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].received_bales = e.target.value;
-                                      if (newProducts[pIndex]?.challanType === "quick") {
-                                        newProducts[pIndex].due =
-                                          selectedChallansProducts[pIndex].bales - newProducts[pIndex].received_bales;
-                                      }
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
+  
+  
+  
+  
+  <section className="table__body">
+<table className="table-invoice">
+  <thead>
+    <tr>
+      <th>PRODUCT_NAME</th>
+      <th>CUT</th>
+      <th>QTY_PCS</th>
+      <th>QTY_METER</th>
+      <th>BALES</th>
+      <th>RECIEVED_PCS</th>
+      <th>RECIEVED_METER</th>
+      <th>RECIEVED_BALES</th>
+      <th>DUE</th>
+      <th>RATE</th>
+      <th>TOTAL RS.</th>
+      <th>DISPATCHING PRODUCTS</th>
+    </tr>
+  </thead>
+  <tbody>
+    {selectedChallansProducts?.map((Product, pIndex) => {
+      return (
+        <tr
+          key={pIndex}
+        >
+          <td>
+            <div className="flex flex-col justify-center items-center">
+              <p>{Product.product || "NA"}</p>
+             
+            </div>
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={Product.cut}
+              className="max-w-[5rem] flex justify-center items-center"
+              value={Product.cut}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].cut = e.target.value;
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem] flex justify-center items-center"
+              value={Product.qtyPcs}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].qtyPcs = e.target.value;
+                // newProducts[pIndex].qtyMtr = (newProducts[pIndex].cut * e.target.value);
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem] flex justify-center items-center"
+              value={Product.qtyMtr}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].qtyMtr = e.target.value;
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td >
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem] flex justify-center items-center"
+              value={Product.bales}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].bales = e.target.value;
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem] flex justify-center items-center"
+              value={
+                selectedChallansProducts?.[pIndex]
+                  ?.received_pcs
+              }
+              onChange={(e) => {
+                handleChange(e, pIndex);
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem]"
+              value={selectedChallansProducts?.[pIndex]?.received_mtr}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                handleChange2(e, pIndex);
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem]"
+              value={selectedChallansProducts[pIndex].received_bales}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].received_bales = e.target.value;
+                if (newProducts[pIndex]?.challanType === "quick") {
+                  newProducts[pIndex].due =
+                    selectedChallansProducts[pIndex].bales - newProducts[pIndex].received_bales;
+                }
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
 
-                                <td>
-                                  {Math.trunc(selectedChallansProducts?.[pIndex]?.due) || 0}
-                                </td>
-                                <td >
-                                  <input
-                                    value={selectedChallansProducts[pIndex]?.rate}
-                                    className="max-w-[5rem]"
+          <td>
+            {Math.trunc(selectedChallansProducts?.[pIndex]?.due) || 0}
+          </td>
+          <td >
+            <input
+              value={selectedChallansProducts[pIndex]?.rate}
+              className="max-w-[5rem]"
 
-                                    placeholder={0}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].rate = e.target.value;
-                                      newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
+              placeholder={0}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].rate = e.target.value;
+                newProducts[pIndex].total = e.target.value * (newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? newProducts[pIndex].received_mtr : newProducts[pIndex].received_pcs)
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+             <Select
+                className="max-w-xs text-[0.7rem]"
+                selectedKeys={[Product.unit === "1" ? 'Pcs' : "MTR"]}
+                onSelectionChange={(value) => {
+                  const newProducts = [
+                    ...selectedChallansProducts,
+                  ];
+                  newProducts[pIndex].unit = value.currentKey === "Pcs" ? "1" : "2";
+                  newProducts[pIndex].total = newProducts[pIndex].unit === "2" | newProducts[pIndex].unit === "Pcs" ? (newProducts[pIndex].received_mtr * newProducts[pIndex].rate) : (newProducts[pIndex].received_pcs * newProducts[pIndex].rate)
+                  setSelectedChallansProducts(newProducts);
+                }}
+              >
+               {["Pcs", "MTR"].map((animal) => (
+                  <SelectItem
+                    className="text-[0.7rem]"
+                    key={animal}>
+                    {animal}
+                  </SelectItem>
+                ))}
+              </Select>
+             
+          </td>
 
-                                <td >
-                                  <input
-                                    type="number"
-                                    placeholder={0}
-                                    className="max-w-[5rem]"
-                                    value={selectedChallansProducts[pIndex]?.total}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      newProducts[pIndex].total =
-                                        e.target.value;
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                                <td>
-                                  {" "}
-                                  <input
-                                    type="checkbox"
-                                    placeholder="markAsCompleted"
-                                    className="flex ml-5 h-4 w-4"
-                                    checked={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
-                                    value={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
-                                    onChange={(e) => {
-                                      const newProducts = [
-                                        ...selectedChallansProducts,
-                                      ];
-                                      handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id, newProducts[pIndex].challanType)
-                                      newProducts[pIndex].isBeingDispatchedInInvoice = e.target.checked; // Ensure selectedChallansProducts is not mutated directly
+          <td >
+            <input
+              type="number"
+              placeholder={0}
+              className="max-w-[5rem]"
+              value={selectedChallansProducts[pIndex]?.total}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                newProducts[pIndex].total =
+                  e.target.value;
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+          <td>
+            {" "}
+            <input
+              type="checkbox"
+              placeholder="markAsCompleted"
+              className="flex ml-5 h-4 w-4"
+              checked={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
+              value={selectedChallansProducts[pIndex]?.isBeingDispatchedInInvoice}
+              onChange={(e) => {
+                const newProducts = [
+                  ...selectedChallansProducts,
+                ];
+                handleDispatchToggle(e.target.checked, newProducts[pIndex].challanId, newProducts[pIndex].id, newProducts[pIndex].challanType)
+                newProducts[pIndex].isBeingDispatchedInInvoice = e.target.checked; // Ensure selectedChallansProducts is not mutated directly
 
-                                      setSelectedChallansProducts(newProducts);
-                                    }}
-                                  />
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </section>
+                setSelectedChallansProducts(newProducts);
+              }}
+            />
+          </td>
+        </tr>
+      );
+    })}
+  </tbody>
+</table>
+
+          
+</section>
+         <div className="flex gap-6 mt-6">
+         <Input
+         {...formik.getFieldProps('discount')}
+         type="number"
+         classNames={{
+         base: "max-w-[18rem] border-[#fff]",
+         listboxWrapper: "max-h-[270px] ",
+         selectorButton: "text-[#000] ",
+         }}
+         placeholder="Discount"
+         />
+         
+         <Input
+         type="number"
+         {...formik.getFieldProps('otherExpenses')}
+
+         classNames={{
+         base: "max-w-[18rem] border-[#fff]",
+         listboxWrapper: "max-h-[270px] ",
+         selectorButton: "text-[#000] ",
+         }}
+         placeholder="Other exppenses"
+         />
+         
+         <Input
+         {...formik.getFieldProps('gst')}
+         type="number"
+         classNames={{
+         base: "max-w-[18rem] border-[#fff]",
+         listboxWrapper: "max-h-[270px] ",
+         selectorButton: "text-[#000] ",
+         }}
+         placeholder="GST"
+         />
+         
+         <Input
+         {...formik.getFieldProps('totalBillingAmount')}
+         type="number"
+         classNames={{
+         base: "max-w-[18rem] border-[#fff]",
+         listboxWrapper: "max-h-[270px] ",
+         selectorButton: "text-[#000] ",
+         }}
+         placeholder="Total Billing"
+         /> </div> </>
+                    }
+                    
                   </div>
+                 
                 </ModalBody>
                 <ModalFooter>
                   <Button

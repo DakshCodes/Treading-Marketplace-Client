@@ -103,11 +103,12 @@ const Challan = () => {
         toast.success(response.message);
         console.log(response.challanDoc)
         setChallansData([...challansData, response.challanDoc]);
+        console.log(response.challanDoc,"responseeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
         setUpdateId(null); // Reset update ID when modal is closed
         onOpenChange(false)
       } else {
-        console.log(response.response.data.error);
-        toast.error(response.response.data.error);
+        console.log(response.response?.data.error);
+        toast.error(response.response?.data.error);
         // throw new Error(response.error);
       }
     } catch (error) {
@@ -329,7 +330,7 @@ const Challan = () => {
         qtyMeter = Math.floor(event.target.value * parseFloat(cutvalue?.name));
         setqtymeter(qtyMeter);
       }
-      setqtymeter(qtyMeter);
+      // setqtymeter(qtyMeter);
     } else {
       toast.error("add cut first");
     }
@@ -1677,7 +1678,17 @@ const Challan = () => {
                                 placeholder="0"
                                 value={qtymeter}
                                 className='max-w-[15rem]'
-                                onChange={(e) => setqtymeter(e.target.value)}
+                                onChange={(e) => {if (cutref) {
+                                  let qtyMeter;
+                                  const cutvalue = cutData.find(cut => cut._id === cutref)
+                                  if (!cutvalue?.isNameNumerical) {
+                                    setqtymeter(qtyMeter);
+                                    setqty("");
+                                  }
+                                } else {
+                                  toast.error("add cut first");
+                                }
+                              }}
                               />
                               <Input
                                 label="rate"
