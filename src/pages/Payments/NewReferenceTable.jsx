@@ -18,9 +18,9 @@ export default function NewReferenceTable({ customerData, balanceUsed, currentBa
         const existingBalance = supplierBalance?.balance
         if (supplierBalance) {
           setCurrentBalance(supplierBalance.balance);
-          if (balanceUsed && existingBalance >= 0 ) {
-            setCurrentBalance(0);
-          }
+          // if (balanceUsed && existingBalance >= 0 ) {
+          //   setCurrentBalance(0);
+          // }
           console.log(supplierBalance);
           setSupplierBalanceExists(true);
         } else {

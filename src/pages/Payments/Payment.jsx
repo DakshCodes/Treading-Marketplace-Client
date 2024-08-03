@@ -92,6 +92,7 @@ const Payment = () => {
 
     console.log(invoiceData, '--------------------');
 
+    const [selectedBalanceAmount, setSelectedBalanceAmount] = useState(0);
 
     const yourArray = [...selectedKeys];
     const selectedChallanData = yourArray.map((entry) => {
@@ -1174,7 +1175,19 @@ const Payment = () => {
                                                     <p>Current Balance of Customer</p>
                                                     <div className="flex items-center justify-between">
                                                         <p className="text-green-500 font-semibold text-xl">Rs. {existingBalance}</p>
-                                                        <button onClick={() =>{ setBalanceUsed(true) ; setAmountEntered(existingBalance)}} className="text-white bg-blue-500 px-2 py-1 text-xs">use me</button>
+                                                        <Input
+                                                            type="number"
+                                                            label="Use from balance"
+                                                            max={existingBalance}
+                                                            value={selectedBalanceAmount}
+                                                            onChange={(e) => setSelectedBalanceAmount(Math.min(parseFloat(e.target.value) || 0, existingBalance))}
+                                                        />
+                                                        <button onClick={() => {
+                                                            setBalanceUsed(true);
+                                                            setAmountEntered(selectedBalanceAmount);
+                                                        }} className="text-white bg-blue-500 px-2 py-1 text-xs">
+                                                            Use selected amount
+                                                        </button>
                                                     </div>
                                                 </div>
                                             }
