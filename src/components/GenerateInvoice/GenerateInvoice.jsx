@@ -114,7 +114,7 @@ const GenerateInvoice = () => {
     { name: "Pcs", _id: 1 },
     { name: "Meter", _id: 2 },
   ]
-console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
+
   const [isLoading, setIsLoading] = useRecoilState(globalLoaderAtom);
   const [updated, setUpdated] = useState(false);
   const [supplierRef, setSupplierRef] = useState("");
@@ -126,7 +126,8 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
       item.products.map((row) => {
         if (!row?.isProductDispatchedByInvoice) {
           const newRow = { ...row };
-
+      
+          console.log(newRow,"new rowwwwwwww")
           // Update the copied row object
           if (newRow.due !== 0) {
             if (newRow.unit === '1' && (item.challanType === 'main')) {
@@ -137,7 +138,6 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
             } else if (newRow.unit === '2' && (item.challanType === 'main')) {
               //if unit in meter
               newRow.qtyMtr = newRow.unit === '2' ? newRow.due : newRow.qtyMtr;
-              newRow.qtyPcs = (newRow.qtyMtr / newRow.cut?.name);
             }
 
             if (item.challanType === 'quick') {
@@ -365,21 +365,21 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
     const cutvalue = cutData.find(cut => cut.name === selectedChallansProducts[rowIndex]?.cut)
     if (selectedChallansProducts[rowIndex]?.challanType === "main") {
       if (cutvalue.isNameNumerical) {
-        selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
-        if (selectedChallansProducts[rowIndex]?.unit === "1") {
+        selectedChallansProducts[rowIndex].due = (selectedChallansProducts[rowIndex].qtyPcs - selectedChallansProducts[rowIndex].received_pcs);
+        if (selectedChallansProducts[rowIndex]?.unit === "2") {
           selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
         } else {
           selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
         }
       } else {
-        if (selectedChallansProducts[rowIndex]?.unit === "") {
+        if (selectedChallansProducts[rowIndex]?.unit === "2") {
           selectedChallansProducts[rowIndex].total = Math.abs(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_mtr)
         } else {
           selectedChallansProducts[rowIndex].total = Math.trunc(selectedChallansProducts[rowIndex].rate * selectedChallansProducts[rowIndex].received_pcs)
         }
 
         if(selectedChallansProducts[rowIndex]?.qtyPcs !== ""){
-          selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_pcs - selectedChallansProducts[rowIndex].qtyPcs);
+          selectedChallansProducts[rowIndex].due = ( selectedChallansProducts[rowIndex].qtyPcs - selectedChallansProducts[rowIndex].received_pcs);
         }
        
       }
@@ -419,7 +419,7 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
       if (!cutvalue.isNameNumerical) {
 
         if(selectedChallansProducts[rowIndex]?.qtyMtr !== ""){
-          selectedChallansProducts[rowIndex].due = Math.abs(selectedChallansProducts[rowIndex].received_mtr - selectedChallansProducts[rowIndex].qtyMtr);
+          selectedChallansProducts[rowIndex].due = (selectedChallansProducts[rowIndex].qtyMtr - selectedChallansProducts[rowIndex].received_mtr );
         }
        
       }}
@@ -821,7 +821,7 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
 
   <>
   
-  <div className="flex items-center gap-10">
+  <div className="flex items-center gap-10 relative">
                       <ModalHeader className="px-0 text-[1.2rem] font-font1 flex items-center gap-3">
                         Challan Table
                         <div class="bg-default/50 text-foreground flex items-center rounded-small justify-center w-7 h-7"><svg height="1em" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg" class="text-lg "><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zm0 2 .001 4H5V5h14zM5 11h8v8H5v-8zm10 8v-8h4.001l.001 8H15z" fill="currentColor"></path></svg></div>
@@ -881,9 +881,9 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
   
   
   
-  <section className="table__body">
-<table className="table-invoice">
-  <thead>
+ <section className="h-[25%] table__body overflow-y-scroll"> {/* Apply overflow-y-auto to parent container */}
+  <table className="relative table-invoice">
+    <thead className="sticky top-0 z-10">
     <tr>
       <th>PRODUCT_NAME</th>
       <th>CUT</th>
@@ -937,7 +937,14 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
                   ...selectedChallansProducts,
                 ];
                 newProducts[pIndex].qtyPcs = e.target.value;
-                // newProducts[pIndex].qtyMtr = (newProducts[pIndex].cut * e.target.value);
+                const cutvalue = cutData.find(cut => cut.name === newProducts[pIndex]?.cut)
+                if(cutvalue?.isNameNumerical){
+                  newProducts[pIndex].due = newProducts[pIndex].qtyPcs;
+                  newProducts[pIndex].qtyMtr = (newProducts[pIndex].cut * e.target.value);
+                  }
+                else{
+                  newProducts[pIndex].due = newProducts[pIndex].qtyPcs;
+                }
                 setSelectedChallansProducts(newProducts);
               }}
             />
@@ -953,6 +960,10 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
                   ...selectedChallansProducts,
                 ];
                 newProducts[pIndex].qtyMtr = e.target.value;
+                const cutvalue = cutData.find(cut => cut.name === newProducts[pIndex]?.cut)
+                if(newProducts[pIndex].unit === "2" && !cutvalue?.isNameNumerical){
+                newProducts[pIndex].due = newProducts[pIndex].qtyMtr;
+                }
                 setSelectedChallansProducts(newProducts);
               }}
             />
@@ -981,11 +992,14 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
                 selectedChallansProducts?.[pIndex]
                   ?.received_pcs
               }
+              
               onChange={(e) => {
-                handleChange(e, pIndex);
                 const newProducts = [
                   ...selectedChallansProducts,
                 ];
+                newProducts[pIndex].received_pcs = e.target.value;
+                handleChange(e, pIndex);
+                
                 setSelectedChallansProducts(newProducts);
               }}
             />
@@ -1000,6 +1014,7 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
                 const newProducts = [
                   ...selectedChallansProducts,
                 ];
+                newProducts[pIndex].received_mtr = e.target.value;
                 handleChange2(e, pIndex);
                 setSelectedChallansProducts(newProducts);
               }}
@@ -1019,6 +1034,9 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
                 if (newProducts[pIndex]?.challanType === "quick") {
                   newProducts[pIndex].due =
                     selectedChallansProducts[pIndex].bales - newProducts[pIndex].received_bales;
+
+                    newProducts[pIndex].total =
+                    selectedChallansProducts[pIndex].rate * newProducts[pIndex].received_bales;
                 }
                 setSelectedChallansProducts(newProducts);
               }}
@@ -1026,7 +1044,10 @@ console.log(challansData,"daraaaaaaaaaaaaaaaaaa")
           </td>
 
           <td>
+            <div className="flex gap-2">
             {Math.trunc(selectedChallansProducts?.[pIndex]?.due) || 0}
+            <div>{selectedChallansProducts?.[pIndex]?.challanType === "quick" ? "bales" : selectedChallansProducts?.[pIndex]?.unit === "1" ? "pcs" : "mtr"  }</div>
+            </div>
           </td>
           <td >
             <input
