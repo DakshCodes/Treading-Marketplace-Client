@@ -194,13 +194,13 @@ export default function DataTableModel({ columns, update, deleteItem, users, sta
             case "products.due":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products.reduce((acc, currVal) =>  acc + currVal.due , 0)}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products?.reduce((acc, currVal) =>  acc + currVal.due , 0)}</p>
                     </div>
                 );
             case "products.received":
                 return (
                     <div className="flex flex-col">
-                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products.reduce((acc, currVal) =>  acc + currVal.received , 0)}</p>
+                        <p className="text-bold text-tiny capitalize text-default-400">{user?.products?.reduce((acc, currVal) =>  acc + currVal.received , 0)}</p>
                     </div>
                 );
             case "verified":

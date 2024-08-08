@@ -44,10 +44,10 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { globalLoaderAtom } from "../../store/GlobalLoader/globalLoaderAtom";
 import {
-    Createinvoice,
-    Deleteinvoice,
-    Updateinvoice,
-} from "../../apis/invoice";
+    Createcustomerpayment,
+    Deletecustomerpayment,
+    Updatecustomerpayment,
+} from "../../apis/customerpayment.js";
 import { invoiceDataState } from "../../store/invoice/invoiceAtom";
 import { customerDataState } from "../../store/customer/customerAtom";
 import { suppliersDataState } from "../../store/supplier/supplierAtom";
@@ -57,15 +57,16 @@ import { UpdateProductsDue, UpdatechallanProducts } from "../../apis/challan";
 import { productsDataState } from "../../store/product/productAtom";
 import { UpdateQuickChallanProducts, UpdateQuickProductsDue } from "../../apis/quickChallan";
 import { cutDataState } from "../../store/cut/cutAtom";
-import DataTableModel from "../../components/DataTableModel/DataTableModel";
-import Adjustment from "./Adjustment";
-import NewRefrence from "./NewReferenceTable";
+import DataTableModel from "../DataTableModel/DataTableModel";
+// import Adjustment from "./Adjustment";
+// import NewRefrence from "./NewReferenceTable";
 import NewReferenceTable from "./NewReferenceTable";
 import { paymentModeState } from "../../store/paymentmode/paymentModeAtom";
 import axios from "axios";
-import { Createpayment } from "../../apis/payment";
+// import { Createpayment } from "../../apis/payment";
+import { customerpaymentDataState } from "../../store/customerpayments/customerPaymentsAtom";
 
-const Payment = () => {
+const CustomerPayment = () => {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const navigate = useNavigate();
 
@@ -75,6 +76,7 @@ const Payment = () => {
     const [challanRef, setChallanRef] = useState(null);
     const [selectedPaymentResolveType, setSelectedPaymentResolveType] = React.useState('');
     const [invoiceData, setInvoiceData] = useRecoilState(invoiceDataState);
+    const [customerPaymentData, setCustomerPaymentData] = useRecoilState(customerpaymentDataState);
     const [customerData, setcustomerData] = useRecoilState(customerDataState);
     const [paymentModeData, setPaymentModeData] = useRecoilState(paymentModeState);
     const [suppliersData, setsuppliersData] = useRecoilState(suppliersDataState);
@@ -328,7 +330,7 @@ const Payment = () => {
         }
     }
     // Create The width
-    const createinvoice = async (values) => {
+    const createCustomerPayment = async (values) => {
         try {
             values.challanRef = [...selectedKeys];
             values.products = selectedChallansProducts;
@@ -342,12 +344,12 @@ const Payment = () => {
                 updateProductDue(product.challanId, product.id, product.challanType, product.due);
             });
             setIsLoading(true);
-            const response = await Createinvoice(values);
+            const response = await Createcustomerpayment(values);
             setIsLoading(false);
             if (response.success) {
                 toast.success(response.message);
-                navigate("/invoice");
-                setInvoiceData([...invoiceData, response.invoiceDoc]);
+                navigate("/payments");
+                setInvoiceData([...customerPaymentData, response.customerpaymentDoc]);
                 onOpenChange(false);
                 setUpdateId(null); // Reset update ID when modal is closed
             } else {
@@ -377,14 +379,14 @@ const Payment = () => {
     const deleteItem = async (id) => {
         try {
             setIsLoading(true);
-            const response = await Deleteinvoice(id);
+            const response = await Deletecustomerpayment(id);
             setIsLoading(false);
             if (response.success) {
                 toast.success(response.message);
-                setInvoiceData((prevData) =>
-                    prevData.filter((invoice) => invoice._id !== id)
+                setCustomerPaymentData((prevData) =>
+                    prevData.filter((customerpayment) => customerpayment._id !== id)
                 );
-                navigate("/invoice");
+                navigate("/payments");
             } else {
                 throw new Error(response.message);
             }
@@ -537,7 +539,7 @@ const Payment = () => {
                 setIsLoading(false);
             } else {
                 setIsLoading(true);
-                await Createpayment(paymentData);
+                await createCustomerPayment(paymentData);
                 onOpenChange(false)
                 setIsLoading(false);
             }
@@ -1521,7 +1523,7 @@ const Payment = () => {
                 update={handleUpdate}
                 columns={columns}
                 statusOptions={statusOptions}
-                users={invoiceData}
+                users={customerPaymentData}
                 onOpen={onOpen}
                 section={"invoice"}
             />
@@ -1529,4 +1531,4 @@ const Payment = () => {
     );
 };
 
-export default Payment;
+export default CustomerPayment;
