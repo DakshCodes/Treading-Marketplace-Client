@@ -466,7 +466,7 @@ const SupplierPayment = () => {
         }));
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/invoice/process-payment`, { invoiceAdjustments });
+            const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/invoice/process-supplier-payment`, { invoiceAdjustments });
             // Update the state with the new data
             // setInvoices(response.data.updatedInvoices.filter(invoice => !invoice.isCleared));
         } catch (error) {
@@ -514,6 +514,7 @@ const SupplierPayment = () => {
             const paymentData = {
                 ...values,
                 adjustments: invoices.map(invoice => ({
+                    invoiceId: invoice?._id,
                     invoiceNo: invoice.invoiceNo,
                     adjust: invoice.adjust,
                     discount: invoice.discount,
@@ -725,17 +726,16 @@ const SupplierPayment = () => {
     useEffect(() => {
         if (filteredInvoiceData) {
             setInvoices(filteredInvoiceData.map(item => {
-                if (item?.isCleared) {
-                    return null; // Or any other suitable placeholder, or you can filter them out separately
+                if (item?.isCleared && !item?.isPaidToSupplier) {
+                    return {
+                        ...item,
+                        grandTotal: item?.grandTotal,
+                        adjust: 0,
+                        discount: 0,
+                        interest: 0,
+                        remaining: item?.grandTotal
+                    };
                 }
-                return {
-                    ...item,
-                    grandTotal: item?.currentTotal ?? item?.grandTotal,
-                    adjust: 0,
-                    discount: 0,
-                    interest: 0,
-                    remaining: item?.currentTotal ?? item?.grandTotal
-                };
             }).filter(item => item !== null)); // This ensures that cleared invoices are not set in the state
         }
     }, [filteredInvoiceData]);

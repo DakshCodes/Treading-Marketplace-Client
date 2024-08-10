@@ -502,7 +502,8 @@ const CustomerPayment = () => {
             chequeNumber: "",
             adjustments: [],
             overallRemarks: "",
-            newReference: null
+            newReference: null,
+            whomToPay: null
         },
         onSubmit: async (values) => {
             // Prepare the data for submission
@@ -513,6 +514,7 @@ const CustomerPayment = () => {
             const paymentData = {
                 ...values,
                 adjustments: invoices.map(invoice => ({
+                    invoiceId : invoice._id,
                     invoiceNo: invoice.invoiceNo,
                     adjust: invoice.adjust,
                     discount: invoice.discount,
@@ -974,6 +976,16 @@ const CustomerPayment = () => {
                                 </ModalHeader>
                                 <ModalBody>
                                     <div className="max-w-full rounded-2xl py-5 flex gap-1 flex-col">
+                                        <RadioGroup
+                                            label="Whom to pay this payment ?"
+                                            value={formik.values.whomToPay}
+                                            onValueChange={(value) => formik.setFieldValue("whomToPay", value)}
+                                        >
+                                            <div className="flex gap-4 items-center">
+                                                <Radio value="supplier">Direct to Supplier</Radio>
+                                                <Radio value="self">Self</Radio>
+                                            </div>
+                                        </RadioGroup>
                                         <div className="px-2 py-0 text-[1.2rem] font-font1 flex items-center gap-10">
                                             <div className='flex items-center gap-10 mt-5'>
                                                 <Autocomplete
