@@ -352,6 +352,8 @@ const SupplierPayment = () => {
                 setInvoiceData([...supplierPaymentData, response.supplierpaymentDoc]);
                 onOpenChange(false);
                 setUpdateId(null); // Reset update ID when modal is closed
+                console.log(supplierPaymentData,"supplier payment data")
+
             } else {
                 throw new Error(response.message);
             }
