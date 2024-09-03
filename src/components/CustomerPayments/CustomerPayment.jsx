@@ -107,6 +107,8 @@ const CustomerPayment = () => {
 
     const [discountedAmount, setDiscountedAmount] = useState(0);
 
+    console.log(customerPaymentData,"customer payment data")
+    console.log(invoiceData,"invoicedata data")
 
     const columns = [
         { name: "ID", uid: "_id", sortable: true },
@@ -352,7 +354,6 @@ const CustomerPayment = () => {
                 setInvoiceData([...customerPaymentData, response.customerpaymentDoc]);
                 onOpenChange(false);
                 setUpdateId(null); // Reset update ID when modal is closed
-                console.log(customerPaymentData,"customer payment data")
             } else {
                 throw new Error(response.message);
             }
@@ -519,7 +520,10 @@ const CustomerPayment = () => {
                     adjust: invoice.adjust,
                     discount: invoice.discount,
                     interest: invoice.interest,
-                    remaining: invoice.remaining
+                    remaining: invoice.remaining,
+                    balance : invoice.balance,
+                    whomToPay: formik.values.whomToPay
+
                 })),
                 newReference: newRefData ? {
                     currentBalance: currentBalance,
@@ -735,7 +739,8 @@ const CustomerPayment = () => {
                     adjust: 0,
                     discount: 0,
                     interest: 0,
-                    remaining: item?.currentTotal ?? item?.grandTotal
+                    remaining: item?.currentTotal ?? item?.grandTotal,
+                    balance: item?.currentTotal ?? item?.grandTotal
                 };
             }).filter(item => item !== null)); // This ensures that cleared invoices are not set in the state
         }
@@ -831,7 +836,8 @@ const CustomerPayment = () => {
     // };
 
 
-    //latest one 
+    //latest one
+    let Balance = 0; 
     const handleAdjustChange = (index, value) => {
         const updatedInvoices = [...invoices];
         const currentInvoice = updatedInvoices[index];
@@ -842,8 +848,13 @@ const CustomerPayment = () => {
         // Recalculate remaining amount, allowing negative values
         const totalAdjustment = currentInvoice.adjust + currentInvoice.discount - currentInvoice.interest;
         currentInvoice.remaining = currentInvoice.grandTotal - totalAdjustment;
-
-        setInvoices(updatedInvoices);
+        // updatedInvoices.reduce((acc, item)=> acc + updatedInvoices[index].remaining ,0)
+        let runningBalance = 0;
+        for (let i = 0; i < updatedInvoices.length; i++) {
+          runningBalance += updatedInvoices[i].remaining;
+          updatedInvoices[i].balance = runningBalance;
+        }
+        setInvoices(updatedInvoices)
         updateNewTotalAmountEntered();
     };
 
@@ -1357,6 +1368,7 @@ const CustomerPayment = () => {
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest</th>
                                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
+                                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-200">
@@ -1396,6 +1408,12 @@ const CustomerPayment = () => {
                                                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
                                                                                 <span className={item?.remaining < 0 ? 'text-red-600' : ''}>
                                                                                     {item?.remaining.toFixed(2)}
+                                                                                </span>
+                                                                            </td>
+
+                                                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-600">
+                                                                                <span className={item?.balance < 0 ? 'text-red-600' : ''}>
+                                                                                    {item?.balance?.toFixed(2)}
                                                                                 </span>
                                                                             </td>
                                                                         </tr>

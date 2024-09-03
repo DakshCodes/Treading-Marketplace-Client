@@ -740,6 +740,8 @@ const SupplierPayment = () => {
         }
     }, [filteredInvoiceData]);
 
+    console.log(invoices,"invoices dataaaaaaaaaaaaaaaaa")
+
 
     // useEffect(() => {
     //     if (filteredInvoiceData) {

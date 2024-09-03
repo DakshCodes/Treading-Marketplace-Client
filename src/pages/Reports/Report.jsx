@@ -3,6 +3,8 @@ import ChallanReport from './ChallanReport'
 import { Chip, Tab, Tabs } from '@nextui-org/react'
 import Invoice from '../Invoice/Invoice';
 import InvoiceReport from './InvoiceReport';
+import InvoiceReport2 from './InvoiceReport2';
+import InvoiceReport3 from './InvoiceReport3';
 
 export default function Report() {
     return (
@@ -43,6 +45,30 @@ export default function Report() {
                         className="max-h-max px-5 "
                     >
                         <InvoiceReport />
+                    </Tab>
+                    <Tab
+                        key="invoicereport2"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <span>Invoice Report 2</span>
+                                <Chip size="sm" variant="light"></Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <InvoiceReport2 />
+                    </Tab>
+                    <Tab
+                        key="invoicereport3"
+                        title={
+                            <div className="flex items-center space-x-2 ">
+                                <span>Invoice Report 3</span>
+                                <Chip size="sm" variant="light"></Chip>
+                            </div>
+                        }
+                        className="max-h-max px-5 "
+                    >
+                        <InvoiceReport3 />
                     </Tab>
 
                 </Tabs>
